@@ -11,7 +11,7 @@ export interface ShortUrlResponse {
     expiresAt: Date
 }
 
-const API_BASE_URL = "http://localhost:5220/api/short-urls";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function createShortUrl(request: CreateShortUrlRequest): Promise<ShortUrlResponse> {
     // return new Promise((resolve) => {
