@@ -4,15 +4,13 @@ public record ShortUrlResponse(long Id, string ShortUrl, string OriginalUrl, Dat
 
 public static class ShortUrlResponseMapper
 {
-    public static ShortUrlResponse ToResponse(this ShortUrl shortUrl, HttpRequest httpRequest)
+    public static ShortUrlResponse ToResponse(this ShortUrl shortUrl, ApiSettings apiSettings)
     {
-        var shortUrlPath = new UriBuilder()
+        var builder = new UriBuilder(apiSettings.ApiBaseUrl)
         {
-            Scheme = httpRequest.Scheme,
-            Host = httpRequest.Host.Host,
-            Port = httpRequest.Host.Port ?? (httpRequest.Scheme == "https" ? 443 : 80),
             Path = shortUrl.Code
-        }.Uri.ToString();
-        return new ShortUrlResponse(shortUrl.Id, shortUrlPath, shortUrl.OriginalUrl, shortUrl.ExpiresAt);
+        };
+        return new ShortUrlResponse(shortUrl.Id, builder.Uri.AbsoluteUri, shortUrl.OriginalUrl, 
+            shortUrl.ExpiresAt);
     }
 }

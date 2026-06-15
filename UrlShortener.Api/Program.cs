@@ -16,10 +16,11 @@ builder.Services.AddOpenApiDocument(config =>
     config.Title = "UrlShortener.API v1";
     config.Version = "v1";
 });
-// Short URL related services
-builder.Services.AddScoped<ShortUrlService>();
-builder.Services.AddSingleton<ShortUrlClickEventQueue>();
-builder.Services.AddHostedService<ShortUrlClickBackgroundService>();
+// global settings
+builder.Services.AddOptions<ApiSettings>()
+    .BindConfiguration("ApiSettings")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -30,8 +31,12 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(corsOptions.AllowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
-    });  
+    });
 });
+// Short URL related services
+builder.Services.AddScoped<ShortUrlService>();
+builder.Services.AddSingleton<ShortUrlClickEventQueue>();
+builder.Services.AddHostedService<ShortUrlClickBackgroundService>();
 
 var app = builder.Build();
 // CORS

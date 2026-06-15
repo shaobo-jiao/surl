@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace UrlShortener.Api;
 
@@ -23,32 +24,34 @@ public static class ShortUrlEndpoints
     /// <summary>
     /// Creates a new Short URL that maps to the given original URL.
     /// </summary>
-    /// <param name="httpRequest"></param>
+    /// <param name="apiSettings"></param>
     /// <param name="shortUrlSvc"></param>
     /// <param name="request"></param>
     /// <returns></returns>
     public static async Task<Results<CreatedAtRoute<ShortUrlResponse>, BadRequest>> CreateShortUrlAsync(
-        HttpRequest httpRequest, ShortUrlService shortUrlSvc, CreateShortUrlRequest request, CancellationToken cancellationToken)
+        IOptions<ApiSettings> apiSettings, ShortUrlService shortUrlSvc, CreateShortUrlRequest request, 
+        CancellationToken cancellationToken)
     {
         var shortUrl = await shortUrlSvc.CreateShortUrlAsync(request, cancellationToken);
-        var response = shortUrl.ToResponse(httpRequest);
+        var response = shortUrl.ToResponse(apiSettings.Value);
         return TypedResults.CreatedAtRoute(response, "GetOriginalUrl", new { code = shortUrl.Code });
     }
 
     /// <summary>
     /// Gets original URL mapping information for the given short URL
     /// </summary>
-    /// <param name="httpRequest"></param>
+    /// <param name="apiSettings"></param>
     /// <param name="shortUrlSvc"></param>
     /// <param name="code"></param>
     /// <returns></returns>
     public static async Task<Results<Ok<ShortUrlResponse>, ProblemHttpResult>> GetOriginalUrlAsync(
-        HttpRequest httpRequest, ShortUrlService shortUrlSvc, [FromRoute] string code, CancellationToken cancellationToken)
+        IOptions<ApiSettings> apiSettings, ShortUrlService shortUrlSvc, [FromRoute] string code, 
+        CancellationToken cancellationToken)
     {
         try
         {
             var shortUrl = await shortUrlSvc.GetShortUrlByCodeAsync(code, cancellationToken);
-            return TypedResults.Ok(shortUrl.ToResponse(httpRequest));
+            return TypedResults.Ok(shortUrl.ToResponse(apiSettings.Value));
         }
         catch (ShortUrlBaseException ex)
         {
@@ -60,7 +63,7 @@ public static class ShortUrlEndpoints
     /// Redirects to the original URL mapped by the given short URL, and logs the click event of the found URL entity.
     /// </summary>
     public static async Task<Results<RedirectHttpResult, ProblemHttpResult>> RedirectToOriginalUrl(
-        HttpRequest httpRequest, ShortUrlService shortUrlSvc, ShortUrlClickEventQueue _clickEventQueue, [FromRoute] string code, 
+        ShortUrlService shortUrlSvc, ShortUrlClickEventQueue _clickEventQueue, [FromRoute] string code, 
         CancellationToken cancellationToken)
     {
         try
