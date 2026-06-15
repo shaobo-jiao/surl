@@ -1,6 +1,7 @@
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "./ui/navigation-menu";
 
-
+// Header contains a "Logo" that links to homepage and a nav bar 
+// the nav bar contains: Home, URLs only as for now. later need to add Login/Logout links
 const Header = () => {
   // todo: user login info related visibility control; screen width related control
   return (
@@ -16,31 +17,12 @@ const Header = () => {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
-                <a href="/urls" className="font-medium hover:">URLs</a>
+                <a href="/urls" className="font-medium">URLs</a>
               </NavigationMenuLink>
             </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild>
-                <a href="#" className="font-medium hover:">Sign Up</a>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild>
-                <a href="#" className="font-medium hover:">Log In</a>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild>
-                <a href="#" className="font-medium hover:">Log Out</a>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-
           </NavigationMenuList>
         </NavigationMenu>
-        <h4 className="text-sm font-medium italic">Hi, Shaobo</h4>
+        <h4 className="text-sm font-medium italic">Hi, XXX</h4>
       </div>
     </header>
   );
