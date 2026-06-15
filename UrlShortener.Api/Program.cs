@@ -5,7 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 // database
 builder.Services.AddDbContext<AppDbContext>(opts =>
 {
-    opts.UseSqlite(builder.Configuration.GetConnectionString("Default"));
+    opts.UseNpgsql(builder.Configuration.GetConnectionString("Default"))
+        .UseSnakeCaseNamingConvention();
 });
 // swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -22,7 +23,8 @@ builder.Services.AddHostedService<ShortUrlClickBackgroundService>();
 // CORS
 builder.Services.AddCors(options =>
 {
-    var corsOptions = builder.Configuration.GetSection("Cors").Get<CorsOptions>() ?? throw new InvalidOperationException("Failed to load CORS configuration.");
+    var corsOptions = builder.Configuration.GetSection("Cors").Get<CorsOptions>() 
+        ?? throw new InvalidOperationException("Failed to load CORS configuration.");
     options.AddDefaultPolicy(policy =>
     {
         policy.WithOrigins(corsOptions.AllowedOrigins)

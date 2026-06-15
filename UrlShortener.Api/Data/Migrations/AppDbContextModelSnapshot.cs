@@ -3,11 +3,12 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using UrlShortener.Api;
 
 #nullable disable
 
-namespace UrlShortener.Api.Data.Migrations
+namespace UrlShortener.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -15,47 +16,66 @@ namespace UrlShortener.Api.Data.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
+            modelBuilder
+                .HasDefaultSchema("url_shortener")
+                .HasAnnotation("ProductVersion", "10.0.7")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("UrlShortener.Api.ShortUrl", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text")
+                        .HasColumnName("code");
 
                     b.Property<DateTimeOffset>("ExpiresAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
 
                     b.Property<string>("OriginalUrl")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text")
+                        .HasColumnName("original_url");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_short_urls");
 
-                    b.ToTable("ShortUrls");
+                    b.ToTable("short_urls", "url_shortener");
                 });
 
             modelBuilder.Entity("UrlShortener.Api.ShortUrlClick", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTimeOffset>("ClickedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("clicked_at");
 
                     b.Property<long>("ShortUrlId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint")
+                        .HasColumnName("short_url_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_short_url_clicks");
 
-                    b.HasIndex("ShortUrlId");
+                    b.HasIndex("ShortUrlId")
+                        .HasDatabaseName("ix_short_url_clicks_short_url_id");
 
-                    b.ToTable("ShortUrlClicks");
+                    b.ToTable("short_url_clicks", "url_shortener");
                 });
 
             modelBuilder.Entity("UrlShortener.Api.ShortUrlClick", b =>
@@ -64,7 +84,8 @@ namespace UrlShortener.Api.Data.Migrations
                         .WithMany("Clicks")
                         .HasForeignKey("ShortUrlId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_short_url_clicks_short_urls_short_url_id");
 
                     b.Navigation("ShortUrl");
                 });

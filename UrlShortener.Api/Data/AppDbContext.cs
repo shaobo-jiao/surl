@@ -13,6 +13,7 @@ public class AppDbContext: DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasDefaultSchema("url_shortener");
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<ShortUrl>()
