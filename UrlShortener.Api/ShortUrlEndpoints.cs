@@ -29,11 +29,10 @@ public static class ShortUrlEndpoints
     /// <param name="request"></param>
     /// <returns></returns>
     public static async Task<Results<CreatedAtRoute<ShortUrlResponse>, BadRequest>> CreateShortUrlAsync(
-        IOptions<ApiSettings> apiSettings, ShortUrlService shortUrlSvc, CreateShortUrlRequest request, 
-        CancellationToken cancellationToken)
+        ShortUrlService shortUrlSvc, CreateShortUrlRequest request, CancellationToken cancellationToken)
     {
         var shortUrl = await shortUrlSvc.CreateShortUrlAsync(request, cancellationToken);
-        var response = shortUrl.ToResponse(apiSettings.Value);
+        var response = shortUrl.ToResponse();
         return TypedResults.CreatedAtRoute(response, "GetOriginalUrl", new { code = shortUrl.Code });
     }
 
@@ -45,13 +44,12 @@ public static class ShortUrlEndpoints
     /// <param name="code"></param>
     /// <returns></returns>
     public static async Task<Results<Ok<ShortUrlResponse>, ProblemHttpResult>> GetOriginalUrlAsync(
-        IOptions<ApiSettings> apiSettings, ShortUrlService shortUrlSvc, [FromRoute] string code, 
-        CancellationToken cancellationToken)
+        ShortUrlService shortUrlSvc, [FromRoute] string code, CancellationToken cancellationToken)
     {
         try
         {
             var shortUrl = await shortUrlSvc.GetShortUrlByCodeAsync(code, cancellationToken);
-            return TypedResults.Ok(shortUrl.ToResponse(apiSettings.Value));
+            return TypedResults.Ok(shortUrl.ToResponse());
         }
         catch (ShortUrlBaseException ex)
         {

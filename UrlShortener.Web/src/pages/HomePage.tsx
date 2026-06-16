@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { createShortUrl, type ShortUrlResponse } from "@/ShortUrlApi";
+import { createShortUrl, type ShortUrl } from "@/ShortUrlApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
@@ -13,17 +13,16 @@ const HomePage = () => {
   const [originalUrl, setOriginalUrl] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const [response, setResponse] = useState(null as ShortUrlResponse | null)
+  const [shortUrl, setShortUrl] = useState(null as ShortUrl | null)
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setResponse(null);
+    setShortUrl(null);
     setIsCreating(true);
     setHasError(false);
     try {
-      const response = await createShortUrl({ originalUrl });
-      setResponse(response);
+      setShortUrl(await createShortUrl({ originalUrl }));
       setIsCreating(false);
     }
     catch (e) {
@@ -34,9 +33,9 @@ const HomePage = () => {
 
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
-    if (response === null) return;
+    if (shortUrl === null) return;
     setCopied(true);
-    await navigator.clipboard.writeText(response.shortUrl);
+    await navigator.clipboard.writeText(shortUrl.absoluteUrl);
     setTimeout(() => setCopied(false), 3000);
   }
 
@@ -68,15 +67,15 @@ const HomePage = () => {
           </form>
         </CardContent>
 
-        {response &&
+        {shortUrl &&
           <CardFooter>
             <div className="flex flex-col w-full items-start gap-2">
               <h3 className="font-medium flex items-center gap-1">
                 <CircleCheck className="size-4" /> Successful!
               </h3>
               <div className="flex flex-row w-full items-center gap-2">
-                <a href={response.shortUrl} target="_blank" className="hover:underline flex-1 ">
-                  {response.shortUrl}
+                <a href={shortUrl.absoluteUrl} target="_blank" className="hover:underline flex-1 ">
+                  {shortUrl.absoluteUrl}
                 </a>
                 <Button type="button" variant="outline" size="icon" className="ml-auto rounded-md" 
                   onClick={handleCopy}>
@@ -85,7 +84,7 @@ const HomePage = () => {
               </div>
               <Separator />
               <p className="text-muted-foreground">
-                The link will expire at {response.expiresAt.toLocaleString()}
+                The link will expire at {shortUrl.expiresAt.toLocaleString()}
               </p>
             </div>
           </CardFooter>

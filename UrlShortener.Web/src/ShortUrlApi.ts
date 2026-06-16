@@ -7,13 +7,21 @@ export interface CreateShortUrlRequest {
 export interface ShortUrlResponse {
     id: string, // long Id from backend
     originalUrl: string,
-    shortUrl: string,
+    shortUrlCode: string,
+    expiresAt: string
+}
+
+export interface ShortUrl {
+    id: string,
+    originalUrl: string,
+    code: string,
+    absoluteUrl: string,
     expiresAt: Date
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export async function createShortUrl(request: CreateShortUrlRequest): Promise<ShortUrlResponse> {
+export async function createShortUrl(request: CreateShortUrlRequest): Promise<ShortUrl> {
     // return new Promise((resolve) => {
     //     setTimeout(() => {
     //         resolve({
@@ -37,6 +45,13 @@ export async function createShortUrl(request: CreateShortUrlRequest): Promise<Sh
         throw new Error(`Failed to create short URL: ${response.statusText}`);
 
     const data = await response.json() as ShortUrlResponse;
-    return { ...data, expiresAt: new Date(data.expiresAt) };
+    const shortUrl: ShortUrl = {
+        id: data.id,
+        originalUrl: data.originalUrl,
+        code: data.shortUrlCode,
+        absoluteUrl: new URL(data.shortUrlCode, import.meta.env.VITE_APP_URL).toString(),
+        expiresAt: new Date(data.expiresAt),
+    }
+    return shortUrl;
 }
 

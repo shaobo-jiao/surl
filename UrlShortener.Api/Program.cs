@@ -16,11 +16,6 @@ builder.Services.AddOpenApiDocument(config =>
     config.Title = "UrlShortener.API v1";
     config.Version = "v1";
 });
-// global settings
-builder.Services.AddOptions<ApiSettings>()
-    .BindConfiguration("ApiSettings")
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
 // CORS
 builder.Services.AddCors(options =>
 {

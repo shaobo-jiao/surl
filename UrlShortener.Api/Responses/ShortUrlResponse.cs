@@ -1,16 +1,11 @@
 ﻿namespace UrlShortener.Api;
 
-public record ShortUrlResponse(long Id, string ShortUrl, string OriginalUrl, DateTimeOffset ExpiresAt);
+public record ShortUrlResponse(long Id, string ShortUrlCode, string OriginalUrl, DateTimeOffset ExpiresAt);
 
 public static class ShortUrlResponseMapper
 {
-    public static ShortUrlResponse ToResponse(this ShortUrl shortUrl, ApiSettings apiSettings)
+    public static ShortUrlResponse ToResponse(this ShortUrl shortUrl)
     {
-        var builder = new UriBuilder(apiSettings.ApiBaseUrl)
-        {
-            Path = shortUrl.Code
-        };
-        return new ShortUrlResponse(shortUrl.Id, builder.Uri.AbsoluteUri, shortUrl.OriginalUrl, 
-            shortUrl.ExpiresAt);
+        return new ShortUrlResponse(shortUrl.Id, shortUrl.Code, shortUrl.OriginalUrl, shortUrl.ExpiresAt);
     }
 }
