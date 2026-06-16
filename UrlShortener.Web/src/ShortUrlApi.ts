@@ -56,10 +56,9 @@ export async function createShortUrl(request: CreateShortUrlRequest): Promise<Sh
 }
 
 export async function getOriginalUrl(shortUrlCode: string): Promise<string> {
-    const response = await fetch(new URL(shortUrlCode, API_BASE_URL));
+    const response = await fetch(new URL(`/redirection/${shortUrlCode}`, API_BASE_URL));
     if (!response.ok)
         throw new Error("The link is either invalid or expired.");
 
-    const data = await response.json() as ShortUrlResponse;
-    return data.originalUrl;
+    return await response.json();;
 }

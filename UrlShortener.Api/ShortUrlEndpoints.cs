@@ -17,8 +17,10 @@ public static class ShortUrlEndpoints
             .ProducesProblem(StatusCodes.Status410Gone)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
-        app.MapGet("/{code}", RedirectToOriginalUrl)
-            .ExcludeFromDescription(); // exclude from Swagger
+        app.MapGet("/redirection/{code}", GetOriginalUrlForRedirectionAsync)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status410Gone)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 
     /// <summary>
@@ -58,19 +60,19 @@ public static class ShortUrlEndpoints
     }
 
     /// <summary>
-    /// Redirects to the original URL mapped by the given short URL, and logs the click event of the found URL entity.
+    /// Gets original URL for redirection and triggers click event saving.
     /// </summary>
-    public static async Task<Results<RedirectHttpResult, ProblemHttpResult>> RedirectToOriginalUrl(
-        ShortUrlService shortUrlSvc, ShortUrlClickEventQueue _clickEventQueue, [FromRoute] string code, 
+    public static async Task<Results<Ok<string>, ProblemHttpResult>> GetOriginalUrlForRedirectionAsync(
+        ShortUrlService shortUrlSvc, ShortUrlClickEventQueue clickEventQueue, [FromRoute] string code, 
         CancellationToken cancellationToken)
     {
         try
         {
             var shortUrl = await shortUrlSvc.GetShortUrlByCodeAsync(code, cancellationToken);
             var clickEvent = new ShortUrlClickEvent(shortUrl.Id, shortUrl.Code, DateTimeOffset.UtcNow);
-            await _clickEventQueue.EnqueueAsync(clickEvent, cancellationToken);
+            await clickEventQueue.EnqueueAsync(clickEvent, cancellationToken);
 
-            return TypedResults.Redirect(shortUrl.OriginalUrl, permanent: false);
+            return TypedResults.Ok(shortUrl.OriginalUrl);
         }
         catch (ShortUrlBaseException ex)
         {
