@@ -1,26 +1,22 @@
 ﻿namespace UrlShortener.Api;
 
-public class ShortUrlService(AppDbContext dbContext)
+public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGenerator)
 {
     private AppDbContext _dbContext = dbContext;
+    private IdGenerator<ShortUrl> _idGenerator = idGenerator;
 
     public async Task<ShortUrl> CreateShortUrlAsync(CreateShortUrlRequest request, CancellationToken cancellationToken)
     {
-        // use same transaction for the two saves.
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
-
+        // generate ID and encode code
+        var newId = _idGenerator.NewId();
         var shortUrl = new ShortUrl
         {
+            Id = newId,
+            Code = Base62Encoding.Encode(newId),
             OriginalUrl = request.OriginalUrl
         };
         await _dbContext.ShortUrls.AddAsync(shortUrl);
         await _dbContext.SaveChangesAsync(cancellationToken);
-
-        // computes code from auto populated ID.
-        shortUrl.Code = Base62Encoding.Encode(shortUrl.Id);
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        await transaction.CommitAsync(cancellationToken);
         return shortUrl;
     }
 

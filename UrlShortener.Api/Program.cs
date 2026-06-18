@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using UrlShortener.Api;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +29,14 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+// Id Generator 
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddOptions<IdOptions>()
+    .BindConfiguration("IdOptions")
+    .ValidateOnStart();
+builder.Services.AddSingleton<IValidateOptions<IdOptions>, IdOptionsValidator>();
+builder.Services.AddSingleton<IdGenerator<ShortUrl>>();
+
 // Short URL related services
 builder.Services.AddScoped<ShortUrlService>();
 builder.Services.AddSingleton<ShortUrlClickEventQueue>();

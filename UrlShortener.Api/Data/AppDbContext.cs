@@ -17,6 +17,10 @@ public class AppDbContext: DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<ShortUrl>()
+            .Property(e => e.Id)
+            .ValueGeneratedNever();
+        
+        modelBuilder.Entity<ShortUrl>()
             .HasMany(e => e.Clicks)
             .WithOne(e => e.ShortUrl)
             .HasForeignKey(e => e.ShortUrlId)
