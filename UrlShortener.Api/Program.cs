@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using UrlShortener.Api;
@@ -38,6 +39,8 @@ builder.Services.AddSingleton<IValidateOptions<IdOptions>, IdOptionsValidator>()
 builder.Services.AddSingleton<IdGenerator<ShortUrl>>();
 
 // Short URL related services
+builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
+builder.Services.AddScoped<IValidator<CreateShortUrlRequest>, CreateShortUrlRequestValidator>();
 builder.Services.AddScoped<ShortUrlService>();
 builder.Services.AddSingleton<ShortUrlClickEventQueue>();
 builder.Services.AddHostedService<ShortUrlClickBackgroundService>();
