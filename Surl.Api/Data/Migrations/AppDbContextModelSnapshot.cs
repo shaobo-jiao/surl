@@ -17,7 +17,6 @@ namespace Surl.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("url_shortener")
                 .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -46,7 +45,7 @@ namespace Surl.Api.Migrations
                     b.HasKey("Id")
                         .HasName("pk_short_urls");
 
-                    b.ToTable("short_urls", "url_shortener");
+                    b.ToTable("short_urls", (string)null);
                 });
 
             modelBuilder.Entity("Surl.Api.ShortUrlClick", b =>
@@ -72,7 +71,7 @@ namespace Surl.Api.Migrations
                     b.HasIndex("ShortUrlId")
                         .HasDatabaseName("ix_short_url_clicks_short_url_id");
 
-                    b.ToTable("short_url_clicks", "url_shortener");
+                    b.ToTable("short_url_clicks", (string)null);
                 });
 
             modelBuilder.Entity("Surl.Api.ShortUrlClick", b =>
