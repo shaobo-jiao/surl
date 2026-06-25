@@ -10,9 +10,10 @@ RUN npm install
 
 # build app
 COPY . .
-# more on ARG and ENV later, need match host
-ENV VITE_APP_URL=http://localhost:5001
-ENV VITE_API_BASE_URL=http://localhost:5000/api/short-urls
+ARG VITE_APP_URL=http://localhost:5001
+ENV VITE_APP_URL=$VITE_APP_URL
+ARG VITE_API_BASE_URL=http://localhost:5000/api/short-urls
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
 
