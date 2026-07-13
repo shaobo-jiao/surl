@@ -8,7 +8,7 @@ using Surl.Api;
 
 #nullable disable
 
-namespace Surl.Api.Migrations
+namespace Surl.Api.Common.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot

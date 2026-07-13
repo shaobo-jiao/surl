@@ -9,11 +9,11 @@ using Surl.Api;
 
 #nullable disable
 
-namespace Surl.Api.Migrations
+namespace Surl.Api.Common.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260619132750_RemoveDefaultSchema")]
-    partial class RemoveDefaultSchema
+    [Migration("20260713025828_PostgresInit")]
+    partial class PostgresInit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

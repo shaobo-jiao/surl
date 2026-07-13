@@ -4,24 +4,19 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Surl.Api.Migrations
+namespace Surl.Api.Common.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class PostgresInit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.EnsureSchema(
-                name: "url_shortener");
-
             migrationBuilder.CreateTable(
                 name: "short_urls",
-                schema: "url_shortener",
                 columns: table => new
                 {
-                    id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    id = table.Column<long>(type: "bigint", nullable: false),
                     code = table.Column<string>(type: "text", nullable: false),
                     original_url = table.Column<string>(type: "text", nullable: false),
                     expires_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
@@ -33,7 +28,6 @@ namespace Surl.Api.Migrations
 
             migrationBuilder.CreateTable(
                 name: "short_url_clicks",
-                schema: "url_shortener",
                 columns: table => new
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
@@ -47,7 +41,6 @@ namespace Surl.Api.Migrations
                     table.ForeignKey(
                         name: "fk_short_url_clicks_short_urls_short_url_id",
                         column: x => x.short_url_id,
-                        principalSchema: "url_shortener",
                         principalTable: "short_urls",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -55,7 +48,6 @@ namespace Surl.Api.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "ix_short_url_clicks_short_url_id",
-                schema: "url_shortener",
                 table: "short_url_clicks",
                 column: "short_url_id");
         }
@@ -64,12 +56,10 @@ namespace Surl.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "short_url_clicks",
-                schema: "url_shortener");
+                name: "short_url_clicks");
 
             migrationBuilder.DropTable(
-                name: "short_urls",
-                schema: "url_shortener");
+                name: "short_urls");
         }
     }
 }
