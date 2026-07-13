@@ -265,8 +265,97 @@ Reference:
 - [Postgres 18 Docs](https://www.postgresql.org/docs/current/)
 
 ## Docker
-Docker provides containerization for applications. Before starting with Docker Compose, standalone docker images and containers are first examined to host the application.
+Docker provides containerization for applications. 
+Before using Docker Compose, standalone docker images and containers are first examined to host the application.
 
+The applications contains three main components, corresponding to three containers to run:
+- frontend
+- API
+- database
+
+### Frontend
+The frontend image build requires:
+- build the artifact in a `Node` base image
+- copy the build artifact into a `Nginx` base image
+- build the image and run container of it
+
+When building the artifact, we provide the API and App URLs as environment variables. 
+- VITE_APP_URL
+- VITE_API_BASE_URL
+
+Refer to [Surl.Web Dockerfile](Surl.Web/Dockerfile) for details, and the following command to build the image and run the containers:
+```bash
+# build the image
+$ docker build -t surl-web --platform linux/amd64,linux/arm64 \
+    --build-arg VITE_API_BASE_URL=http://localhost:6002/api/short-urls \
+    --build-arg VITE_APP_URL=http://localhost:6001 \
+    ./Surl.Web
+
+# run the container
+$ docker run -d --name surl-web --network=surl -p 6001:80 surl-web
+```
+
+### Database
+We use `Postgres` images for the database. When running containers for the database images, we need to:
+- use `volume` to persistent the data
+- provide the init script to initialize the database, schema and necessary roles.
+- specify environment variables for the `Postgres` server and init script.
+- specify a name for the container so that it can be accessed from the API container in the same network
+
+The init script can be provided to the container using `bind mounts`. Refer to [db_init.sh](Surl.Api/Docker/db_init.sh) for the init script,
+and the following command for running containers for the app.
+
+```bash
+docker run -d --name=surl-db --network=surl \
+    --mount type=volume,src=postgres-vol,dst=/var/lib/postgresql \
+    --mount type=bind,src=./db_init.sh,dst=/docker-entrypoint-initdb.d/db_init.sh,ro \
+    -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=1 \
+    -e SURL_OWNER_PASSWORD=1 -e SURL_RW_PASSWORD=1 \
+    postgres:18-bookworm
+```
+
+For every deployment, we also need to run a schema update script. The steps are as follows:
+- build the idempotent locally or in the CI/CD
+- run the schema update script against the database
+
+Refer to the following commands for the steps:
+```bash
+# prepare the script
+$ dotnet ef migrations script --idempotent -o bin/db-schema.sql
+
+# execute the script against the database in the container
+$ docker exec -i surl-db psql -U surl_owner -d surl < ../bin/db-schema.sql
+```
+
+### API
+The API is based on ASP.NET Core Minimal API, so the image build requires:
+- build the artifact based on `dotnet sdk` base image
+- copy over the artifact into a `asp.net core runtime` base image
+- run the application as the non-root `app` user
+- build the image and run containers with necessary environment variables
+
+Refer to [Surl.API Dockerfile](Surl.Api/Dockerfile) for the details, and refer to the following command to run the containers.
+```bash
+# build the image
+$ docker build -t surl-api --platform linux/amd64,linux/arm64 ./Surl.Api     
+
+# build the container (with env file)
+$ docker run -d --name surl-api --network surl --env-file Surl.Api/.env -p 6002:8080 surl-api
+```
+
+The `.env` file provides environment variables to the API, including:
+- `ASPNETCORE_ENVIRONMENT`
+- `ConnectionStrings__Default`
+- etc
+
+### Deployment and Hosting in Servers
+The sections above provides details on how to build the images and run the application locally. 
+However, to host the application in the server, we will need to install Docker Engine in the server, publish 
+the images, pull into the server and run containers.
+
+Install Docker Engine
+```bash
+```
 
 
 

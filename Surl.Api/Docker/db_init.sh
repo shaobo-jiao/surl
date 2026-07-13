@@ -33,11 +33,3 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     ALTER DEFAULT PRIVILEGES FOR ROLE surl_owner IN SCHEMA surl
     GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO surl_rw;
 EOSQL
-
-# an example of running postgres with above init script; later move to a better place; later use docker compose
-# docker run -d --name=postgres -p 5433:5432 \
-#     --mount type=volume,src=postgres_vol,dst=/var/lib/postgresql \
-#     --mount type=bind,src=./db_init.sh,dst=/docker-entrypoint-initdb.d/db_init.sh,ro \
-#     -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres \
-#     -e SURL_OWNER_PASSWORD=1 -e SURL_RW_PASSWORD=2 \
-#     postgres:18-bookworm
