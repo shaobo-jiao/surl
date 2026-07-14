@@ -66,6 +66,11 @@ if (app.Environment.IsDevelopment())
         config.DocExpansion = "list";
     });
 }
+app.UseRequestLocalization();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 // endpoints
 app.MapShortUrlEndpoints();
 app.MapUserEndpoints();
