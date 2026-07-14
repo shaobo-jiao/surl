@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Surl.Api.Common;
 using Surl.Api.Data;
 using Surl.Api.ShortUrls;
+using Surl.Api.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 // database
@@ -32,6 +33,17 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+
+// localization
+builder.Services.AddLocalization();
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { "en" };
+    options.SetDefaultCulture(supportedCultures[0])
+        .AddSupportedCultures(supportedCultures)
+        .AddSupportedUICultures(supportedCultures);
+});
+
 // Id Generator 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddOptions<IdOptions>()
@@ -46,6 +58,8 @@ builder.Services.AddScoped<IValidator<CreateShortUrlRequest>, CreateShortUrlRequ
 builder.Services.AddScoped<ShortUrlService>();
 builder.Services.AddSingleton<ShortUrlClickEventQueue>();
 builder.Services.AddHostedService<ShortUrlClickBackgroundService>();
+// User related services
+builder.Services.AddUserServices();
 
 var app = builder.Build();
 // CORS
@@ -62,5 +76,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapShortUrlEndpoints();
+app.MapUserEndpoints();
 
 app.Run();
