@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Surl.Api.Auth;
 using Surl.Api.ShortUrls;
 using Surl.Api.Users;

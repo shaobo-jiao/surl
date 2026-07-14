@@ -1,4 +1,3 @@
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Surl.Api.Auth;
@@ -9,11 +8,8 @@ using Surl.Api.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 // database
-builder.Services.AddDbContext<AppDbContext>(opts =>
-{
-    opts.UseNpgsql(builder.Configuration.GetConnectionString("Default"))
-        .UseSnakeCaseNamingConvention();
-});
+builder.Services.AddAppDbContext(builder.Configuration);
+
 // swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApiDocument(config =>
