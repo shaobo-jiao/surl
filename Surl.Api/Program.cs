@@ -44,21 +44,15 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
         .AddSupportedUICultures(supportedCultures);
 });
 
-// Id Generator 
+// Id Generator Base
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddOptions<IdOptions>()
     .BindConfiguration("IdOptions")
     .ValidateOnStart();
 builder.Services.AddSingleton<IValidateOptions<IdOptions>, IdOptionsValidator>();
-builder.Services.AddSingleton<IdGenerator<ShortUrl>>();
 
-// Short URL related services
-builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
-builder.Services.AddScoped<IValidator<CreateShortUrlRequest>, CreateShortUrlRequestValidator>();
-builder.Services.AddScoped<ShortUrlService>();
-builder.Services.AddSingleton<ShortUrlClickEventQueue>();
-builder.Services.AddHostedService<ShortUrlClickBackgroundService>();
-// User related services
+// Module Services
+builder.Services.AddShortUrlServices(builder.Configuration);
 builder.Services.AddUserServices();
 
 var app = builder.Build();
@@ -74,7 +68,7 @@ if (app.Environment.IsDevelopment())
         config.DocExpansion = "list";
     });
 }
-
+// endpoints
 app.MapShortUrlEndpoints();
 app.MapUserEndpoints();
 

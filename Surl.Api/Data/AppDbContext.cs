@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Surl.Api.ShortUrls;
 using Surl.Api.Users;
 
@@ -19,17 +20,7 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<ShortUrl>()
-            .Property(e => e.Id)
-            .ValueGeneratedNever();
-
-        modelBuilder.Entity<ShortUrl>()
-            .HasMany(e => e.Clicks)
-            .WithOne(e => e.ShortUrl)
-            .HasForeignKey(e => e.ShortUrlId)
-            .IsRequired();
-
-        // User module configuration
+        modelBuilder.ConfigureShortUrlEntities();
         modelBuilder.ConfigureUserEntities();
     }
 }
