@@ -337,7 +337,7 @@ The API is based on ASP.NET Core Minimal API, so the image build requires:
 Refer to [Surl.API Dockerfile](Surl.Api/Dockerfile) for the details, and refer to the following command to run the containers.
 ```bash
 # build the image
-$ docker build -t surl-api --platform linux/amd64,linux/arm64 ./Surl.Api     
+$ docker build -t surl-api --platform linux/amd64,linux/arm64 ./Surl.Api
 
 # build the container (with env file)
 $ docker run -d --name surl-api --network surl --env-file Surl.Api/.env -p 6002:8080 surl-api
@@ -350,20 +350,87 @@ The `.env` file provides environment variables to the API, including:
 
 ### Deployment and Hosting in Servers
 The sections above provides details on how to build the images and run the application locally. 
-However, to host the application in the server, we will need to install Docker Engine in the server, publish 
-the images, pull into the server and run containers.
+There are a few more steps necessary to host the application in the server.
+- install docker engine
+- push and pull the images
+- run containers create
 
-Install Docker Engine
+Install Docker Engine: refer to [Docker Engine Installation](https://docs.docker.com/engine/install/)
+
+Push the images from local
 ```bash
+# login (Docker Hub is used for now)
+$ docker login -u USERNAME
+
+# build and push web
+$ docker build -t USERNAME/surl-web --platform linux/amd64,linux/arm64 \
+    --build-arg VITE_API_BASE_URL=https://surl-api.shaobo.dev/api/short-urls \
+    --build-arg VITE_APP_URL=https://surl.shaobo.dev \
+    ./Surl.Web
+
+$ docker image push USERNAME/surl-web
+
+# build and push api
+$ docker build -t USERNAME/surl-api --platform linux/amd64,linux/arm64 ./Surl.Api
+$ docker image push USERNAME/surl-api
+```
+
+Pull the images into the server
+```bash
+# login
+$ sudo docker login -u USERNAME
+
+# pull image
+$ sudo docker pull USERNAME/surl-api
+$ sudo docker pull USERNAME/surl-web
+$ sudo docker pull postgres:18-bookworm
+```
+
+Create environment variable files for the containers:
+- `/etc/surl/.env.db`
+    ```text
+    POSTGRES_USER=postgres
+    POSTGRES_PASSWORD=???
+    SURL_OWNER_PASSWORD=???
+    SURL_RW_PASSWORD=???
+    ```
+- `/etc/surl/.env.api`
+    ```text
+    ASPNETCORE_ENVIRONMENT=Production
+    ConnectionStrings__Default=Host=surl-db;Database=surl;Username=surl_rw;Password=???
+    ```
+
+Upload database initialization and schema update script:
+```bash
+# db_init.sh
+$ scp ./Docker/db_init.sh user@server:/tmp/db_init.sh
+
+# build and upload schema script
+$ dotnet ef migrations script --idempotent -o ./bin/db_schema.sql
+$ scp ./bin/db_schema.sql user@server:/tmp/db_schema.sh
+```
+
+Run the containers:
+```bash
+# create network
+$ sudo docker network create surl
+
+# frontend
+$ sudo docker run -d --name surl-web --network surl -p 5001:80 USERNAME/surl-web 
+
+# database
+$ sudo docker run -d --name surl-db --network surl \
+    --mount type=volume,src=surl-db-vol,dst=/var/lib/postgresql \
+    --mount type=bind,src=/tmp/db_init.sh,dst=/docker-entrypoint-initdb.d/db_init.sh,ro \
+    --env-file /etc/surl/.env.db \
+    postgres:18-bookworm
+
+# API
+$ sudo docker run -d --name surl-api --network surl --env-file /etc/surl/.env.api -p 5002:8080 USERNAME/surl-api
 ```
 
 
-
 ## Docker Compose
-
-
-
-
 
 
 
