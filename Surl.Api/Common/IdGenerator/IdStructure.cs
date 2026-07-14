@@ -1,4 +1,4 @@
-﻿namespace Surl.Api;
+﻿namespace Surl.Api.Common;
 
 /// <summary>
 /// Represents the structure of a Snowflake Id. The structure is configurable but suggested not to 

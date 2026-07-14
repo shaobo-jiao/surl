@@ -1,4 +1,4 @@
-﻿namespace Surl.Api;
+﻿namespace Surl.Api.ShortUrls;
 
 public class ShortUrlInvalidCodeException: ShortUrlBaseException
 {

@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Surl.Api;
+namespace Surl.Api.Common;
 
 /// <summary>
 /// Represents a validation filter of given type of request.

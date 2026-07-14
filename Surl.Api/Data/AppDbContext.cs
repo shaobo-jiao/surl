@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Surl.Api.ShortUrls;
 
-namespace Surl.Api;
+namespace Surl.Api.Data;
 
 public class AppDbContext: DbContext
 {

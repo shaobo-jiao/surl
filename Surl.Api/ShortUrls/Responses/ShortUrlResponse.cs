@@ -1,4 +1,4 @@
-﻿namespace Surl.Api;
+﻿namespace Surl.Api.ShortUrls;
 
 public record ShortUrlResponse(long Id, string ShortUrlCode, string OriginalUrl, DateTimeOffset ExpiresAt);
 

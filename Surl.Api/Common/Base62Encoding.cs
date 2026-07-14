@@ -1,4 +1,4 @@
-﻿namespace Surl.Api;
+﻿namespace Surl.Api.Common;
 
 /// <summary>
 /// Base62 encoding that converts a long integer to its Base62 text representation and vice versa

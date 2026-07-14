@@ -1,7 +1,7 @@
-﻿namespace Surl.Api;
+﻿namespace Surl.Api.ShortUrls;
 
 /// <summary>
-/// Represents a background serivce that consumes click events from a in-memory queue
+/// Represents a background service that consumes click events from a in-memory queue
 /// and saves the click events into database. 
 /// Currently each click event triggers a scope with DbContext creation and disposal.
 /// Later we may consider batch processing. 
@@ -20,7 +20,7 @@ public class ShortUrlClickBackgroundService(
         _logger.LogInformation("ShortUrlClickBackgroundService is starting.");
         try
         {
-            // async enumrable: each time load a click event from the queue, or wait if it's empty.
+            // async enumerable: each time load a click event from the queue, or wait if it's empty.
             await foreach (var clickEvent in _clickQueue.DequeueAllAsync(stoppingToken))
             {
                 _logger.LogInformation("Processing click event: {ClickEvent}", clickEvent);

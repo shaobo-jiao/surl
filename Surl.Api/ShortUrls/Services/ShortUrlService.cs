@@ -1,4 +1,7 @@
-﻿namespace Surl.Api;
+﻿using Surl.Api.Common;
+using Surl.Api.Data;
+
+namespace Surl.Api.ShortUrls;
 
 public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGenerator)
 {

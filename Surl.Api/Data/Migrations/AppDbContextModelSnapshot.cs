@@ -2,21 +2,18 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Surl.Api;
+using Surl.Api.Data;
 
 #nullable disable
 
-namespace Surl.Api.Common.Data.Migrations
+namespace Surl.Api.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260713025828_PostgresInit")]
-    partial class PostgresInit
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,7 +22,7 @@ namespace Surl.Api.Common.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Surl.Api.ShortUrl", b =>
+            modelBuilder.Entity("Surl.Api.ShortUrls.ShortUrl", b =>
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
@@ -51,7 +48,7 @@ namespace Surl.Api.Common.Data.Migrations
                     b.ToTable("short_urls", (string)null);
                 });
 
-            modelBuilder.Entity("Surl.Api.ShortUrlClick", b =>
+            modelBuilder.Entity("Surl.Api.ShortUrls.ShortUrlClick", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -77,9 +74,9 @@ namespace Surl.Api.Common.Data.Migrations
                     b.ToTable("short_url_clicks", (string)null);
                 });
 
-            modelBuilder.Entity("Surl.Api.ShortUrlClick", b =>
+            modelBuilder.Entity("Surl.Api.ShortUrls.ShortUrlClick", b =>
                 {
-                    b.HasOne("Surl.Api.ShortUrl", "ShortUrl")
+                    b.HasOne("Surl.Api.ShortUrls.ShortUrl", "ShortUrl")
                         .WithMany("Clicks")
                         .HasForeignKey("ShortUrlId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -89,7 +86,7 @@ namespace Surl.Api.Common.Data.Migrations
                     b.Navigation("ShortUrl");
                 });
 
-            modelBuilder.Entity("Surl.Api.ShortUrl", b =>
+            modelBuilder.Entity("Surl.Api.ShortUrls.ShortUrl", b =>
                 {
                     b.Navigation("Clicks");
                 });

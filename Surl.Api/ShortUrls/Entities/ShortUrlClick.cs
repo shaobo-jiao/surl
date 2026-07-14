@@ -1,4 +1,4 @@
-﻿namespace Surl.Api;
+﻿namespace Surl.Api.ShortUrls;
 
 /// <summary>
 /// Represents a short url click event.
@@ -12,5 +12,5 @@ public class ShortUrlClick
 
     public DateTimeOffset ClickedAt { get; set; }
 
-    // later to add click source info like referer, user agents and ip address.
+    // later to add click source info like referrer, user agents and ip address.
 }

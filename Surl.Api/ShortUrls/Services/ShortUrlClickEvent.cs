@@ -1,4 +1,4 @@
-﻿namespace Surl.Api;
+﻿namespace Surl.Api.ShortUrls;
 
 /// <summary>
 /// Represents a short url click event DTO.

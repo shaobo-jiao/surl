@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 
-namespace Surl.Api;
+namespace Surl.Api.Common;
 
 /// <summary>
 /// Implements a Twitter Snowflake ID generator. 

@@ -1,4 +1,4 @@
-﻿namespace Surl.Api;
+﻿namespace Surl.Api.Common;
 
 /// <summary>
 /// wraps an Id generated from IdGenerator

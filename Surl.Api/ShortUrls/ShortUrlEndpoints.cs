@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using Surl.Api.Common;
 
-namespace Surl.Api;
+namespace Surl.Api.ShortUrls;
 
 public static class ShortUrlEndpoints
 {

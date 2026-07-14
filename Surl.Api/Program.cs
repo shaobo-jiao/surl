@@ -1,7 +1,9 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Surl.Api;
+using Surl.Api.Common;
+using Surl.Api.Data;
+using Surl.Api.ShortUrls;
 
 var builder = WebApplication.CreateBuilder(args);
 // database

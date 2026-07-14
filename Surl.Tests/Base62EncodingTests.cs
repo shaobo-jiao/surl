@@ -1,4 +1,4 @@
-﻿using Surl.Api;
+﻿using Surl.Api.Common;
 
 namespace Surl.Tests;
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Surl.Api;
+namespace Surl.Api.ShortUrls;
 
 public static class ShortUrlExceptionResponseExtensions
 {

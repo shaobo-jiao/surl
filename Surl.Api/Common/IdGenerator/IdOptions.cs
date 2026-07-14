@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 
-namespace Surl.Api;
+namespace Surl.Api.Common;
 
 /// <summary>
 /// Configures the Id structure and current IdGenerator WorkerId.

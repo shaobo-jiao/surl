@@ -1,7 +1,8 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.Options;
+using Surl.Api.Common;
 
-namespace Surl.Api;
+namespace Surl.Api.ShortUrls;
 
 public record CreateShortUrlRequest(string OriginalUrl);
 
