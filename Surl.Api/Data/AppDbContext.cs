@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Surl.Api.Auth;
 using Surl.Api.ShortUrls;
 using Surl.Api.Users;
 
@@ -15,6 +16,8 @@ public class AppDbContext : DbContext
     public DbSet<ShortUrlClick> ShortUrlClicks { get; set; }
 
     public DbSet<User> Users { get; set; }
+    
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,5 +25,6 @@ public class AppDbContext : DbContext
 
         modelBuilder.ConfigureShortUrlEntities();
         modelBuilder.ConfigureUserEntities();
+        modelBuilder.ConfigureAuthEntities();
     }
 }

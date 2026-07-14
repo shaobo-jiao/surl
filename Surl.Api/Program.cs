@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Surl.Api.Auth;
 using Surl.Api.Common;
 using Surl.Api.Data;
 using Surl.Api.ShortUrls;
@@ -54,6 +55,7 @@ builder.Services.AddSingleton<IValidateOptions<IdOptions>, IdOptionsValidator>()
 // Module Services
 builder.Services.AddShortUrlServices(builder.Configuration);
 builder.Services.AddUserServices();
+builder.Services.AddAuthServices(builder.Configuration);
 
 var app = builder.Build();
 // CORS
@@ -71,5 +73,6 @@ if (app.Environment.IsDevelopment())
 // endpoints
 app.MapShortUrlEndpoints();
 app.MapUserEndpoints();
+app.MapAuthEndpoints();
 
 app.Run();
