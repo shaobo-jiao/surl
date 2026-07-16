@@ -4,6 +4,7 @@ services:
   db:
     image: postgres:18-bookworm
     env_file: ./config/db.env
+    restart: always
     volumes:
       - type: volume
         source: db-data
@@ -12,6 +13,16 @@ services:
         source: ./config/db_init.sh
         target: /docker-entrypoint-initdb.d/db_init.sh
         read_only: true
+  migration:
+    image: postgres:18-bookworm
+    env_file: ./config/db.env
+    restart: no
+    volumes:
+      - type: bind
+        source: ./backend/Surl.Api/bin/db_schema.sql
+        target: /migration/db_schema.sql
+        read_only: true
+    command: /bin/bash -c "PGPASSWORD=$$SURL_OWNER_PASSWORD psql -h db -d surl -U surl_owner -f /migration/db_schema.sql"
 
 volumes:
   db-data:
