@@ -1,4 +1,4 @@
 <Solution>
   <Project Path="Surl.Api/Surl.Api.csproj" />
-  <Project Path="Surl.Tests/Surl.Tests.csproj" />
+  <Project Path="Surl.Api.Tests/Surl.Api.Tests.csproj" />
 </Solution>
