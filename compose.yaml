@@ -49,6 +49,16 @@ services:
       migration:
         condition: service_completed_successfully
     
+  frontend:
+    build: 
+      context: ./frontend
+      args:
+        - VITE_API_BASE_URL=http://localhost:6002/api/short-urls
+        - VITE_APP_URL=http://localhost:6001
+    ports:
+      - 6001:80
+    restart: always
+
 volumes:
   db-data:
 
