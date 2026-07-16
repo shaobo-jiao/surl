@@ -35,7 +35,20 @@ services:
         target: /migration/db_schema.sql
         read_only: true
     command: /bin/bash -c "PGPASSWORD=$$SURL_OWNER_PASSWORD psql -h db -d surl -U surl_owner -f /migration/db_schema.sql"
-
+  
+  api:
+    build: ./backend/Surl.Api/
+    ports:
+      - 6002:8080
+    restart: always
+    env_file: ./config/api.env
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+      migration:
+        condition: service_completed_successfully
+    
 volumes:
   db-data:
 
