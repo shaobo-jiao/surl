@@ -1,4 +1,18 @@
 name: surl
 
 services:
-  
+  db:
+    image: postgres:18-bookworm
+    env_file: ./config/db.env
+    volumes:
+      - type: volume
+        source: db-data
+        target: /var/lib/postgresql
+      - type: bind
+        source: ./config/db_init.sh
+        target: /docker-entrypoint-initdb.d/db_init.sh
+        read_only: true
+
+volumes:
+  db-data:
+

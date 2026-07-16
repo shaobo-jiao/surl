@@ -1,1 +1,6 @@
 .DS_Store
+
+# environment files
+*.env
+*.env.*
+!*.env.examples
