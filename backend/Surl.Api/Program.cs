@@ -31,6 +31,9 @@ builder.Services.AddCors(options =>
     });
 });
 
+// health check
+builder.Services.AddHealthChecks();
+
 // localization
 builder.Services.AddLocalization();
 builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -72,6 +75,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // endpoints
+app.MapHealthChecks("/healthz");
 app.MapShortUrlEndpoints();
 app.MapUserEndpoints();
 app.MapAuthEndpoints();

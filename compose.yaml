@@ -48,7 +48,14 @@ services:
         restart: true
       migration:
         condition: service_completed_successfully
-    
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/healthz || exit 1"]
+      start_period: 10s
+      start_interval: 1s
+      interval: 1m
+      timeout: 10s
+      retries: 5
+
   frontend:
     build: 
       context: ./frontend
@@ -58,7 +65,10 @@ services:
     ports:
       - 6001:80
     restart: always
-
+    depends_on:
+      api:
+        condition: service_healthy
+        restart: true
 volumes:
   db-data:
 
