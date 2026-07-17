@@ -1,0 +1,12 @@
+# this file overrides some attributes in the the default compose.yaml file 
+# to provide production specific attributes. For example, image attributes
+# are used to overwrite the build attributes for services.
+
+# More to be added
+
+services:
+  api:
+    image: surl-api:latest
+  
+  frontend:
+    image: surl-web:latest
