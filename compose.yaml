@@ -3,7 +3,7 @@ name: surl
 services:
   db:
     image: postgres:18-bookworm
-    env_file: ./config/db.env
+    env_file: ${DB_ENV_FILE:-./config/db.env}
     restart: always
     volumes:
       - type: volume
@@ -23,25 +23,27 @@ services:
   
   migration:
     image: postgres:18-bookworm
-    env_file: ./config/db.env
+    env_file: ${DB_ENV_FILE:-./config/db.env}
     restart: no
-    depends_on:
-      db: 
-        condition: service_healthy
-        restart: false
     volumes:
       - type: bind
         source: ./backend/Surl.Api/bin/db_schema.sql
         target: /migration/db_schema.sql
         read_only: true
+    tmpfs:
+      - /var/lib/postgresql
     command: /bin/bash -c "PGPASSWORD=$$SURL_OWNER_PASSWORD psql -h db -d surl -U surl_owner -f /migration/db_schema.sql"
+    depends_on:
+      db: 
+        condition: service_healthy
+        restart: false
   
   api:
     build: ./backend/Surl.Api/
     ports:
-      - 6002:8080
+      - ${API_PORT:-6002}:8080
     restart: always
-    env_file: ./config/api.env
+    env_file: ${API_ENV_FILE:-./config/api.env}
     depends_on:
       db:
         condition: service_healthy
@@ -60,10 +62,10 @@ services:
     build: 
       context: ./frontend
       args:
-        - VITE_API_BASE_URL=http://localhost:6002/api/short-urls
-        - VITE_APP_URL=http://localhost:6001
+        - VITE_API_BASE_URL=http://localhost:${API_PORT:-6002}/api/short-urls
+        - VITE_APP_URL=http://localhost:${FRONTEND_PORT:-6001}
     ports:
-      - 6001:80
+      - ${FRONTEND_PORT:-6001}:80
     restart: always
     depends_on:
       api:

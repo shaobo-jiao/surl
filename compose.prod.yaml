@@ -2,11 +2,22 @@
 # to provide production specific attributes. For example, image attributes
 # are used to overwrite the build attributes for services.
 
-# More to be added
-
 services:
+  db:
+    volumes:
+      - type: bind
+        source: /etc/docker/surl/db_init.sh
+        target: /docker-entrypoint-initdb.d/db_init.sh
+        read_only: true
+  
+  migration:
+    volumes:
+      - type: bind
+        source: ./migrations/db_schema_${TAG}.sql
+        target: /migration/db_schema.sql
+        read_only: true
   api:
-    image: surl-api:latest
+    image: shaobojiao/surl-api:${TAG}
   
   frontend:
-    image: surl-web:latest
+    image: shaobojiao/surl-web:${TAG}
