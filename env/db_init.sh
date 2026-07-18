@@ -3,13 +3,20 @@
 # This script is run when initializing the database. 
 set -e
 
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+SURL_OWNER_PASSWORD="$(cat /run/secrets/surl-owner-password)"
+SURL_RW_PASSWORD="$(cat /run/secrets/surl-rw-password)"
+
+psql --username "$POSTGRES_USER" \
+    --dbname "$POSTGRES_DB" \
+    --set ON_ERROR_STOP=1 \
+    --set surl_owner_password="$SURL_OWNER_PASSWORD" \
+    --set surl_rw_password="$SURL_RW_PASSWORD" <<-EOSQL
     -- create database
     CREATE DATABASE surl;
 
     -- create roles
-    CREATE ROLE surl_owner WITH LOGIN PASSWORD '${SURL_OWNER_PASSWORD}';
-    CREATE ROLE surl_rw WITH LOGIN PASSWORD '${SURL_RW_PASSWORD}';
+    CREATE ROLE surl_owner WITH LOGIN PASSWORD :'surl_owner_password';
+    CREATE ROLE surl_rw WITH LOGIN PASSWORD :'surl_rw_password';
 
     -- allow connection
     GRANT CONNECT ON DATABASE surl TO surl_owner;

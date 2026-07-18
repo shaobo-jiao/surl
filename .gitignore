@@ -3,4 +3,9 @@
 # environment files
 *.env
 *.env.*
-!*.env.examples
+!*.env.example
+
+# secrets:
+secrets/*
+!secrets/*.example
+!secrets/README.md

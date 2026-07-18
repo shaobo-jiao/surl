@@ -18,6 +18,8 @@ services:
         read_only: true
   api:
     image: shaobojiao/surl-api:${TAG}
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
   
   frontend:
     image: shaobojiao/surl-web:${TAG}

@@ -3,14 +3,23 @@ name: surl
 services:
   db:
     image: postgres:18-bookworm
-    env_file: ${DB_ENV_FILE:-./config/db.env}
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
+    env_file: 
+      - ${DB_ENV_FILE:-./env/db.env}
+    secrets:
+      - postgres-password
+      - surl-owner-password
+      - surl-rw-password
     restart: always
     volumes:
       - type: volume
         source: db-data
         target: /var/lib/postgresql
       - type: bind
-        source: ./config/db_init.sh
+        source: ./env/db_init.sh
         target: /docker-entrypoint-initdb.d/db_init.sh
         read_only: true
     healthcheck:
@@ -23,7 +32,15 @@ services:
   
   migration:
     image: postgres:18-bookworm
-    env_file: ${DB_ENV_FILE:-./config/db.env}
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
+    env_file: 
+      - ${DB_ENV_FILE:-./env/db.env}
+    secrets:
+      - postgres-password
+      - surl-owner-password
     restart: no
     volumes:
       - type: bind
@@ -32,7 +49,7 @@ services:
         read_only: true
     tmpfs:
       - /var/lib/postgresql
-    command: /bin/bash -c "PGPASSWORD=$$SURL_OWNER_PASSWORD psql -h db -d surl -U surl_owner -f /migration/db_schema.sql"
+    command: /bin/bash -c "PGPASSWORD="$$(cat /run/secrets/surl-owner-password)" psql -h db -d surl -U surl_owner -f /migration/db_schema.sql"
     depends_on:
       db: 
         condition: service_healthy
@@ -43,7 +60,10 @@ services:
     ports:
       - ${API_PORT:-6002}:8080
     restart: always
-    env_file: ${API_ENV_FILE:-./config/api.env}
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    env_file: 
+      - ${API_ENV_FILE:-./env/api.env}
     depends_on:
       db:
         condition: service_healthy
@@ -71,6 +91,15 @@ services:
       api:
         condition: service_healthy
         restart: true
+
 volumes:
   db-data:
 
+secrets:
+  postgres-password:
+    file: ./secrets/postgres_password
+  surl-owner-password:
+    file: ./secrets/surl_owner_password
+  surl-rw-password:
+    file: ./secrets/surl_rw_password
+    
