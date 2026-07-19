@@ -7,8 +7,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
-    env_file: 
-      - ${DB_ENV_FILE:-./env/db.env}
     secrets:
       - postgres-password
       - surl-owner-password
@@ -36,8 +34,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
-    env_file: 
-      - ${DB_ENV_FILE:-./env/db.env}
     secrets:
       - postgres-password
       - surl-owner-password
