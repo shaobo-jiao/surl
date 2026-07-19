@@ -62,8 +62,10 @@ services:
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-    env_file: 
-      - ${API_ENV_FILE:-./env/api.env}
+      - ConnectionStrings__Default=Host=db;Database=surl;Username=surl_rw;
+      - Secrets__DB_Default_Password_File=/run/secrets/surl-rw-password
+    secrets:
+      - surl-rw-password
     depends_on:
       db:
         condition: service_healthy

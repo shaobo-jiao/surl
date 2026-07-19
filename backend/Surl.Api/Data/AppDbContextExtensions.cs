@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Surl.Api.Users;
 
 namespace Surl.Api.Data;
@@ -10,8 +11,17 @@ public static class AppDbContextExtensions
     {
         services.AddDbContext<AppDbContext>(opts =>
         {
+            // build connection string
+            var connectionStringBuilder = new NpgsqlConnectionStringBuilder(configuration.GetConnectionString("Default"));
+            // get password from secret file if exists
+            var passwordFile = configuration.GetValue<string>("Secrets:DB_Default_Password_File");
+            if (File.Exists(passwordFile))
+            {
+                connectionStringBuilder.Password = File.ReadAllText(passwordFile).TrimEnd();
+            }
+            
             // postgres database
-            opts.UseNpgsql(configuration.GetConnectionString("Default"))
+            opts.UseNpgsql(connectionStringBuilder.ConnectionString)
                 .UseSnakeCaseNamingConvention();
 
             // seed a default Admin;
