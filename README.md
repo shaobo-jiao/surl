@@ -46,6 +46,20 @@ visit the application locally at [http://localhost:6001](http://localhost:6001)
 ## Version 2 (User Registration and URL Management)
 ...
 
+Pending:
+- logging
+- review authentication and authorization: docs and current impl
+- add url management api 
+- add auth frontend
+- add url management page frontend
+- GitHub Actions for CI/CD
+- explore rate limiting
+- explore caching, Redis
+- unit and integration testing for API 
+- OIDC?
+- mailing service?
+
+
 ## Version 1 (MVP)
 API Endpoints:
 - `POST /api/short-urls/`: accepts an URL and returns the shortened URL.
