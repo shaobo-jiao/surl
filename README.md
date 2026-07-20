@@ -1,9 +1,52 @@
 # Overview
-This project implements the URL Shortener idea in the book "System Design Interview". 
-- Backend: .NET API, PostgreSQL
-- Frontend: React
+`SURL` is a URL Shortener project implemented with .NET Web API and React. 
+A live preview is available at [https://surl.shaobo.dev](https://surl.shaobo.dev).
 
-### Version 1 (MVP)
+Features
+- Generates a short URL that redirects to the originally provided URL. 
+- User registration and URL management
+
+# Tech stack of the project
+- _.NET Minimal API_ to build the backend API
+- _Postgres_ as the database
+- _React_ + _TypeScript_ + _TailwindCSS_ to build the frontend
+- _Docker_ and _Docker Compose_ for containerization
+- _Cloudflare Tunnel_ to allow public access at [https://surl.shaobo.dev](https://surl.shaobo.dev)
+
+# Try the application locally
+Make sure you have the following installed in your computer:
+- Docker Desktop
+- .NET SDK 10.0
+
+```bash
+# clone the repo
+$ git clone https://github.com/shaobo-jiao/surl.git
+$ cd ./surl/
+
+# install dotnet ef if it's not installed
+$ dotnet tool install --global dotnet-ef --version 10.0.*
+
+# prepare necessary secrets
+$ cp ./secrets/postgres_password.example ./secrets/postgres_password
+$ cp ./secrets/surl_owner_password.example ./secrets/surl_owner_password
+$ cp ./secrets/surl_rw_password.example ./secrets/surl_rw_password
+
+# generate migration script
+$ dotnet restore ./backend/Surl.Api/
+$ dotnet ef migrations script -i -p ./backend/Surl.Api/ -o ./backend/Surl.Api/bin/db_schema.sql
+
+# start the containers
+$ docker compose up -d
+```
+
+visit the application locally at [http://localhost:6001](http://localhost:6001)
+
+# Project Details
+
+## Version 2 (User Registration and URL Management)
+...
+
+## Version 1 (MVP)
 API Endpoints:
 - `POST /api/short-urls/`: accepts an URL and returns the shortened URL.
 - `GET /api/short-urls/{code}`: searches and returns the original URL by given shortened URL code.
