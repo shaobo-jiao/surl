@@ -66,7 +66,7 @@ builder.Services.AddSingleton<IValidateOptions<IdOptions>, IdOptionsValidator>()
 // Module Services
 builder.Services.AddShortUrlServices(builder.Configuration);
 builder.Services.AddUserServices();
-builder.Services.AddAuthServices(builder.Configuration);
+builder.Services.AddAuthServices();
 
 var app = builder.Build();
 // CORS

@@ -1,10 +1,19 @@
-﻿namespace Surl.Api;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Surl.Api;
 
 public class JwtOptions
 {
-    public required string SecretKey { get; init; }
-    public required string Issuer { get; init; }
-    public required string Audience { get; init; }
-    public required int AccessTokenExpireInMinutes { get; init; } 
-    public required int RefreshTokenExpireInDays { get; init; }
+    [Required]
+    public string SecretKey { get; set; } = string.Empty;
+
+    [Required]
+    public string Issuer { get; init; } = string.Empty;
+
+    [Required]
+    public string Audience { get; init; } = string.Empty;
+    
+    public int AccessTokenExpireInMinutes { get; init; } 
+
+    public int RefreshTokenExpireInDays { get; init; }
 }
