@@ -64,7 +64,7 @@ builder.Services.AddOptions<IdOptions>()
 builder.Services.AddSingleton<IValidateOptions<IdOptions>, IdOptionsValidator>();
 
 // Module Services
-builder.Services.AddShortUrlServices(builder.Configuration);
+builder.Services.AddShortUrlServices();
 builder.Services.AddUserServices();
 builder.Services.AddAuthServices();
 

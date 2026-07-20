@@ -10,10 +10,10 @@ public static class ShortUrlServices
     /// </summary>
     /// <param name="services"></param>
     /// <param name="configuration"></param>
-    public static void AddShortUrlServices(this IServiceCollection services, IConfiguration configuration)
+    public static void AddShortUrlServices(this IServiceCollection services)
     {   
         services.AddSingleton<IdGenerator<ShortUrl>>();
-        services.Configure<ApiSettings>(configuration.GetSection("ApiSettings"));
+        services.AddOptions<ApiSettings>().BindConfiguration("ApiSettings");
         
         services.AddScoped<ShortUrlService>();
         services.AddScoped<IValidator<CreateShortUrlRequest>, CreateShortUrlRequestValidator>();
