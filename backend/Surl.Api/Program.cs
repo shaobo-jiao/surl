@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 using Surl.Api.Auth;
 using Surl.Api.Common;
 using Surl.Api.Data;
@@ -17,6 +20,15 @@ builder.Services.AddOpenApiDocument(config =>
     config.DocumentName = "Surl.API";
     config.Title = "Surl.API v1";
     config.Version = "v1";
+
+    config.AddSecurity("Bearer", new OpenApiSecurityScheme
+    {
+        Type = OpenApiSecuritySchemeType.Http,
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
+        BearerFormat = "JWT", 
+        Description = "Type into the textbox: {your JWT token}."
+    });
+    config.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
 });
 // CORS
 builder.Services.AddCors(options =>
