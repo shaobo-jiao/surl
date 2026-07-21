@@ -6,8 +6,8 @@ public class User
     public string Username { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string? Email { get; set; }
-    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
-    public string Role { get; set; } = Roles.User;
+    public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
+    public string Role { get; set; } = AppRoles.User;
 
     private User() { }
 

@@ -21,7 +21,9 @@ public static class PagedResultExtensions
         pageSize ??= PagedResultConstants.DefaultPageSize;
 
         var totalCount = await query.CountAsync();
-        var items = await query.Skip((page.Value - 1) * pageSize.Value).Take(pageSize.Value).ToListAsync();
+        var items = await query.Skip((page.Value - 1) * pageSize.Value)
+            .Take(pageSize.Value)
+            .ToListAsync();
 
         return new PagedResult<T>(items, page.Value, pageSize.Value, totalCount);
     }

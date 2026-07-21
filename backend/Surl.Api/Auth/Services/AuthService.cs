@@ -18,7 +18,7 @@ public class AuthService(AppDbContext dbContext, IUserService userService, IPass
     public Task<User> RegisterAsync(RegisterRequest registerRequest)
     {
         // rely on user service to create a user
-        CreateUserRequest createUserRequest = new(registerRequest.Username, registerRequest.Password, registerRequest.Email, Roles.User);
+        CreateUserRequest createUserRequest = new(registerRequest.Username, registerRequest.Password, registerRequest.Email, AppRoles.User);
         return _userService.CreateUserAsync(createUserRequest);
     }
 

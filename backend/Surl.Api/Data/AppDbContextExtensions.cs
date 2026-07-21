@@ -34,7 +34,7 @@ public static class AppDbContextExtensions
                 {
                     var user = new User(defaultAdminUsername);
                     user.PasswordHash = new PasswordHasher<User>().HashPassword(user, defaultAdminPassword);
-                    user.Role = Roles.Admin;
+                    user.Role = AppRoles.Admin;
                     context.Set<User>().Add(user);
                     context.SaveChanges();
                 }
@@ -45,7 +45,7 @@ public static class AppDbContextExtensions
                 {
                     var user = new User(defaultAdminUsername);
                     user.PasswordHash = new PasswordHasher<User>().HashPassword(user, defaultAdminPassword);
-                    user.Role = Roles.Admin;
+                    user.Role = AppRoles.Admin;
                     await context.Set<User>().AddAsync(user);
                     await context.SaveChangesAsync();
                 }

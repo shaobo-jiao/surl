@@ -10,7 +10,7 @@ public static class UserEndpoints
     {
         // Admins can access user endpoints
         var group = app.MapGroup("/api/users")
-            .RequireAuthorization(p => p.RequireRole(Roles.Admin));
+            .RequireAuthorization(p => p.RequireRole(AppRoles.Admin));
             
         group.MapGet("/", GetUsersAsync)
             .WithValidationFilter<QueryUserParams>();

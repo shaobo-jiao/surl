@@ -6,16 +6,10 @@ using Surl.Api.Data;
 
 namespace Surl.Api.Users;
 
-public class UserService : IUserService
+public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordHasher) : IUserService
 {
-    private AppDbContext _dbContext;
-    private IPasswordHasher<User> _passwordHasher;
-
-    public UserService(AppDbContext dbContext, IPasswordHasher<User> passwordHasher)
-    {
-        _dbContext = dbContext;
-        _passwordHasher = passwordHasher;
-    }
+    private AppDbContext _dbContext = dbContext;
+    private IPasswordHasher<User> _passwordHasher = passwordHasher;
 
     public async Task<User> CreateUserAsync(CreateUserRequest createUserRequest)
     {
@@ -23,10 +17,10 @@ public class UserService : IUserService
         if (await UserExistsAsync(createUserRequest.Username))
             throw new DuplicateUsernameException();
 
-        User user = new User(createUserRequest.Username);
+        var user = new User(createUserRequest.Username);
         user.PasswordHash = _passwordHasher.HashPassword(user, createUserRequest.Password);
         user.Email = createUserRequest.Email;
-        // Admins can create admins/users, while registered users are always Users
+        // registered users always have role "User", while "Admins" can manage users.  
         user.Role = createUserRequest.Role;
 
         await _dbContext.Users.AddAsync(user);
@@ -38,6 +32,7 @@ public class UserService : IUserService
     public async Task DeleteUserAsync(int id)
     {
         User user = await GetUserByIdAsync(id) ?? throw new UserNotFoundException();
+        // hard-delete users. later may change to soft delete by introducing an IsDeleted flag in the user entity.
         _dbContext.Users.Remove(user);
         await _dbContext.SaveChangesAsync();
     }

@@ -1,6 +1,6 @@
 ﻿namespace Surl.Api.Users;
 
-public record UserResponse(int Id, string Username, string? Email, DateTime CreatedAt);
+public record UserResponse(int Id, string Username, string? Email, DateTimeOffset CreatedAt);
 
 public static partial class UserMapper
 {

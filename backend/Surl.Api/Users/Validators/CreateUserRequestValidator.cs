@@ -24,7 +24,7 @@ public class CreateUserRequestValidator: AbstractValidator<CreateUserRequest>
             .When(x => !string.IsNullOrEmpty(x.Email));
 
         RuleFor(x => x.Role)
-            .Must(x => Roles.All().Contains(x))
-            .WithMessage(string.Format(localizer["User_Role_Invalid"], string.Join(", ", Roles.All())));
+            .Must(x => AppRoles.All().Contains(x))
+            .WithMessage(string.Format(localizer["User_Role_Invalid"], string.Join(", ", AppRoles.All())));
     }
 }
