@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Surl.Api.Users;
 
-public static class UserServices
+public static class UserServiceRegistration
 {
     /// <summary>
     /// Registers all services required by the User module

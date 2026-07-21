@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Surl.Api.Auth;
 
-public static class AuthServices
+public static class AuthServiceRegistration
 {
     /// <summary>
     /// Registers all services required by the Auth module

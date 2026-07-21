@@ -3,7 +3,7 @@ using Surl.Api.Common;
 
 namespace Surl.Api.ShortUrls;
 
-public static class ShortUrlServices
+public static class ShortUrlServiceRegistration
 {
     /// <summary>
     /// Registers all services required by the ShortUrls module
@@ -11,7 +11,7 @@ public static class ShortUrlServices
     /// <param name="services"></param>
     /// <param name="configuration"></param>
     public static void AddShortUrlServices(this IServiceCollection services)
-    {   
+    {
         services.AddSingleton<IdGenerator<ShortUrl>>();
         services.AddOptions<ApiSettings>().BindConfiguration("ApiSettings");
         
