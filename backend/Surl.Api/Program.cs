@@ -29,6 +29,7 @@ builder.Services.AddOpenApiDocument(config =>
     });
     config.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
 });
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -55,14 +56,14 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
         .AddSupportedUICultures(supportedCultures);
 });
 
-// Id Generator Base
+// IdGen base
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddOptions<IdOptions>()
     .BindConfiguration("IdOptions")
     .ValidateOnStart();
 builder.Services.AddSingleton<IValidateOptions<IdOptions>, IdOptionsValidator>();
 
-// Module Services
+// application services
 builder.Services.AddShortUrlServices();
 builder.Services.AddUserServices();
 builder.Services.AddAuthServices();
@@ -70,6 +71,11 @@ builder.Services.AddAuthServices();
 var app = builder.Build();
 // CORS
 app.UseCors();
+
+// auth
+app.UseAuthentication();
+app.UseAuthorization();
+
 // swagger
 if (app.Environment.IsDevelopment())
 {
@@ -80,12 +86,11 @@ if (app.Environment.IsDevelopment())
         config.DocExpansion = "list";
     });
 }
+
+// localization
 app.UseRequestLocalization();
 
-app.UseAuthentication();
-app.UseAuthorization();
-
-// endpoints
+// application endpoints
 app.MapHealthChecks("/healthz");
 app.MapShortUrlEndpoints();
 app.MapUserEndpoints();

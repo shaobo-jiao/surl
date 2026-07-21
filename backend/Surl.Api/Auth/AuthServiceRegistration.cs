@@ -62,7 +62,7 @@ public static class AuthServiceRegistration
             });
         services.AddAuthorization();
 
-        // validators
+        // request validators
         services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
         services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
         services.AddScoped<IValidator<RefreshRequest>, RefreshRequestValidator>();

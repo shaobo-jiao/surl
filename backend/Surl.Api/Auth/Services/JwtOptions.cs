@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Surl.Api;
+namespace Surl.Api.Auth;
 
 public class JwtOptions
 {
