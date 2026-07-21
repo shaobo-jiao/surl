@@ -28,8 +28,10 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
         if (!Base62Encoding.TryDecode(code, out long id))
             throw new ShortUrlInvalidCodeException();
 
-        var shortUrl = await _dbContext.ShortUrls.FindAsync(id, cancellationToken) ?? throw new ShortUrlNotFoundException();
-        if (shortUrl.ExpiresAt < DateTime.UtcNow) throw new ShortUrlExpiredException();
+        var shortUrl = await _dbContext.ShortUrls.FindAsync(id, cancellationToken) 
+            ?? throw new ShortUrlNotFoundException();
+        if (shortUrl.ExpiresAt < DateTimeOffset.UtcNow) 
+            throw new ShortUrlExpiredException();
         return shortUrl;
     }
 

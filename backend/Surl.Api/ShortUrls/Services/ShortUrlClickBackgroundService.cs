@@ -6,9 +6,7 @@
 /// Currently each click event triggers a scope with DbContext creation and disposal.
 /// Later we may consider batch processing. 
 /// </summary>
-public class ShortUrlClickBackgroundService(
-    IServiceScopeFactory scopeFactory,
-    ShortUrlClickEventQueue eventQueue,
+public class ShortUrlClickBackgroundService(IServiceScopeFactory scopeFactory, ShortUrlClickEventQueue eventQueue,
     ILogger<ShortUrlClickBackgroundService> logger) : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;

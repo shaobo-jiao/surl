@@ -67,7 +67,7 @@ public class AuthService(AppDbContext dbContext, IUserService userService, IPass
         {
             UserId = refreshToken.UserId,
             Token = newRefreshToken,
-            ExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpireInDays),
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(_jwtOptions.RefreshTokenExpireInDays),
         });
         refreshToken.IsUsed = true;
         await _dbContext.SaveChangesAsync();
