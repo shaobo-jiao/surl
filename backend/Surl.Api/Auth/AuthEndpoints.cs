@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Surl.Api.Common;
@@ -72,9 +73,9 @@ public static class AuthEndpoints
     public static async Task<Results<Ok<string>, BadRequest<string>, UnauthorizedHttpResult>> ChangePasswordAsync(
         IAuthService authService, ClaimsPrincipal user, ChangePasswordRequest request)
     {
-        if (!int.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out int userId))
+        if (!int.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out int userId))
             return TypedResults.Unauthorized();
-
+        
         try
         {
             await authService.ChangePasswordAsync(userId, request);

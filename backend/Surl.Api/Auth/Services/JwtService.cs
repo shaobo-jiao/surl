@@ -8,14 +8,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Surl.Api.Auth;
 
-public class JwtService : ITokenService
+public class JwtService(IOptions<JwtOptions> jwtOptions) : ITokenService
 {
-    private JwtOptions _jwtOptions;
-
-    public JwtService(IOptions<JwtOptions> jwtOptions)
-    {
-        _jwtOptions = jwtOptions.Value;
-    }
+    private JwtOptions _jwtOptions = jwtOptions.Value;
 
     public string GenerateAccessToken(User user)
     {
@@ -23,21 +18,23 @@ public class JwtService : ITokenService
         var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         // identity related claims grouped together, later assign to Subject as one ClaimIdentity
-        var claims = new List<Claim>()
+        var identityClaims = new List<Claim>()
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Role, user.Role)
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Name, user.Username),
+            new Claim(AppClaimTypes.Role, user.Role)
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
+            Subject = new ClaimsIdentity(identityClaims),
             SigningCredentials = signingCredentials,
+
             Issuer = _jwtOptions.Issuer,
             Audience = _jwtOptions.Audience,
+
             NotBefore = DateTime.UtcNow,
             Expires = DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenExpireInMinutes),
-            Subject = new ClaimsIdentity(claims),
         };
 
         return new JsonWebTokenHandler().CreateToken(tokenDescriptor);

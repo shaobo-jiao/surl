@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -37,7 +37,7 @@ public static class AuthServiceRegistration
         // JWT bearer authentication
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme);
-        
+
         // options for JWT bearer authentication
         services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
             .Configure<IOptions<JwtOptions>>((options, jwtOptionsWrapper) =>
@@ -54,10 +54,11 @@ public static class AuthServiceRegistration
                     ValidIssuer = jwtOptions.Issuer,
                     ValidateAudience = true,
                     ValidAudience = jwtOptions.Audience,
-                    NameClaimType = ClaimTypes.Name,
-                    RoleClaimType = ClaimTypes.Role,
+                    
+                    NameClaimType = JwtRegisteredClaimNames.Name,
+                    RoleClaimType = AppClaimTypes.Role,
                 };
-                // opts.MapInboundClaims = false;
+                options.MapInboundClaims = false;
             });
         services.AddAuthorization();
 
