@@ -9,7 +9,7 @@ public static class UserEndpoints
     public static void MapUserEndpoints(this IEndpointRouteBuilder app)
     {
         // Admins can access user endpoints
-        var group = app.MapGroup("/api/users")
+        var group = app.MapGroup("/users")
             .RequireAuthorization(p => p.RequireRole(AppRoles.Admin));
             
         group.MapGet("/", GetUsersAsync)

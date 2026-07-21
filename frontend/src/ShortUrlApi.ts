@@ -32,7 +32,7 @@ export async function createShortUrl(request: CreateShortUrlRequest): Promise<Sh
     //         })
     //     }, 3000);
     // });
-    const response = await fetch(API_BASE_URL, {
+    const response = await fetch(new URL("short-urls/", API_BASE_URL), {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -56,7 +56,7 @@ export async function createShortUrl(request: CreateShortUrlRequest): Promise<Sh
 }
 
 export async function getOriginalUrl(shortUrlCode: string): Promise<string> {
-    const response = await fetch(new URL(`/redirection/${shortUrlCode}`, API_BASE_URL));
+    const response = await fetch(new URL(`redirection/${shortUrlCode}`, API_BASE_URL));
     if (!response.ok)
         throw new Error("The link is either invalid or expired.");
 

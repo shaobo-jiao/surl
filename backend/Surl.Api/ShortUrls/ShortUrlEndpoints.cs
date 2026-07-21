@@ -8,7 +8,7 @@ public static class ShortUrlEndpoints
 {
     public static void MapShortUrlEndpoints(this IEndpointRouteBuilder app)
     {
-        var shortUrlApi = app.MapGroup("/api/short-urls");
+        var shortUrlApi = app.MapGroup("/short-urls");
         
         shortUrlApi.MapPost("/", CreateShortUrlAsync)
             .WithValidationFilter<CreateShortUrlRequest>();

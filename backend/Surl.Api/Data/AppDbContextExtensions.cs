@@ -25,6 +25,7 @@ public static class AppDbContextExtensions
                 .UseSnakeCaseNamingConvention();
 
             // seed a default Admin;
+            // NOTE: this is applied when applying migration with `dotnet ef database update`, but not with migration scripts.
             var defaultAdminUsername = configuration["DefaultAdmin:Username"] ?? throw new InvalidOperationException("Default admin username not configured");
             var defaultAdminPassword = configuration["DefaultAdmin:Password"] ?? throw new InvalidOperationException("Default admin password not configured");
 
