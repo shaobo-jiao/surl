@@ -60,10 +60,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Default=Host=db;Database=surl;Username=surl_rw;
       - Secrets__DB_Default_Password_File=/run/secrets/surl-rw-password
-      - Secrets_JWT_SECRET_FILE=/run/secrets/jwt-secret
+      - Secrets__JWT_SECRET_KEY_FILE=/run/secrets/jwt-secret-key
     secrets:
       - surl-rw-password
-      - jwt-secret
+      - jwt-secret-key
     depends_on:
       db:
         condition: service_healthy
@@ -98,6 +98,6 @@ secrets:
     file: ./secrets/surl_owner_password
   surl-rw-password:
     file: ./secrets/surl_rw_password
-  jwt-secret:
-    file: ./secrets/jwt_secret
+  jwt-secret-key:
+    file: ./secrets/jwt_secret_key
     

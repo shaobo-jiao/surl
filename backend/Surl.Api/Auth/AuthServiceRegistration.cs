@@ -21,23 +21,24 @@ public static class AuthServiceRegistration
 
         // JWT options
         services.AddOptions<JwtOptions>()
-            .BindConfiguration("Jwt")
+            .BindConfiguration("JwtOptions")
             .PostConfigure<IConfiguration>((options, configuration) =>
             {
                 // overwrite jwt secret from the secret file
-                var jwtSecretFile = configuration.GetValue<string>("Secrets:JWT_SECRET_FILE");
-                if (File.Exists(jwtSecretFile))
+                var jwtSecretKeyFile = configuration.GetValue<string>("Secrets:JWT_SECRET_KEY_FILE");
+                if (File.Exists(jwtSecretKeyFile))
                 {
-                    options.SecretKey = File.ReadAllText(jwtSecretFile).TrimEnd();
+                    options.SecretKey = File.ReadAllText(jwtSecretKeyFile).TrimEnd();
                 }
             })
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // authentication
+        // JWT bearer authentication
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme);
-
+        
+        // options for JWT bearer authentication
         services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
             .Configure<IOptions<JwtOptions>>((options, jwtOptionsWrapper) =>
             {
