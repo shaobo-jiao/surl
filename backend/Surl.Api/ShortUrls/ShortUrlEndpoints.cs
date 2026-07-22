@@ -64,22 +64,33 @@ public static class ShortUrlEndpoints
     /// Gets the original URL for redirection from given code, and triggers a click event.
     /// </summary>
     /// <returns>The original URL</returns>
-    public static async Task<Results<Ok<string>, NotFound, BadRequest<string>>> GetRedirectionUrlAsync(
+    public static async Task<Results<Ok<string>, NotFound, BadRequest, ProblemHttpResult>> GetRedirectionUrlAsync(
         IShortUrlService shortUrlService, [FromRoute] string code, ShortUrlClickEventQueue clickEventQueue, CancellationToken cancellationToken)
     {
-        try
+        var result = await shortUrlService.GetRedirectionUrlAsync(code, cancellationToken);
+        if (result.IsSuccessful)
         {
-            var shortUrl = await shortUrlService.GetRedirectionUrlAsync(code, cancellationToken);
-            if (shortUrl is null) return TypedResults.NotFound();
-
+            var shortUrl = result.Value!;
             var clickEvent = new ShortUrlClickEvent(shortUrl.Id, shortUrl.Code, DateTimeOffset.UtcNow);
             await clickEventQueue.EnqueueAsync(clickEvent, cancellationToken);
-
             return TypedResults.Ok(shortUrl.OriginalUrl);
         }
-        catch (ShortUrlBaseException ex)
+        else
         {
-            return TypedResults.BadRequest(ex.Message);
+            // failure
+            return result.Error switch
+            {
+                ShortUrlError.NotFound => TypedResults.NotFound(),
+                ShortUrlError.InvalidCode => TypedResults.Problem(
+                    statusCode: StatusCodes.Status400BadRequest, 
+                    title: "Invalid URL",
+                    detail: "The provided short url is invalid."),
+                ShortUrlError.Expired => TypedResults.Problem(
+                    statusCode: StatusCodes.Status410Gone,
+                    title: "Short URL Expired",
+                    detail: "The short URL has expired"),
+                _ => TypedResults.BadRequest(),
+            };
         }
     }
 

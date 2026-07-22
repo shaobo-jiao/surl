@@ -34,17 +34,19 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
         throw new NotImplementedException();
     }
 
-    public async Task<ShortUrl?> GetRedirectionUrlAsync(string code, CancellationToken cancellationToken)
+    public async Task<Result<ShortUrl, ShortUrlError>> GetRedirectionUrlAsync(string code, CancellationToken cancellationToken)
     {
         if (!Base62Encoding.TryDecode(code, out long id))
-            throw new ShortUrlInvalidCodeException();
+            return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.InvalidCode);
 
         var shortUrl = await _dbContext.ShortUrls.FindAsync(id, cancellationToken);
-        if (shortUrl is null) return null;
+        if (shortUrl is null) 
+            return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.NotFound);
 
         if (shortUrl.ExpiresAt < DateTimeOffset.UtcNow) 
-            throw new ShortUrlExpiredException();
-        return shortUrl;
+            return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.Expired);
+        
+        return Result<ShortUrl, ShortUrlError>.Success(shortUrl);
     }
 
     public Task<ShortUrl> UpdateShortUrlAsync(long shortUrlId, UpdateShortUrlRequest request, int? userId, CancellationToken cancellationToken)

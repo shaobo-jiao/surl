@@ -40,7 +40,7 @@ public interface IShortUrlService
     /// <param name="shortUrlCode"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<ShortUrl?> GetRedirectionUrlAsync(string shortUrlCode, CancellationToken cancellationToken);
+    Task<Result<ShortUrl, ShortUrlError>> GetRedirectionUrlAsync(string shortUrlCode, CancellationToken cancellationToken);
 
     /// <summary>
     /// Updates a short URL.
