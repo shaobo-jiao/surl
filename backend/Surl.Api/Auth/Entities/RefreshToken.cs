@@ -20,7 +20,11 @@ public class RefreshToken
     public required int UserId { get; set; }
     
     public required DateTimeOffset ExpiresAt { get; set; }
-    public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
+    
+    /// <summary>
+    /// Created date time, it's required and set to time provider's current datetime. 
+    /// </summary>
+    public required DateTimeOffset CreatedAt { get; init; }
     
     /// <summary>
     /// Whether the refresh token has been used. Related endpoint: /auth/refresh
@@ -35,5 +39,10 @@ public class RefreshToken
 
     public User User { get; set; } = default!;
 
-    public bool IsValid => !IsUsed && !IsRevoked && ExpiresAt >= DateTimeOffset.UtcNow;
+    /// <summary>
+    /// Checks whether the refresh token is valid at given point in time.
+    /// </summary>
+    /// <param name="utcNow"></param>
+    /// <returns></returns>
+    public bool IsValidAt(DateTimeOffset utcNow) => !IsUsed && !IsRevoked && ExpiresAt > utcNow;
 }

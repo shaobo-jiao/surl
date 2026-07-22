@@ -64,13 +64,14 @@ public static class ShortUrlEndpoints
     /// </summary>
     /// <returns>The original URL</returns>
     public static async Task<Results<Ok<string>, NotFound, BadRequest, ProblemHttpResult>> GetRedirectionUrlAsync(
-        IShortUrlService shortUrlService, [FromRoute] string code, ShortUrlClickEventQueue clickEventQueue, CancellationToken cancellationToken)
+        IShortUrlService shortUrlService, [FromRoute] string code, ShortUrlClickEventQueue clickEventQueue, 
+        TimeProvider timeProvider, CancellationToken cancellationToken)
     {
         var result = await shortUrlService.GetRedirectionUrlAsync(code, cancellationToken);
         if (result.IsSuccessful)
         {
             var shortUrl = result.Value!;
-            var clickEvent = new ShortUrlClickEvent(shortUrl.Id, shortUrl.Code, DateTimeOffset.UtcNow);
+            var clickEvent = new ShortUrlClickEvent(shortUrl.Id, shortUrl.Code, timeProvider.GetUtcNow());
             await clickEventQueue.EnqueueAsync(clickEvent, cancellationToken);
             return TypedResults.Ok(shortUrl.OriginalUrl);
         }

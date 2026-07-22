@@ -6,7 +6,7 @@ public class User
     public string Username { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string? Email { get; set; }
-    public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
+    public required DateTimeOffset CreatedAt { get; init; }
     public string Role { get; set; } = AppRoles.User;
 
     private User() { }

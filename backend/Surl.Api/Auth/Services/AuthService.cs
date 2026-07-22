@@ -7,13 +7,14 @@ using Surl.Api.Data;
 namespace Surl.Api.Auth;
 
 public class AuthService(AppDbContext dbContext, IUserService userService, IPasswordHasher<User> passwordHasher,
-    ITokenService tokenService, IOptions<JwtOptions> jwtOptionsWrapper) : IAuthService
+    ITokenService tokenService, IOptions<JwtOptions> jwtOptionsWrapper, TimeProvider timeProvider) : IAuthService
 {
     private AppDbContext _dbContext = dbContext;
     private IUserService _userService = userService;
     private IPasswordHasher<User> _passwordHasher = passwordHasher;
     private ITokenService _tokenService = tokenService;
     private JwtOptions _jwtOptions = jwtOptionsWrapper.Value;
+    private TimeProvider _timeProvider = timeProvider; 
 
     public Task<User> RegisterAsync(RegisterRequest registerRequest)
     {
@@ -37,11 +38,13 @@ public class AuthService(AppDbContext dbContext, IUserService userService, IPass
         string refreshToken = _tokenService.GenerateRefreshToken();
 
         // save refresh token into db;
+        var utcNow = _timeProvider.GetUtcNow();
         await _dbContext.RefreshTokens.AddAsync(new RefreshToken()
         {
             Token = refreshToken,
             UserId = user.Id,
-            ExpiresAt = DateTimeOffset.UtcNow.AddDays(_jwtOptions.RefreshTokenExpireInDays),
+            CreatedAt = utcNow,
+            ExpiresAt = utcNow.AddDays(_jwtOptions.RefreshTokenExpireInDays),
         });
         await _dbContext.SaveChangesAsync();
 
@@ -57,17 +60,19 @@ public class AuthService(AppDbContext dbContext, IUserService userService, IPass
         
         if (refreshToken == null) 
             throw new InvalidRefreshTokenException("Refresh token not found");
-        else if (!refreshToken.IsValid)
+        else if (!refreshToken.IsValidAt(_timeProvider.GetUtcNow()))
             throw new InvalidRefreshTokenException("The refresh token is either used, revoked or expired already.");
         
         // consume refresh token
         string newAccessToken = _tokenService.GenerateAccessToken(refreshToken.User);
         string newRefreshToken = _tokenService.GenerateRefreshToken();
+        var utcNow = _timeProvider.GetUtcNow();
         await _dbContext.RefreshTokens.AddAsync(new RefreshToken()
         {
             UserId = refreshToken.UserId,
             Token = newRefreshToken,
-            ExpiresAt = DateTimeOffset.UtcNow.AddDays(_jwtOptions.RefreshTokenExpireInDays),
+            CreatedAt = utcNow,
+            ExpiresAt = utcNow.AddDays(_jwtOptions.RefreshTokenExpireInDays),
         });
         refreshToken.IsUsed = true;
         await _dbContext.SaveChangesAsync();

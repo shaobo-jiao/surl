@@ -6,10 +6,11 @@ using Surl.Api.Data;
 
 namespace Surl.Api.Users;
 
-public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordHasher) : IUserService
+public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordHasher, TimeProvider timeProvider) : IUserService
 {
     private AppDbContext _dbContext = dbContext;
     private IPasswordHasher<User> _passwordHasher = passwordHasher;
+    private TimeProvider _timeProvider = timeProvider;
 
     public async Task<User> CreateUserAsync(CreateUserRequest createUserRequest)
     {
@@ -17,11 +18,14 @@ public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordH
         if (await UserExistsAsync(createUserRequest.Username))
             throw new DuplicateUsernameException();
 
-        var user = new User(createUserRequest.Username);
+        var user = new User(createUserRequest.Username)
+        {
+            CreatedAt = _timeProvider.GetUtcNow(),
+            Email = createUserRequest.Email,
+            // registered users always have role "User", while "Admins" can manage users.  
+            Role = createUserRequest.Role,
+        };
         user.PasswordHash = _passwordHasher.HashPassword(user, createUserRequest.Password);
-        user.Email = createUserRequest.Email;
-        // registered users always have role "User", while "Admins" can manage users.  
-        user.Role = createUserRequest.Role;
 
         await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();

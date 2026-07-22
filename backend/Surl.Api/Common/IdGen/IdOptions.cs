@@ -39,14 +39,16 @@ public class IdOptions
 /// <summary>
 /// Validates IdOptions
 /// </summary>
-public class IdOptionsValidator : IValidateOptions<IdOptions>
+public class IdOptionsValidator(TimeProvider timeProvider) : IValidateOptions<IdOptions>
 {
+    private TimeProvider _timeProvider = timeProvider;
+
     private const int MinExpiryYears = 10; // validate timestamp fields is not too short and causes IdGenerator expires quickly
 
     public ValidateOptionsResult Validate(string? name, IdOptions options)
     {
         // epoch 
-        if (options.Epoch > DateTimeOffset.UtcNow)
+        if (options.Epoch > _timeProvider.GetUtcNow())
             return ValidateOptionsResult.Fail("Epoch cannot be a future time point.");
 
         // timestamp fields
@@ -77,7 +79,7 @@ public class IdOptionsValidator : IValidateOptions<IdOptions>
         {
             expiryDate = DateTimeOffset.MaxValue;
         }
-        if (expiryDate <= DateTimeOffset.UtcNow.AddYears(MinExpiryYears))
+        if (expiryDate <= _timeProvider.GetUtcNow().AddYears(MinExpiryYears))
             return ValidateOptionsResult.Fail($"Timestamp range is too short. Expiry Date: {expiryDate}");
 
         // WorkerId

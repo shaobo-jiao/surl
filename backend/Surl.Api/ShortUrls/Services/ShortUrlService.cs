@@ -4,11 +4,12 @@ using Surl.Api.Data;
 
 namespace Surl.Api.ShortUrls;
 
-public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGenerator, ILogger<ShortUrlService> logger) : IShortUrlService
+public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGenerator, ILogger<ShortUrlService> logger, TimeProvider timeProvider) : IShortUrlService
 {
     private AppDbContext _dbContext = dbContext;
     private IdGenerator<ShortUrl> _idGenerator = idGenerator;
     private ILogger<ShortUrlService> _logger = logger;
+    private TimeProvider _timeProvider = timeProvider;
 
     public async Task<ShortUrl> CreateShortUrlAsync(CreateShortUrlRequest request, int? userId, CancellationToken cancellationToken)
     {
@@ -20,7 +21,7 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
             Id = newId,
             Code = Base62Encoding.Encode(newId),
             OriginalUrl = request.OriginalUrl,
-            ExpiresAt = request.ExpiresAt ?? DateTimeOffset.UtcNow.AddDays(1),
+            ExpiresAt = request.ExpiresAt ?? _timeProvider.GetUtcNow().AddDays(1),
             UserId = userId,
         };
 
@@ -79,7 +80,7 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
             return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.NotFound);
         
         _logger.LogDebug("shortUrl loaded, checking expiry: {expiresAt}", shortUrl.ExpiresAt);
-        if (shortUrl.ExpiresAt < DateTimeOffset.UtcNow)
+        if (shortUrl.ExpiresAt < _timeProvider.GetUtcNow())
             return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.Expired);
 
         _logger.LogInformation("returning short url for redirection: {id}", id);

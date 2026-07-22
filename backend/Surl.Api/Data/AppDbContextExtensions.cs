@@ -33,9 +33,12 @@ public static class AppDbContextExtensions
             {
                 if (!context.Set<User>().Any(u => u.Username == defaultAdminUsername))
                 {
-                    var user = new User(defaultAdminUsername);
+                    var user = new User(defaultAdminUsername)
+                    {
+                        CreatedAt = new DateTime(2001, 1, 1), // default CreatedAt
+                        Role = AppRoles.Admin,
+                    };
                     user.PasswordHash = new PasswordHasher<User>().HashPassword(user, defaultAdminPassword);
-                    user.Role = AppRoles.Admin;
                     context.Set<User>().Add(user);
                     context.SaveChanges();
                 }
@@ -44,11 +47,14 @@ public static class AppDbContextExtensions
             {
                 if (!await context.Set<User>().AnyAsync(u => u.Username == defaultAdminUsername, cancellationToken))
                 {
-                    var user = new User(defaultAdminUsername);
+                    var user = new User(defaultAdminUsername)
+                    {
+                        CreatedAt = new DateTime(2001, 1, 1), // default CreatedAt
+                        Role = AppRoles.Admin,
+                    };
                     user.PasswordHash = new PasswordHasher<User>().HashPassword(user, defaultAdminPassword);
-                    user.Role = AppRoles.Admin;
-                    await context.Set<User>().AddAsync(user);
-                    await context.SaveChangesAsync();
+                    await context.Set<User>().AddAsync(user, cancellationToken);
+                    await context.SaveChangesAsync(cancellationToken);
                 }
             });
         });
