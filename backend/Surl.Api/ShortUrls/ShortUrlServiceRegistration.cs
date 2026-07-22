@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using Surl.Api.Common;
-using Surl.Api.Users;
 
 namespace Surl.Api.ShortUrls;
 
