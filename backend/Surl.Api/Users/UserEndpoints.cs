@@ -28,9 +28,9 @@ public static class UserEndpoints
     }
 
     public static async Task<Ok<PagedResult<UserResponse>>> GetUsersAsync(
-        IUserService userService, [AsParameters] QueryUserParams queryUserParams)
+        IUserService userService, [AsParameters] QueryUserParams queryUserParams, CancellationToken cancellationToken)
     {
-        PagedResult<User> users = await userService.GetUsersAsync(queryUserParams);
+        PagedResult<User> users = await userService.GetUsersAsync(queryUserParams, cancellationToken);
         return TypedResults.Ok(users.Map(u => u.ToResponse()));
     }
 

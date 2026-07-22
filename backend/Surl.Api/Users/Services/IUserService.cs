@@ -9,7 +9,7 @@ public interface IUserService
     /// </summary>
     /// <param name="queryParams">parameters controlling the query, such as filters and pagination parameters</param>
     /// <returns>The list of user wrapped in a paged result</returns>
-    Task<PagedResult<User>> GetUsersAsync(QueryUserParams queryParams);
+    Task<PagedResult<User>> GetUsersAsync(QueryUserParams queryParams, CancellationToken cancellationToken);
 
     /// <summary>
     /// Get certain user by id

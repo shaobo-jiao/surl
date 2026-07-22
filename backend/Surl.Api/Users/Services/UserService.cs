@@ -37,7 +37,7 @@ public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordH
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<Common.PagedResult<User>> GetUsersAsync(QueryUserParams queryParams)
+    public async Task<Common.PagedResult<User>> GetUsersAsync(QueryUserParams queryParams, CancellationToken cancellationToken)
     {
         var userQuery = _dbContext.Users.AsQueryable();
 
@@ -52,7 +52,7 @@ public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordH
         userQuery = userQuery.OrderBy($"{queryParams.OrderBy ?? nameof(User.Id)} {((queryParams.IsDescending ?? false) ? "DESC" : "ASC")}");
 
         // pagination
-        return await userQuery.ToPagedResultAsync(queryParams.Page, queryParams.PageSize);
+        return await userQuery.ToPagedResultAsync(queryParams.Page, queryParams.PageSize, cancellationToken);
     }
 
     public Task<User?> GetUserByIdAsync(int id)

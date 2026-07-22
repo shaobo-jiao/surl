@@ -5,7 +5,7 @@ namespace Surl.Api.Common;
 /// <summary>
 /// Represents a paginated result set when returning a data list. 
 /// </summary>
-public record PagedResult<T>(IEnumerable<T> Items, int Page, int PageSize,int TotalCount)
+public record PagedResult<T>(IEnumerable<T> Items, int Page, int PageSize, int TotalCount)
 {
     public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
 }
@@ -15,15 +15,15 @@ public static class PagedResultExtensions
     /// <summary>
     /// Queries the data and wraps the result in a paginated result set.
     /// </summary>
-    public static async Task<PagedResult<T>> ToPagedResultAsync<T>(this IQueryable<T> query, int? page, int? pageSize)
+    public static async Task<PagedResult<T>> ToPagedResultAsync<T>(this IQueryable<T> query, int? page, int? pageSize, CancellationToken cancellationToken)
     {
         page ??= PagedResultConstants.DefaultPage;
         pageSize ??= PagedResultConstants.DefaultPageSize;
 
-        var totalCount = await query.CountAsync();
+        var totalCount = await query.CountAsync(cancellationToken);
         var items = await query.Skip((page.Value - 1) * pageSize.Value)
             .Take(pageSize.Value)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return new PagedResult<T>(items, page.Value, pageSize.Value, totalCount);
     }
