@@ -3,12 +3,12 @@ using Surl.Api.Data;
 
 namespace Surl.Api.ShortUrls;
 
-public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGenerator)
+public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGenerator): IShortUrlService
 {
     private AppDbContext _dbContext = dbContext;
     private IdGenerator<ShortUrl> _idGenerator = idGenerator;
 
-    public async Task<ShortUrl> CreateShortUrlAsync(CreateShortUrlRequest request, CancellationToken cancellationToken)
+    public async Task<ShortUrl> CreateShortUrlAsync(CreateShortUrlRequest request, int? userId, CancellationToken cancellationToken)
     {
         // generate ID and encode code
         var newId = _idGenerator.NewId();
@@ -16,23 +16,45 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
         {
             Id = newId,
             Code = Base62Encoding.Encode(newId),
-            OriginalUrl = request.OriginalUrl
+            OriginalUrl = request.OriginalUrl,
+            UserId = userId,
         };
         await _dbContext.ShortUrls.AddAsync(shortUrl);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return shortUrl;
     }
 
-    public async Task<ShortUrl> GetShortUrlByCodeAsync(string code, CancellationToken cancellationToken)
+    public Task<ShortUrl> GetShortUrlByIdAsync(long shortUrlId, int? userId, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<PagedResult<ShortUrl>> GetShortUrlsAsync(QueryShortUrlParams queryParams, int? userId, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<ShortUrl?> GetRedirectionUrlAsync(string code, CancellationToken cancellationToken)
     {
         if (!Base62Encoding.TryDecode(code, out long id))
             throw new ShortUrlInvalidCodeException();
 
-        var shortUrl = await _dbContext.ShortUrls.FindAsync(id, cancellationToken) 
-            ?? throw new ShortUrlNotFoundException();
+        var shortUrl = await _dbContext.ShortUrls.FindAsync(id, cancellationToken);
+        if (shortUrl is null) return null;
+
         if (shortUrl.ExpiresAt < DateTimeOffset.UtcNow) 
             throw new ShortUrlExpiredException();
         return shortUrl;
+    }
+
+    public Task<ShortUrl> UpdateShortUrlAsync(long shortUrlId, UpdateShortUrlRequest request, int? userId, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task DeleteShortUrlAsync(long shortUrlId, int? userId, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 
     /// <summary>

@@ -21,6 +21,12 @@ public static class ModelConfiguration
             .HasForeignKey(e => e.ShortUrlId)
             .IsRequired();
 
+        builder.Entity<ShortUrl>()
+            .HasOne(e => e.User)
+            .WithMany()
+            .HasForeignKey(e => e.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         return builder;
     }
 }

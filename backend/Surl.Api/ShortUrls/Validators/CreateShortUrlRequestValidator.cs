@@ -6,7 +6,7 @@ namespace Surl.Api.ShortUrls;
 
 public class CreateShortUrlRequestValidator : AbstractValidator<CreateShortUrlRequest>
 {
-    public CreateShortUrlRequestValidator(IOptions<ApiSettings> apiSettingsWrapper)
+    public CreateShortUrlRequestValidator(IOptions<ApiSettings> apiSettingsWrapper, TimeProvider timeProvider)
     {
         var apiSettings = apiSettingsWrapper.Value;
 
@@ -19,5 +19,9 @@ public class CreateShortUrlRequestValidator : AbstractValidator<CreateShortUrlRe
             .WithMessage("The URL is invalid")
             .Must(s => !apiSettings.DisallowedHosts.Contains(new Uri(s).Authority))
             .WithMessage("The URL host is not allowed");
+
+        RuleFor(x => x.ExpiresAt)
+            .Must(expiresAt => expiresAt is null || expiresAt > timeProvider.GetUtcNow())
+            .WithMessage("The expiry date must be in the future");
     }
 }

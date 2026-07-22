@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Surl.Api.Common;
+using Surl.Api.Users;
 
 namespace Surl.Api.ShortUrls;
 
@@ -15,8 +16,10 @@ public static class ShortUrlServiceRegistration
         services.AddSingleton<IdGenerator<ShortUrl>>();
         services.AddOptions<ApiSettings>().BindConfiguration("ApiSettings");
         
-        services.AddScoped<ShortUrlService>();
+        services.AddScoped<IShortUrlService, ShortUrlService>();
         services.AddScoped<IValidator<CreateShortUrlRequest>, CreateShortUrlRequestValidator>();
+        services.AddScoped<IValidator<UpdateShortUrlRequest>, UpdateShortUrlRequestValidator>();
+        services.AddScoped<IValidator<QueryShortUrlParams>, QueryShortUrlParamsValidator>();
         
         services.AddSingleton<ShortUrlClickEventQueue>();
         services.AddHostedService<ShortUrlClickBackgroundService>();

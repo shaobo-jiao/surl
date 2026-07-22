@@ -26,7 +26,7 @@ public class ShortUrlClickBackgroundService(IServiceScopeFactory scopeFactory, S
                 try
                 {
                     await using var scope = _scopeFactory.CreateAsyncScope();
-                    var shortUrlService = scope.ServiceProvider.GetRequiredService<ShortUrlService>();
+                    var shortUrlService = scope.ServiceProvider.GetRequiredService<IShortUrlService>();
                     await shortUrlService.SaveClickEventAsync(clickEvent, stoppingToken);
 
                     _logger.LogInformation("Successfully processed click event: {ClickEvent}", clickEvent);
