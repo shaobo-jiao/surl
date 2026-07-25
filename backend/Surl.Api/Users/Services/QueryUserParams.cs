@@ -10,3 +10,13 @@
 /// <param name="Page">works with PageSize, to specify the page number.</param>
 /// <param name="PageSize">works with Page, to define the page size.</param>
 public record QueryUserParams(string? Username, string? Email, string? OrderBy, bool? IsDescending, int? Page, int? PageSize);
+
+
+public static class QueryUserParamsAllowedOrderByProperties
+{
+    public const string Username = "Username";
+    public const string Email = "Email";
+    public const string CreatedAt = "CreatedAt";
+
+    public static HashSet<string> All() => [Username, Email, CreatedAt];
+}

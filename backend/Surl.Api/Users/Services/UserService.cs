@@ -1,7 +1,6 @@
 ﻿using Surl.Api.Common;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Dynamic.Core;
 using Surl.Api.Data;
 
 namespace Surl.Api.Users;
@@ -52,8 +51,15 @@ public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordH
         if (!string.IsNullOrEmpty(queryParams.Email))
             userQuery = userQuery.Where(u => u.Email != null && u.Email.Contains(queryParams.Email));
 
-        // order 
-        userQuery = userQuery.OrderBy($"{queryParams.OrderBy ?? nameof(User.Id)} {((queryParams.IsDescending ?? false) ? "DESC" : "ASC")}");
+        // order
+        bool IsDescending = queryParams.IsDescending ?? false;
+        userQuery = queryParams.OrderBy switch
+        {
+            QueryUserParamsAllowedOrderByProperties.Username => userQuery.OrderByDirection(x => x.Username, IsDescending),
+            QueryUserParamsAllowedOrderByProperties.Email => userQuery.OrderByDirection(x => x.Email, IsDescending),
+            QueryUserParamsAllowedOrderByProperties.CreatedAt => userQuery.OrderByDirection(x => x.CreatedAt, IsDescending),
+            _ => userQuery.OrderByDirection(x => x.Id, IsDescending),
+        };
 
         // pagination
         return await userQuery.ToPagedResultAsync(queryParams.Page, queryParams.PageSize, cancellationToken);
