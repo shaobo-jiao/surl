@@ -1,5 +1,4 @@
 <Solution>
   <Project Path="Surl.Api.UnitTests/Surl.Api.UnitTests.csproj" />
   <Project Path="Surl.Api/Surl.Api.csproj" />
-  <Project Path="Surl.Api.Tests/Surl.Api.Tests.csproj" />
 </Solution>
