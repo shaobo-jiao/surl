@@ -35,7 +35,7 @@ public static class AppDbContextExtensions
                 {
                     var user = new User(defaultAdminUsername)
                     {
-                        CreatedAt = new DateTime(2001, 1, 1), // default CreatedAt
+                        CreatedAt = new DateTimeOffset(2001, 1, 1, 0, 0, 0, TimeSpan.Zero), // default CreatedAt
                         Role = AppRoles.Admin,
                     };
                     user.PasswordHash = new PasswordHasher<User>().HashPassword(user, defaultAdminPassword);
@@ -49,7 +49,7 @@ public static class AppDbContextExtensions
                 {
                     var user = new User(defaultAdminUsername)
                     {
-                        CreatedAt = new DateTime(2001, 1, 1), // default CreatedAt
+                        CreatedAt = new DateTimeOffset(2001, 1, 1, 0, 0, 0, TimeSpan.Zero), // default CreatedAt
                         Role = AppRoles.Admin,
                     };
                     user.PasswordHash = new PasswordHasher<User>().HashPassword(user, defaultAdminPassword);
