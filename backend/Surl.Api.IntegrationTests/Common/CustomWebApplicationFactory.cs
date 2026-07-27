@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Time.Testing;
@@ -51,8 +52,19 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // set db conn string
-        Environment.SetEnvironmentVariable("ConnectionStrings__Default", _dbContainer.GetConnectionString());
+        builder.ConfigureAppConfiguration(configBuilder =>
+        {
+            var entries = new Dictionary<string, string?>()
+            {
+                // db connection string
+                ["ConnectionStrings:Default"] = _dbContainer.GetConnectionString(),
+
+                // disallowed host for short url creation
+                ["ApiSettings:DisallowedHosts:0"] = "localhost:5001",
+                ["ApiSettings:DisallowedHosts:1"] = "localhost:5002",
+            };
+            configBuilder.AddInMemoryCollection(entries);
+        });
 
         builder.ConfigureServices(services =>
         {

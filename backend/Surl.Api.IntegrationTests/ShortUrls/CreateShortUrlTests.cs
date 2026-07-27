@@ -85,14 +85,62 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     }
 
     [Fact]
+    public async Task CreateShortUrl_EmptyOriginalUrl_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var createRequest = new CreateShortUrlRequest(string.Empty);
+
+        // Act
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var httpResponse = await _factory.HttpClient.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
+        var validationResponse = await httpResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken);
+
+        // Assert
+        Assert.NotNull(validationResponse);
+        Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
+        Assert.Single(validationResponse.Errors);
+        var error = validationResponse.Errors.First();
+        Assert.Equal("OriginalUrl", error.Key);
+        Assert.Equal("'Original Url' must not be empty.", error.Value.FirstOrDefault());
+    }
+
+    [Fact]
     public async Task CreateShortUrl_InvalidOriginalUrl_ShouldReturnBadRequest()
     {
-        throw new NotImplementedException();
+        // Arrange
+        var createRequest = new CreateShortUrlRequest("invalid-url");
+
+        // Act
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var httpResponse = await _factory.HttpClient.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
+        var validationResponse = await httpResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken);
+
+        // Assert
+        Assert.NotNull(validationResponse);
+        Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
+        Assert.Single(validationResponse.Errors);
+        var error = validationResponse.Errors.First();
+        Assert.Equal("OriginalUrl", error.Key);
+        Assert.Equal("The URL is invalid", error.Value.FirstOrDefault());
     }
 
     [Fact]
     public async Task CreateShortUrl_DisallowedHostOriginalUrl_ShouldReturnBadRequest()
     {
-        throw new NotImplementedException();
+        // Arrange
+        var createRequest = new CreateShortUrlRequest("https://localhost:5001");
+
+        // Act
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var httpResponse = await _factory.HttpClient.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
+        var validationResponse = await httpResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken);
+
+        // Assert
+        Assert.NotNull(validationResponse);
+        Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
+        Assert.Single(validationResponse.Errors);
+        var error = validationResponse.Errors.First();
+        Assert.Equal("OriginalUrl", error.Key);
+        Assert.Equal("The URL host is not allowed", error.Value.FirstOrDefault());
     }
 }
