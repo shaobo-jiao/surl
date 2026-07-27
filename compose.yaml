@@ -54,7 +54,7 @@ services:
   api:
     build: ./backend/Surl.Api/
     ports:
-      - ${API_PORT:-6002}:8080
+      - ${API_PORT:-5002}:8080
     restart: always
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -82,10 +82,10 @@ services:
     build: 
       context: ./frontend
       args:
-        - VITE_API_BASE_URL=http://localhost:${API_PORT:-6002}
-        - VITE_APP_URL=http://localhost:${FRONTEND_PORT:-6001}
+        - VITE_API_BASE_URL=http://localhost:${API_PORT:-5002}
+        - VITE_APP_URL=http://localhost:${FRONTEND_PORT:-5001}
     ports:
-      - ${FRONTEND_PORT:-6001}:80
+      - ${FRONTEND_PORT:-5001}:80
     restart: always
     
 volumes:

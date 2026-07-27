@@ -287,12 +287,12 @@ Refer to [Surl.Web Dockerfile](Surl.Web/Dockerfile) for details, and the followi
 ```bash
 # build the image
 $ docker build -t surl-web --platform linux/amd64,linux/arm64 \
-    --build-arg VITE_API_BASE_URL=http://localhost:6002/api/short-urls \
-    --build-arg VITE_APP_URL=http://localhost:6001 \
+    --build-arg VITE_API_BASE_URL=http://localhost:5002/api/short-urls \
+    --build-arg VITE_APP_URL=http://localhost:5001 \
     ./Surl.Web
 
 # run the container
-$ docker run -d --name surl-web --network=surl -p 6001:80 surl-web
+$ docker run -d --name surl-web --network=surl -p 5001:80 surl-web
 ```
 
 ### Database
@@ -340,7 +340,7 @@ Refer to [Surl.API Dockerfile](Surl.Api/Dockerfile) for the details, and refer t
 $ docker build -t surl-api --platform linux/amd64,linux/arm64 ./Surl.Api
 
 # build the container (with env file)
-$ docker run -d --name surl-api --network surl --env-file Surl.Api/.env -p 6002:8080 surl-api
+$ docker run -d --name surl-api --network surl --env-file Surl.Api/.env -p 5002:8080 surl-api
 ```
 
 The `.env` file provides environment variables to the API, including:

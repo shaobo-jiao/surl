@@ -39,7 +39,7 @@ $ dotnet ef migrations script -i -p ./backend/Surl.Api/ -o ./backend/Surl.Api/bi
 $ docker compose up -d
 ```
 
-visit the application locally at [http://localhost:6001](http://localhost:6001)
+visit the application locally at [http://localhost:5001](http://localhost:5001)
 
 # Project Details
 
