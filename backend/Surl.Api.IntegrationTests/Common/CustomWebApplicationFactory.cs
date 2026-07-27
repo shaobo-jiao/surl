@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Time.Testing;
 using Npgsql;
 using Respawn;
 using Surl.Api.Data;
@@ -11,8 +13,6 @@ namespace Surl.Api.IntegrationTests.Common;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    public HttpClient HttpClient { get; private set; } = default!;
-
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18-bookworm")
         .WithDatabase("surl")
         .WithUsername("postgres")
@@ -20,6 +20,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         .Build();
 
     private Respawner _respawner = default!;
+
+    public HttpClient HttpClient { get; private set; } = default!;
+
+    public FakeTimeProvider TimeProvider { get; private set; } = new FakeTimeProvider(TestConstants.TestStartTime);
 
     public async ValueTask InitializeAsync()
     {
@@ -33,7 +37,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         await using var scope = Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await dbContext.Database.MigrateAsync();
-        
+
         // init respawner 
         await InitializeRespawnerAsync();
     }
@@ -49,6 +53,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     {
         // set db conn string
         Environment.SetEnvironmentVariable("ConnectionStrings__Default", _dbContainer.GetConnectionString());
+
+        builder.ConfigureServices(services =>
+        {
+            // configure fake time provider
+            services.RemoveAll<TimeProvider>();
+            services.AddSingleton<TimeProvider>(TimeProvider);
+        });
     }
 
     /// <summary>
@@ -69,8 +80,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     /// Resets the database. Called after every test to give a clean context for next test.
     /// </summary>
     /// <returns></returns>
-    public async Task ResetDatabaseAsync()
+    public async Task ResetStateAsync()
     {
+        // reset time 
+        TimeProvider.SetUtcNow(TestConstants.TestStartTime);
+
+        // reset db data
         using var dbConnection = new NpgsqlConnection(_dbContainer.GetConnectionString());
         await dbConnection.OpenAsync();
         await _respawner.ResetAsync(dbConnection);
