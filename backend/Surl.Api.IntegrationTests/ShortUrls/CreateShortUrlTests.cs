@@ -1,8 +1,9 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using Surl.Api.IntegrationTests.Common;
 using Surl.Api.ShortUrls;
 
-namespace Surl.Api.IntegrationTests.ShortUrlsTests;
+namespace Surl.Api.IntegrationTests.ShortUrls;
 
 [Collection("SurlApiIntegrationTests")]
 public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLifetime
