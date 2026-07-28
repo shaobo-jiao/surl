@@ -21,7 +21,7 @@ public interface IShortUrlService
     /// <param name="userId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<ShortUrl?> GetShortUrlByIdAsync(long shortUrlId, int? userId, CancellationToken cancellationToken);
+    Task<ShortUrl?> GetShortUrlByIdAsync(long shortUrlId, int userId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets list of short URLs using given query parameters. 
@@ -30,7 +30,7 @@ public interface IShortUrlService
     /// <param name="userId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<PagedResult<ShortUrl>> GetShortUrlsAsync(QueryShortUrlParams queryParams, int? userId, CancellationToken cancellationToken);
+    Task<PagedResult<ShortUrl>> GetShortUrlsAsync(QueryShortUrlParams queryParams, int userId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets original URL for redirection from given short url code. 
@@ -49,7 +49,7 @@ public interface IShortUrlService
     /// <param name="userId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Result<ShortUrl, ShortUrlError>> UpdateShortUrlAsync(long shortUrlId, UpdateShortUrlRequest request, int? userId, CancellationToken cancellationToken);
+    Task<Result<ShortUrl, ShortUrlError>> UpdateShortUrlAsync(long shortUrlId, UpdateShortUrlRequest request, int userId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Deletes a short URL by its ID. 
@@ -58,7 +58,7 @@ public interface IShortUrlService
     /// <param name="userId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Result<ShortUrl, ShortUrlError>> DeleteShortUrlAsync(long shortUrlId, int? userId, CancellationToken cancellationToken);
+    Task<Result<ShortUrl, ShortUrlError>> DeleteShortUrlAsync(long shortUrlId, int userId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Saves a click event. To be called by the click processing background service

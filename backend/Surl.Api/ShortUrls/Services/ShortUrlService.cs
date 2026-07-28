@@ -32,24 +32,22 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
         return shortUrl;
     }
 
-    public async Task<ShortUrl?> GetShortUrlByIdAsync(long shortUrlId, int? userId, CancellationToken cancellationToken)
+    public async Task<ShortUrl?> GetShortUrlByIdAsync(long shortUrlId, int userId, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Getting ShortUrl: {id}, userId: {userId}", shortUrlId, userId);
-        var shortUrl = await _dbContext.ShortUrls.FindAsync(shortUrlId, cancellationToken);
-        
-        if (shortUrl is null) return null;
-        if (userId.HasValue && shortUrl.UserId != userId) return null; // not creator;
+        var shortUrl = await _dbContext.ShortUrls
+            .FirstOrDefaultAsync(x => x.Id == shortUrlId && x.UserId == userId, cancellationToken);
         return shortUrl;
     }
 
-    public async Task<PagedResult<ShortUrl>> GetShortUrlsAsync(QueryShortUrlParams queryParams, int? userId, CancellationToken cancellationToken)
+    public async Task<PagedResult<ShortUrl>> GetShortUrlsAsync(QueryShortUrlParams queryParams, int userId, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Getting ShortUrls with parameter: {queryParams}, userId: {userId}", queryParams, userId);
 
         var query = _dbContext.ShortUrls.AsQueryable();
 
         // filter userId;
-        if (userId.HasValue) query = query.Where(x => x.UserId == userId);
+        query = query.Where(x => x.UserId == userId);
 
         // filter param expiry range;
         if (queryParams.ExpiresFrom.HasValue) query = query.Where(x => x.ExpiresAt >= queryParams.ExpiresFrom);
@@ -87,7 +85,7 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
         return Result<ShortUrl, ShortUrlError>.Success(shortUrl);
     }
 
-    public async Task<Result<ShortUrl, ShortUrlError>> UpdateShortUrlAsync(long shortUrlId, UpdateShortUrlRequest request, int? userId, CancellationToken cancellationToken)
+    public async Task<Result<ShortUrl, ShortUrlError>> UpdateShortUrlAsync(long shortUrlId, UpdateShortUrlRequest request, int userId, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Updating short url: {id}, userId: {userId}", shortUrlId, userId);
         var shortUrl = await GetShortUrlByIdAsync(shortUrlId, userId, cancellationToken);
@@ -101,7 +99,7 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
         return Result<ShortUrl, ShortUrlError>.Success(shortUrl);
     }
 
-    public async Task<Result<ShortUrl, ShortUrlError>> DeleteShortUrlAsync(long shortUrlId, int? userId, CancellationToken cancellationToken)
+    public async Task<Result<ShortUrl, ShortUrlError>> DeleteShortUrlAsync(long shortUrlId, int userId, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Deleting Short Url: {id}, userId: {userId}", shortUrlId, userId);
         var shortUrl = await GetShortUrlByIdAsync(shortUrlId, userId, cancellationToken);

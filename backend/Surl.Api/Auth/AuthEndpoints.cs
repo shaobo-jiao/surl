@@ -57,7 +57,7 @@ public static class AuthEndpoints
         IAuthService authService, ClaimsPrincipal user, ChangePasswordRequest request,
         CancellationToken cancellationToken)
     {
-        var userId = user.GetUserId() ?? throw new InvalidOperationException();
+        var userId = user.GetUserId();
         var result = await authService.ChangePasswordAsync(userId, request, cancellationToken);
         if (result.IsSuccessful)
             return TypedResults.Ok("Password changed successfully");

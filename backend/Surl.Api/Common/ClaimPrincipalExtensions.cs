@@ -6,14 +6,18 @@ namespace Surl.Api;
 public static class ClaimPrincipalExtensions
 {   
     /// <summary>
-    /// Extracts UserId from ClaimPrincipal
+    /// Extracts UserId from ClaimPrincipal given that the identity is authenticated.
     /// </summary>
     /// <param name="principal"></param>
     /// <returns></returns>
-    public static int? GetUserId(this ClaimsPrincipal principal)
+    public static int GetUserId(this ClaimsPrincipal principal)
     {
-        if (int.TryParse(principal.FindFirstValue(JwtRegisteredClaimNames.Sub), out int userId))
-            return userId;
-        return null;
+        if (principal.Identity?.IsAuthenticated ?? false)
+            throw new InvalidOperationException();
+
+        if (!int.TryParse(principal.FindFirstValue(JwtRegisteredClaimNames.Sub), out int userId))
+            throw new InvalidOperationException();
+
+        return userId;
     }
 }

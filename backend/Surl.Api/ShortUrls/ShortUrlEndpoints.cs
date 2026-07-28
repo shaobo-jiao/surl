@@ -36,7 +36,10 @@ public static class ShortUrlEndpoints
     public static async Task<Results<CreatedAtRoute<ShortUrlResponse>, BadRequest>> CreateShortUrlAsync(
         IShortUrlService shortUrlSvc, CreateShortUrlRequest request, ClaimsPrincipal principal, CancellationToken cancellationToken)
     {
-        var userId = principal.GetUserId();
+        // can create anonymous or user-linked short urls;
+        var authenticated = principal.Identity?.IsAuthenticated ?? false;
+        int? userId = authenticated ? principal.GetUserId() : null;
+        
         var shortUrl = await shortUrlSvc.CreateShortUrlAsync(request, userId, cancellationToken);
         var response = shortUrl.ToResponse();
         return TypedResults.CreatedAtRoute(response, "GetShortUrlById", new { id = shortUrl.Id });
