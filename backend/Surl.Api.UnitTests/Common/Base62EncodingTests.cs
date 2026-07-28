@@ -1,6 +1,6 @@
 ﻿using Surl.Api.Common;
 
-namespace Surl.Api.UnitTests;
+namespace Surl.Api.UnitTests.Common;
 
 public class Base62EncodingTests
 {

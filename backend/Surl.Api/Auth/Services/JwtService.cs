@@ -8,9 +8,10 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Surl.Api.Auth;
 
-public class JwtService(IOptions<JwtOptions> jwtOptions) : ITokenService
+public class JwtService(IOptions<JwtOptions> jwtOptions, TimeProvider timeProvider) : ITokenService
 {
-    private JwtOptions _jwtOptions = jwtOptions.Value;
+    private readonly JwtOptions _jwtOptions = jwtOptions.Value;
+    private readonly TimeProvider _timeProvider = timeProvider;
 
     public string GenerateAccessToken(User user)
     {
@@ -20,11 +21,12 @@ public class JwtService(IOptions<JwtOptions> jwtOptions) : ITokenService
         // identity related claims grouped together, later assign to Subject as one ClaimIdentity
         var identityClaims = new List<Claim>()
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Name, user.Username),
-            new Claim(AppClaimTypes.Role, user.Role)
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Name, user.Username),
+            new(AppClaimTypes.Role, user.Role)
         };
 
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
             Subject = new ClaimsIdentity(identityClaims),
@@ -33,8 +35,8 @@ public class JwtService(IOptions<JwtOptions> jwtOptions) : ITokenService
             Issuer = _jwtOptions.Issuer,
             Audience = _jwtOptions.Audience,
 
-            NotBefore = DateTime.UtcNow,
-            Expires = DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenExpireInMinutes),
+            NotBefore = utcNow,
+            Expires = utcNow.AddMinutes(_jwtOptions.AccessTokenExpireInMinutes),
         };
 
         return new JsonWebTokenHandler().CreateToken(tokenDescriptor);
