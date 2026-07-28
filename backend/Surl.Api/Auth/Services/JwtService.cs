@@ -35,6 +35,7 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, TimeProvider timeProvid
             Issuer = _jwtOptions.Issuer,
             Audience = _jwtOptions.Audience,
 
+            IssuedAt = utcNow,
             NotBefore = utcNow,
             Expires = utcNow.AddMinutes(_jwtOptions.AccessTokenExpireInMinutes),
         };

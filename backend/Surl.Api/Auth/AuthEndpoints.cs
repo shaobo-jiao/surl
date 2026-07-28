@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Surl.Api.Common;
+using Surl.Api.Users;
 
 namespace Surl.Api.Auth;
 
@@ -26,12 +27,13 @@ public static class AuthEndpoints
             .RequireAuthorization();
     }
 
-    public static async Task<Results<Created, BadRequest<string>>> RegisterAsync(
+    public static async Task<Results<Created<UserResponse>, BadRequest<string>>> RegisterAsync(
         IAuthService authService, [FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
+        // return Created as of now. may add a /me endpoint to get current user info in the future
         var result = await authService.RegisterAsync(request, cancellationToken);
         return result.IsSuccessful
-            ? TypedResults.Created()
+            ? TypedResults.Created(string.Empty, result.Value!.ToResponse())
             : TypedResults.BadRequest("Username already exists"); // the only return error type
     }
 

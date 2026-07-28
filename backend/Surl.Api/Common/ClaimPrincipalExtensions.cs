@@ -12,7 +12,7 @@ public static class ClaimPrincipalExtensions
     /// <returns></returns>
     public static int GetUserId(this ClaimsPrincipal principal)
     {
-        if (principal.Identity?.IsAuthenticated ?? false)
+        if (!(principal.Identity?.IsAuthenticated ?? false))
             throw new InvalidOperationException();
 
         if (!int.TryParse(principal.FindFirstValue(JwtRegisteredClaimNames.Sub), out int userId))

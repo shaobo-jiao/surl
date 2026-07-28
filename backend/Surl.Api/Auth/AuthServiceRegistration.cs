@@ -40,10 +40,10 @@ public static class AuthServiceRegistration
 
         // options for JWT bearer authentication
         services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-            .Configure<IOptions<JwtOptions>>((options, jwtOptionsWrapper) =>
+            .Configure<IOptions<JwtOptions>, TimeProvider>((options, jwtOptionsWrapper, timeProvider) =>
             {
                 var jwtOptions = jwtOptionsWrapper.Value;
-
+                options.TimeProvider = timeProvider;
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
                     ValidateIssuerSigningKey = true,

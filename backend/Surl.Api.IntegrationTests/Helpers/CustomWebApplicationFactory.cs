@@ -24,7 +24,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
     public HttpClient HttpClient { get; private set; } = default!;
 
-    public FakeTimeProvider TimeProvider { get; private set; } = new FakeTimeProvider(TestConstants.TestStartTime);
+    public FakeTimeProvider TimeProvider { get; private set; } = new FakeTimeProvider(Constants.TestStartTime);
 
     public async ValueTask InitializeAsync()
     {
@@ -62,6 +62,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
                 // disallowed host for short url creation
                 ["ApiSettings:DisallowedHosts:0"] = "localhost:5001",
                 ["ApiSettings:DisallowedHosts:1"] = "localhost:5002",
+
+                // jwt secret
+                ["JwtOptions:SecretKey"] = "surl-api-integration-test-jwt-secret-key",
             };
             configBuilder.AddInMemoryCollection(entries);
         });
@@ -71,6 +74,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             // configure fake time provider
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(TimeProvider);
+
+            // configure a custom jwt lifetime validator that is based on TimeProvider 
+            services.ConfigureOptions<CustomJwtBearerOptionsLifeTimeValidator>();
         });
     }
 
@@ -95,7 +101,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     public async Task ResetStateAsync()
     {
         // reset time 
-        TimeProvider.SetUtcNow(TestConstants.TestStartTime);
+        TimeProvider.SetUtcNow(Constants.TestStartTime);
 
         // reset db data
         using var dbConnection = new NpgsqlConnection(_dbContainer.GetConnectionString());

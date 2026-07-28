@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Surl.Api.IntegrationTests.Helpers;
 using Surl.Api.ShortUrls;
@@ -36,7 +35,27 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     [Fact]
     public async Task CreateShortUrl_ValidAuthenticatedRequest_ShouldSucceed()
     {
-        throw new NotImplementedException();
+        // Arrange: creates a user and creates short url for the user
+        var httpClient = _factory.HttpClient;
+        var cancellationToken = TestContext.Current.CancellationToken;
+
+        var user = await AuthHelper.RegisterAsync(httpClient, "user1", cancellationToken);
+        var authTokens = await AuthHelper.LoginAsync(httpClient, "user1", cancellationToken);
+        
+        var originalUrl = "https://example.com";
+        var createShortUrlRequest = new CreateShortUrlRequest(originalUrl);
+        var httpRequestMessage = AuthHelper.CreateAuthenticatedHttpRequestMessageAsJson(
+            HttpMethod.Post, "/short-urls", authTokens.AccessToken, createShortUrlRequest);
+
+        // Act: create a short url for given user;
+        var httpResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+        var shortUrlResponse = await httpResponse.Content.ReadFromJsonAsync<ShortUrlResponse>(cancellationToken);
+
+        // Assert
+        Assert.NotNull(shortUrlResponse);
+        Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
+        Assert.Equal(originalUrl, shortUrlResponse.OriginalUrl);
+        Assert.Equal(user.Id, shortUrlResponse.UserId);
     }
 
     [Fact]
