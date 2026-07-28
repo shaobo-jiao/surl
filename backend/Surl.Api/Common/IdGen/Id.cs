@@ -52,16 +52,16 @@ public class Id
     {
         // Timestamp
         int timestampShifts = IdStructure.WorkerIdBits + IdStructure.SequenceBits;
-        long timestampMask = ((1 << IdStructure.TimestampBits) - 1) << timestampShifts;
+        long timestampMask = ((1L << IdStructure.TimestampBits) - 1L) << timestampShifts;
         long timestamp = (id & timestampMask) >> timestampShifts;
 
         // WorkerId
         int workerIdShifts = IdStructure.SequenceBits;
-        long workerIdMask = ((1 << IdStructure.WorkerIdBits) - 1) << workerIdShifts;
+        long workerIdMask = ((1L << IdStructure.WorkerIdBits) - 1L) << workerIdShifts;
         long workerId = (id & workerIdMask) >> workerIdShifts;
 
         // Sequence
-        long sequenceMask = (1 << IdStructure.SequenceBits) - 1;
+        long sequenceMask = (1L << IdStructure.SequenceBits) - 1L;
         long sequence = id & sequenceMask;
 
         return (timestamp, workerId, sequence);
