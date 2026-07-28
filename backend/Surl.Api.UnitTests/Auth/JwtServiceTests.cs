@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Surl.Api.Auth;
-using Surl.Api.UnitTests.Configuration;
+using Surl.Api.UnitTests.Helpers;
 using Surl.Api.Users;
 
 namespace Surl.Api.UnitTests.Auth;

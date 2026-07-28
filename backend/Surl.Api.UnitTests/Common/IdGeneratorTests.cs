@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Surl.Api.Common;
-using Surl.Api.UnitTests.Configuration;
+using Surl.Api.UnitTests.Helpers;
 using Surl.Api.Users;
 
 namespace Surl.Api.UnitTests.Common;

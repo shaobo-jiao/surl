@@ -10,7 +10,7 @@ using Respawn;
 using Surl.Api.Data;
 using Testcontainers.PostgreSql;
 
-namespace Surl.Api.IntegrationTests.Common;
+namespace Surl.Api.IntegrationTests.Helpers;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {

@@ -2,7 +2,7 @@
 using System.Net.Http.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Surl.Api.IntegrationTests.Common;
+using Surl.Api.IntegrationTests.Helpers;
 using Surl.Api.ShortUrls;
 
 namespace Surl.Api.IntegrationTests.ShortUrls;

@@ -1,4 +1,4 @@
-﻿namespace Surl.Api.IntegrationTests.Common;
+﻿namespace Surl.Api.IntegrationTests.Helpers;
 
 [CollectionDefinition("SurlApiIntegrationTests")]
 public class SharedTestCollection: ICollectionFixture<CustomWebApplicationFactory>

@@ -1,4 +1,4 @@
-﻿namespace Surl.Api.UnitTests.Configuration;
+﻿namespace Surl.Api.IntegrationTests.Helpers;
 
 public class TestConstants
 {
