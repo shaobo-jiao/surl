@@ -78,7 +78,7 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
             return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.NotFound);
         
         _logger.LogDebug("shortUrl loaded, checking expiry: {expiresAt}", shortUrl.ExpiresAt);
-        if (shortUrl.ExpiresAt < _timeProvider.GetUtcNow())
+        if (shortUrl.ExpiresAt <= _timeProvider.GetUtcNow())
             return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.Expired);
 
         _logger.LogInformation("returning short url for redirection: {id}", id);
