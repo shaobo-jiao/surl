@@ -1,36 +1,29 @@
-﻿using Surl.Api.Users;
+using Surl.Api.Common;
+using Surl.Api.Users;
 
 namespace Surl.Api.Auth;
 
 public interface IAuthService
 {
-    /// <summary>
-    /// Registers an application user
-    /// </summary>
-    /// <param name="registerRequest"></param>
-    /// <returns>The created application user entity</returns>
-    Task<User> RegisterAsync(RegisterRequest registerRequest);
+    Task<Result<User, AuthError>> RegisterAsync(RegisterRequest registerRequest, CancellationToken cancellationToken);
 
-    /// <summary>
-    /// Logins to the application
-    /// </summary>
-    /// <param name="loginRequest"></param>
-    /// <returns>Access token and refresh token</returns>
-    Task<LoginResponse> LoginAsync(LoginRequest loginRequest);
+    Task<Result<LoginResponse, AuthError>> LoginAsync(LoginRequest loginRequest, CancellationToken cancellationToken);
 
     /// <summary>
     /// Refresh the access token upon expiry using refresh token. 
     /// The refresh token will be marked used and can no longer be used afterwards. 
     /// </summary>
     /// <param name="refreshRequest"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns>New access token and refresh token</returns>
-    Task<RefreshResponse> RefreshAsync(RefreshRequest refreshRequest);
+    Task<Result<RefreshResponse, AuthError>> RefreshAsync(RefreshRequest refreshRequest, CancellationToken cancellationToken);
 
     /// <summary>
     /// Changes password for an authenticated user. 
     /// </summary>
     /// <param name="userId"></param>
-    /// <param name="resetPasswordRequest">The user's old and new password</param>
+    /// <param name="changePasswordRequest"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task ChangePasswordAsync(int userId, ChangePasswordRequest resetPasswordRequest);
+    Task<Result<User, AuthError>> ChangePasswordAsync(int userId, ChangePasswordRequest changePasswordRequest, CancellationToken cancellationToken);
 }

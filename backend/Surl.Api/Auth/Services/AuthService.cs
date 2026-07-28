@@ -1,102 +1,123 @@
-﻿using Surl.Api.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Surl.Api.Common;
 using Surl.Api.Data;
+using Surl.Api.Users;
 
 namespace Surl.Api.Auth;
 
 public class AuthService(AppDbContext dbContext, IUserService userService, IPasswordHasher<User> passwordHasher,
     ITokenService tokenService, IOptions<JwtOptions> jwtOptionsWrapper, TimeProvider timeProvider) : IAuthService
 {
-    private AppDbContext _dbContext = dbContext;
-    private IUserService _userService = userService;
-    private IPasswordHasher<User> _passwordHasher = passwordHasher;
-    private ITokenService _tokenService = tokenService;
-    private JwtOptions _jwtOptions = jwtOptionsWrapper.Value;
-    private TimeProvider _timeProvider = timeProvider; 
+    private readonly AppDbContext _dbContext = dbContext;
+    private readonly IUserService _userService = userService;
+    private readonly IPasswordHasher<User> _passwordHasher = passwordHasher;
+    private readonly ITokenService _tokenService = tokenService;
+    private readonly JwtOptions _jwtOptions = jwtOptionsWrapper.Value;
+    private readonly TimeProvider _timeProvider = timeProvider;
 
-    public Task<User> RegisterAsync(RegisterRequest registerRequest)
+    public async Task<Result<User, AuthError>> RegisterAsync(
+        RegisterRequest registerRequest, CancellationToken cancellationToken)
     {
         // rely on user service to create a user
-        CreateUserRequest createUserRequest = new(registerRequest.Username, registerRequest.Password, registerRequest.Email, AppRoles.User);
-        return _userService.CreateUserAsync(createUserRequest);
+        var createUserRequest = new CreateUserRequest(
+            registerRequest.Username, registerRequest.Password, registerRequest.Email, AppRoles.User);
+
+        try
+        {
+            // TODO: later to modify user service
+            var user = await _userService.CreateUserAsync(createUserRequest);
+            return Result<User, AuthError>.Success(user);
+        }
+        catch (DuplicateUsernameException)
+        {
+            return Result<User, AuthError>.Failure(AuthError.DuplicateUsername);
+        }
     }
 
-    public async Task<LoginResponse> LoginAsync(LoginRequest loginRequest)
+    public async Task<Result<LoginResponse, AuthError>> LoginAsync(
+        LoginRequest loginRequest, CancellationToken cancellationToken)
     {
-        // find user, validate password, issue token; 
-        var user = await _userService.GetUserByUsernameAsync(loginRequest.Username) 
-            ?? throw new UserNotFoundException();
+        // find user
+        var user = await _userService.GetUserByUsernameAsync(loginRequest.Username);
+        if (user is null)
+            return Result<LoginResponse, AuthError>.Failure(AuthError.InvalidCredentials);
 
+        // validate password
         var verificationResult = _passwordHasher.VerifyHashedPassword(
             user, user.PasswordHash, loginRequest.Password);
-        if (verificationResult != PasswordVerificationResult.Success) 
-            throw new InvalidCredentialsException();
+        if (verificationResult != PasswordVerificationResult.Success)
+            return Result<LoginResponse, AuthError>.Failure(AuthError.InvalidCredentials);
 
-        string accessToken = _tokenService.GenerateAccessToken(user);
-        string refreshToken = _tokenService.GenerateRefreshToken();
-
-        // save refresh token into db;
+        // issue token
+        var accessToken = _tokenService.GenerateAccessToken(user);
+        var refreshToken = _tokenService.GenerateRefreshToken();
         var utcNow = _timeProvider.GetUtcNow();
-        await _dbContext.RefreshTokens.AddAsync(new RefreshToken()
+
+        await _dbContext.RefreshTokens.AddAsync(new RefreshToken
         {
             Token = refreshToken,
             UserId = user.Id,
             CreatedAt = utcNow,
             ExpiresAt = utcNow.AddDays(_jwtOptions.RefreshTokenExpireInDays),
-        });
-        await _dbContext.SaveChangesAsync();
+        }, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new LoginResponse(accessToken, refreshToken);
+        return Result<LoginResponse, AuthError>.Success(new LoginResponse(accessToken, refreshToken));
     }
 
-    public async Task<RefreshResponse> RefreshAsync(RefreshRequest refreshRequest)
+    public async Task<Result<RefreshResponse, AuthError>> RefreshAsync(
+        RefreshRequest refreshRequest, CancellationToken cancellationToken)
     {
-        // load and validate refresh token;
+        // load and validate refresh token
         var refreshToken = await _dbContext.RefreshTokens
             .Include(t => t.User)
-            .FirstOrDefaultAsync(t => t.Token == refreshRequest.RefreshToken);
+            .FirstOrDefaultAsync(t => t.Token == refreshRequest.RefreshToken, cancellationToken);
+
+        if (refreshToken is null || !refreshToken.IsValidAt(_timeProvider.GetUtcNow()))
+            return Result<RefreshResponse, AuthError>.Failure(AuthError.InvalidRefreshToken);
         
-        if (refreshToken == null) 
-            throw new InvalidRefreshTokenException("Refresh token not found");
-        else if (!refreshToken.IsValidAt(_timeProvider.GetUtcNow()))
-            throw new InvalidRefreshTokenException("The refresh token is either used, revoked or expired already.");
-        
-        // consume refresh token
-        string newAccessToken = _tokenService.GenerateAccessToken(refreshToken.User);
-        string newRefreshToken = _tokenService.GenerateRefreshToken();
+        // issue new tokens and deactivate the old one.
+        var newAccessToken = _tokenService.GenerateAccessToken(refreshToken.User);
+        var newRefreshToken = _tokenService.GenerateRefreshToken();
         var utcNow = _timeProvider.GetUtcNow();
-        await _dbContext.RefreshTokens.AddAsync(new RefreshToken()
+
+        await _dbContext.RefreshTokens.AddAsync(new RefreshToken
         {
             UserId = refreshToken.UserId,
             Token = newRefreshToken,
             CreatedAt = utcNow,
             ExpiresAt = utcNow.AddDays(_jwtOptions.RefreshTokenExpireInDays),
-        });
+        }, cancellationToken);
         refreshToken.IsUsed = true;
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return new RefreshResponse(newAccessToken, newRefreshToken);
+        return Result<RefreshResponse, AuthError>.Success(
+            new RefreshResponse(newAccessToken, newRefreshToken));
     }
 
-    public async Task ChangePasswordAsync(int userId, ChangePasswordRequest changePasswordRequest)
+    public async Task<Result<User, AuthError>> ChangePasswordAsync(
+        int userId, ChangePasswordRequest changePasswordRequest, CancellationToken cancellationToken)
     {
-        // load user;
-        var user = await _userService.GetUserByIdAsync(userId) 
-            ?? throw new UserNotFoundException();
+        // find user
+        var user = await _userService.GetUserByIdAsync(userId);
+        if (user is null)
+            return Result<User, AuthError>.Failure(AuthError.UserNotFound);
+        
+        // validate old password
+        var verificationResult = _passwordHasher.VerifyHashedPassword(
+            user, user.PasswordHash, changePasswordRequest.OldPassword);
+        if (verificationResult != PasswordVerificationResult.Success)
+            return Result<User, AuthError>.Failure(AuthError.InvalidCredentials);
 
-        // validate password;
-        var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, changePasswordRequest.OldPassword);
-        if (verificationResult != PasswordVerificationResult.Success) 
-            throw new InvalidCredentialsException();
-
-        // update password and revoke existing refresh tokens;
+        // update password and invoke existing refresh tokens
         user.PasswordHash = _passwordHasher.HashPassword(user, changePasswordRequest.NewPassword);
-        _dbContext.RefreshTokens
+        await _dbContext.RefreshTokens
             .Where(t => t.UserId == userId && !t.IsRevoked)
-            .ToList()
-            .ForEach(t => t.IsRevoked = true);
-        await _dbContext.SaveChangesAsync();
+            .ForEachAsync(t => t.IsRevoked = true, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result<User, AuthError>.Success(user);
     }
 }

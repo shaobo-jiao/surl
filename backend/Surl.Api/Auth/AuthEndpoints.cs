@@ -1,9 +1,7 @@
-﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Surl.Api.Common;
-using Surl.Api.Users;
 
 namespace Surl.Api.Auth;
 
@@ -28,64 +26,47 @@ public static class AuthEndpoints
             .RequireAuthorization();
     }
 
-    public static async Task<Results<CreatedAtRoute<UserResponse>, BadRequest<string>>> RegisterAsync(
-        IAuthService authService, [FromBody] RegisterRequest request)
+    public static async Task<Results<Created, BadRequest<string>>> RegisterAsync(
+        IAuthService authService, [FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
-        try
-        {
-            User user = await authService.RegisterAsync(request);
-            return TypedResults.CreatedAtRoute(user.ToResponse(), "GetUserById", new { id = user.Id });
-        }
-        catch (UserException ex)
-        {
-            return TypedResults.BadRequest(ex.Message);
-        }
+        var result = await authService.RegisterAsync(request, cancellationToken);
+        return result.IsSuccessful
+            ? TypedResults.Created()
+            : TypedResults.BadRequest("Username already exists"); // the only return error type
     }
 
     public static async Task<Results<Ok<LoginResponse>, UnauthorizedHttpResult>> LoginAsync(
-        IAuthService authService, LoginRequest request)
+        IAuthService authService, LoginRequest request, CancellationToken cancellationToken)
     {
-        try
-        {
-            LoginResponse response = await authService.LoginAsync(request);
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex) when (ex is UserNotFoundException || ex is InvalidCredentialsException)
-        {
-            return TypedResults.Unauthorized();
-        }
+        var result = await authService.LoginAsync(request, cancellationToken);
+        return result.IsSuccessful
+            ? TypedResults.Ok(result.Value!)
+            : TypedResults.Unauthorized();
     }
 
     public static async Task<Results<Ok<RefreshResponse>, UnauthorizedHttpResult>> RefreshAsync(
-        IAuthService authService, RefreshRequest request)
+        IAuthService authService, RefreshRequest request, CancellationToken cancellationToken)
     {
-        try
-        {
-            RefreshResponse response = await authService.RefreshAsync(request);
-            return TypedResults.Ok(response);
-        }
-        catch (InvalidRefreshTokenException)
-        {
-            return TypedResults.Unauthorized();
-        }
+        var result = await authService.RefreshAsync(request, cancellationToken);
+        return result.IsSuccessful
+            ? TypedResults.Ok(result.Value!)
+            : TypedResults.Unauthorized();
     }
 
     public static async Task<Results<Ok<string>, BadRequest<string>, UnauthorizedHttpResult>> ChangePasswordAsync(
-        IAuthService authService, ClaimsPrincipal user, ChangePasswordRequest request)
+        IAuthService authService, ClaimsPrincipal user, ChangePasswordRequest request,
+        CancellationToken cancellationToken)
     {
-        if (!int.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out int userId))
-            return TypedResults.Unauthorized();
-        
-        try
-        {
-            await authService.ChangePasswordAsync(userId, request);
+        var userId = user.GetUserId() ?? throw new InvalidOperationException();
+        var result = await authService.ChangePasswordAsync(userId, request, cancellationToken);
+        if (result.IsSuccessful)
             return TypedResults.Ok("Password changed successfully");
-        }
-        catch (Exception ex) when (ex is UserNotFoundException || ex is InvalidCredentialsException)
+
+        return result.Error switch
         {
-            return TypedResults.BadRequest(ex.Message);
-        }
+            AuthError.UserNotFound => TypedResults.BadRequest("User not found"),
+            AuthError.InvalidCredentials => TypedResults.BadRequest("Wrong old password"),
+            _ => TypedResults.BadRequest("Unable to change password"),
+        };
     }
-
 }
-

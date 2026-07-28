@@ -29,18 +29,3 @@ public sealed class Result<TValue, TError>(TValue? value, TError? error, bool is
         return new Result<TValue, TError>(default, error, false);
     }
 }
-
-public sealed class Result
-{
-    
-    public static Result<TValue, TError> Failure<TValue, TError>(TError error)
-    {
-        return new Result<TValue, TError>(default, error, false);
-    }
-
-    
-    public static Result<TValue, object> Success<TValue>(TValue value)
-    {
-        return new Result<TValue, object>(value, default, true);
-    }
-}
