@@ -103,10 +103,9 @@ public static class ShortUrlEndpoints
     {
         var userId = principal.GetUserId();
         var result = await shortUrlService.UpdateShortUrlAsync(id, request, userId, cancellationToken);
-        if (result.IsSuccessful)
-            return TypedResults.Ok(result.Value!.ToResponse());
-        else
-            return TypedResults.NotFound(); // only ShortUrlError.NotFound here
+        return result.IsSuccessful
+            ? TypedResults.Ok(result.Value!.ToResponse())
+            : TypedResults.NotFound(); // only ShortUrlError.NotFound here
     }
 
     public static async Task<Results<NoContent, NotFound>> DeleteShortUrlAsync(

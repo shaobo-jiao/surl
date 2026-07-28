@@ -6,10 +6,10 @@ namespace Surl.Api.ShortUrls;
 
 public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGenerator, ILogger<ShortUrlService> logger, TimeProvider timeProvider) : IShortUrlService
 {
-    private AppDbContext _dbContext = dbContext;
-    private IdGenerator<ShortUrl> _idGenerator = idGenerator;
-    private ILogger<ShortUrlService> _logger = logger;
-    private TimeProvider _timeProvider = timeProvider;
+    private readonly AppDbContext _dbContext = dbContext;
+    private readonly IdGenerator<ShortUrl> _idGenerator = idGenerator;
+    private readonly ILogger<ShortUrlService> _logger = logger;
+    private readonly TimeProvider _timeProvider = timeProvider;
 
     public async Task<ShortUrl> CreateShortUrlAsync(CreateShortUrlRequest request, int? userId, CancellationToken cancellationToken)
     {
