@@ -13,7 +13,7 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
 
     public async Task<ShortUrl> CreateShortUrlAsync(CreateShortUrlRequest request, int? userId, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating ShortUrl for request: {request}, userId: {userId}", request, userId);
+        _logger.LogDebug("Creating short URL for user {UserId}", userId);
         // generate ID and encode code
         var newId = _idGenerator.NewId();
         var shortUrl = new ShortUrl
@@ -28,21 +28,26 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
         await _dbContext.ShortUrls.AddAsync(shortUrl, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("ShortUrl created and saved: {id}", shortUrl.Id);
+        _logger.LogInformation("Short URL {ShortUrlId} created for user {UserId}", shortUrl.Id, userId);
         return shortUrl;
     }
 
     public async Task<ShortUrl?> GetShortUrlByIdAsync(long shortUrlId, int userId, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting ShortUrl: {id}, userId: {userId}", shortUrlId, userId);
+        _logger.LogDebug("Getting short URL {ShortUrlId} for user {UserId}", shortUrlId, userId);
         var shortUrl = await _dbContext.ShortUrls
             .FirstOrDefaultAsync(x => x.Id == shortUrlId && x.UserId == userId, cancellationToken);
+
+        if (shortUrl is null)
+            _logger.LogDebug("Short URL {ShortUrlId} was not found for user {UserId}", shortUrlId, userId);
+
         return shortUrl;
     }
 
     public async Task<PagedResult<ShortUrl>> GetShortUrlsAsync(QueryShortUrlParams queryParams, int userId, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting ShortUrls with parameter: {queryParams}, userId: {userId}", queryParams, userId);
+        _logger.LogDebug("Getting short URLs page {Page} with page size {PageSize} for user {UserId}",
+            queryParams.Page, queryParams.PageSize, userId);
 
         var query = _dbContext.ShortUrls.AsQueryable();
 
@@ -61,55 +66,71 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
             QueryShortUrlAllowedOrderByProperties.ClickCount => query.OrderByDirection(x => x.Clicks.Count(), IsDescending),
             _ => query.OrderByDirection(x => x.Id, IsDescending), // by default: order by id;
         };
-        _logger.LogDebug("GetShortUrls query before pagination: {query}", query.ToQueryString());
         // pagination
         return await query.ToPagedResultAsync(queryParams.Page, queryParams.PageSize, cancellationToken);
     }
 
     public async Task<Result<ShortUrl, ShortUrlError>> GetRedirectionUrlAsync(string code, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting redirection URL for code: {code}", code);
+        _logger.LogDebug("Resolving short URL code");
         if (!Base62Encoding.TryDecode(code, out long id))
+        {
+            _logger.LogDebug("Short URL resolution rejected because the code is invalid");
             return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.InvalidCode);
+        }
 
-        _logger.LogDebug("valid code, loading URL from database using id: {id}", id);
+        _logger.LogDebug("Loading short URL {ShortUrlId}", id);
         var shortUrl = await _dbContext.ShortUrls.FindAsync(id, cancellationToken);
         if (shortUrl is null)
+        {
+            _logger.LogDebug("Short URL {ShortUrlId} was not found", id);
             return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.NotFound);
+        }
         
-        _logger.LogDebug("shortUrl loaded, checking expiry: {expiresAt}", shortUrl.ExpiresAt);
         if (shortUrl.ExpiresAt <= _timeProvider.GetUtcNow())
+        {
+            _logger.LogDebug("Short URL {ShortUrlId} expired at {ExpiresAt}",
+                id, shortUrl.ExpiresAt);
             return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.Expired);
+        }
 
-        _logger.LogInformation("returning short url for redirection: {id}", id);
+        _logger.LogDebug("Short URL {ShortUrlId} resolved successfully", id);
         return Result<ShortUrl, ShortUrlError>.Success(shortUrl);
     }
 
     public async Task<Result<ShortUrl, ShortUrlError>> UpdateShortUrlAsync(long shortUrlId, UpdateShortUrlRequest request, int userId, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating short url: {id}, userId: {userId}", shortUrlId, userId);
+        _logger.LogDebug("Updating short URL {ShortUrlId} for user {UserId}", shortUrlId, userId);
         var shortUrl = await GetShortUrlByIdAsync(shortUrlId, userId, cancellationToken);
-        if (shortUrl is null) return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.NotFound);
+        if (shortUrl is null)
+        {
+            _logger.LogDebug("Short URL update rejected because {ShortUrlId} was not found for user {UserId}",
+                shortUrlId, userId);
+            return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.NotFound);
+        }
 
-        _logger.LogDebug("Short Url to update found, updating info");
         shortUrl.ExpiresAt = request.ExpiresAt;
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("successfully updated short url: {id}", shortUrlId);
+        _logger.LogInformation("Short URL {ShortUrlId} updated for user {UserId}", shortUrlId, userId);
         return Result<ShortUrl, ShortUrlError>.Success(shortUrl);
     }
 
     public async Task<Result<ShortUrl, ShortUrlError>> DeleteShortUrlAsync(long shortUrlId, int userId, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Deleting Short Url: {id}, userId: {userId}", shortUrlId, userId);
+        _logger.LogDebug("Deleting short URL {ShortUrlId} for user {UserId}", shortUrlId, userId);
         var shortUrl = await GetShortUrlByIdAsync(shortUrlId, userId, cancellationToken);
-        if (shortUrl is null) return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.NotFound);
+        if (shortUrl is null)
+        {
+            _logger.LogDebug("Short URL deletion rejected because {ShortUrlId} was not found for user {UserId}",
+                shortUrlId, userId);
+            return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.NotFound);
+        }
         
-        _logger.LogDebug("Short Url to delete found, deleting");
         _dbContext.ShortUrls.Remove(shortUrl);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Successfully removed short url: {id}, userId: {userId}", shortUrlId, userId);
+        _logger.LogInformation("Short URL {ShortUrlId} deleted for user {UserId}", shortUrlId, userId);
         return Result<ShortUrl, ShortUrlError>.Success(shortUrl);
     }
 
@@ -121,7 +142,7 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
     /// <returns></returns>
     public async Task SaveClickEventAsync(ShortUrlClickEvent clickEvent, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Saving click event : {clickEvent}", clickEvent);
+        _logger.LogDebug("Saving click event for short URL {ShortUrlId}", clickEvent.ShortUrlId);
         var click = new ShortUrlClick()
         {
             ShortUrlId = clickEvent.ShortUrlId,
@@ -129,6 +150,6 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
         };
         await _dbContext.ShortUrlClicks.AddAsync(click, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("Successfully saved click event: {clickEvent}", clickEvent);
+        _logger.LogDebug("Click event saved for short URL {ShortUrlId}", clickEvent.ShortUrlId);
     }
 }

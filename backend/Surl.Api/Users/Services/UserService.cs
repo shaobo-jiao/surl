@@ -5,14 +5,19 @@ using Surl.Api.Data;
 
 namespace Surl.Api.Users;
 
-public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordHasher, TimeProvider timeProvider) : IUserService
+public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordHasher,
+    TimeProvider timeProvider, ILogger<UserService> logger) : IUserService
 {
     private readonly AppDbContext _dbContext = dbContext;
     private readonly IPasswordHasher<User> _passwordHasher = passwordHasher;
     private readonly TimeProvider _timeProvider = timeProvider;
+    private readonly ILogger<UserService> _logger = logger;
 
     public async Task<Common.PagedResult<User>> GetUsersAsync(QueryUserParams queryParams, CancellationToken cancellationToken)
     {
+        _logger.LogDebug("Getting users page {Page} with page size {PageSize}", 
+            queryParams.Page, queryParams.PageSize);
+
         var userQuery = _dbContext.Users.AsQueryable();
 
         // filter username & email
@@ -38,11 +43,13 @@ public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordH
 
     public Task<User?> GetUserByIdAsync(int id, CancellationToken cancellationToken)
     {
+        _logger.LogDebug("Getting user {UserId}", id);
         return _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
     }
 
     public Task<User?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken)
     {
+        _logger.LogDebug("Getting user by username");
         return _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
     }
 
@@ -54,9 +61,14 @@ public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordH
     public async Task<Result<User, UserError>> CreateUserAsync(
         CreateUserRequest createUserRequest, CancellationToken cancellationToken)
     {
+        _logger.LogDebug("Creating user");
+
         // check username duplication
         if (await UserExistsAsync(createUserRequest.Username, cancellationToken))
+        {
+            _logger.LogDebug("User creation rejected because the username already exists");
             return Result<User, UserError>.Failure(UserError.DuplicateUsername);
+        }
 
         var user = new User(createUserRequest.Username)
         {
@@ -70,39 +82,55 @@ public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordH
         await _dbContext.Users.AddAsync(user, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
+        _logger.LogInformation("User {UserId} created", user.Id);
         return Result<User, UserError>.Success(user);
     }
 
     public async Task<Result<User, UserError>> UpdateUserAsync(
         int id, UpdateUserRequest updateRequest, CancellationToken cancellationToken)
     {
+        _logger.LogDebug("Updating user {UserId}", id);
+
         var user = await GetUserByIdAsync(id, cancellationToken);
         if (user is null)
+        {
+            _logger.LogDebug("User update rejected because user {UserId} was not found", id);
             return Result<User, UserError>.Failure(UserError.UserNotFound);
+        }
 
         // check if username is being updated to an existing one
         if (user.Username != updateRequest.Username &&
             await UserExistsAsync(updateRequest.Username, cancellationToken))
+        {
+            _logger.LogDebug("User update rejected because the new username already exists for user {UserId}", id);
             return Result<User, UserError>.Failure(UserError.DuplicateUsername);
+        }
 
         user.Username = updateRequest.Username;
         user.PasswordHash = _passwordHasher.HashPassword(user, updateRequest.Password);
         user.Email = updateRequest.Email;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation("User {UserId} updated", id);
         return Result<User, UserError>.Success(user);
     }
 
     public async Task<Result<User, UserError>> DeleteUserAsync(int id, CancellationToken cancellationToken)
     {
+        _logger.LogDebug("Deleting user {UserId}", id);
+
         var user = await GetUserByIdAsync(id, cancellationToken);
         if (user is null)
+        {
+            _logger.LogDebug("User deletion rejected because user {UserId} was not found", id);
             return Result<User, UserError>.Failure(UserError.UserNotFound);
+        }
 
         // hard-delete users. later may change to soft delete by introducing an IsDeleted flag in the user entity.
         _dbContext.Users.Remove(user);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
+        _logger.LogInformation("User {UserId} deleted", id);
         return Result<User, UserError>.Success(user);
     }
 }

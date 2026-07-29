@@ -15,13 +15,14 @@ public class ShortUrlClickBackgroundService(IServiceScopeFactory scopeFactory, S
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("ShortUrlClickBackgroundService is starting.");
+        _logger.LogInformation("Short URL click processor started");
         try
         {
             // async enumerable: each time load a click event from the queue, or wait if it's empty.
             await foreach (var clickEvent in _clickQueue.DequeueAllAsync(stoppingToken))
             {
-                _logger.LogInformation("Processing click event: {ClickEvent}", clickEvent);
+                _logger.LogDebug("Processing click event for short URL {ShortUrlId} clicked at {ClickedAt}",
+                    clickEvent.ShortUrlId, clickEvent.ClickedAt);
 
                 try
                 {
@@ -29,7 +30,7 @@ public class ShortUrlClickBackgroundService(IServiceScopeFactory scopeFactory, S
                     var shortUrlService = scope.ServiceProvider.GetRequiredService<IShortUrlService>();
                     await shortUrlService.SaveClickEventAsync(clickEvent, stoppingToken);
 
-                    _logger.LogInformation("Successfully processed click event: {ClickEvent}", clickEvent);
+                    _logger.LogDebug("Click event processed for short URL {ShortUrlId}", clickEvent.ShortUrlId);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
@@ -37,16 +38,21 @@ public class ShortUrlClickBackgroundService(IServiceScopeFactory scopeFactory, S
                 }
                 catch (Exception ex)
                 {
-                    // log unexpected exception, sleep and continue;
-                    _logger.LogError(ex, "Failed to process click event: {ClickEvent} ", clickEvent);
+                    // The in-memory event is lost after this failure. Log it and briefly
+                    // back off before processing the next event.
+                    _logger.LogError(ex, "Click event processing failed for short URL {ShortUrlId}; event will be discarded",
+                        clickEvent.ShortUrlId);
                     await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                 }
             }
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
-            // operation cancelled, log data and omit the exception;
-            _logger.LogInformation("ShortUrlClickBackgroundService is stopping.");
+            // Expected during application shutdown.
+        }
+        finally
+        {
+            _logger.LogInformation("Short URL click processor stopped");
         }
     }
 }
