@@ -5,5 +5,7 @@
 /// </summary>
 public enum ShortUrlError
 {
-    NotFound, InvalidCode, Expired, 
+    NotFound, 
+    InvalidCode, 
+    Expired, 
 }

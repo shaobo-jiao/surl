@@ -24,16 +24,20 @@ public static class ShortUrlEndpoints
         
         shortUrlApi.MapPatch("/{id:long}", UpdateShortUrlAsync)
             .WithValidationFilter<UpdateShortUrlRequest>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization();
         
         shortUrlApi.MapDelete("/{id:long}", DeleteShortUrlAsync)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization();
 
         app.MapGet("/redirection/{code}", GetRedirectionUrlAsync)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status410Gone);
     }
 
-    public static async Task<Results<CreatedAtRoute<ShortUrlResponse>, BadRequest>> CreateShortUrlAsync(
+    public static async Task<CreatedAtRoute<ShortUrlResponse>> CreateShortUrlAsync(
         IShortUrlService shortUrlSvc, CreateShortUrlRequest request, ClaimsPrincipal principal, CancellationToken cancellationToken)
     {
         // can create anonymous or user-linked short urls;
@@ -66,7 +70,7 @@ public static class ShortUrlEndpoints
     /// Gets the original URL for redirection from given code, and triggers a click event.
     /// </summary>
     /// <returns>The original URL</returns>
-    public static async Task<Results<Ok<string>, NotFound, BadRequest, ProblemHttpResult>> GetRedirectionUrlAsync(
+    public static async Task<Results<Ok<string>, ProblemHttpResult>> GetRedirectionUrlAsync(
         IShortUrlService shortUrlService, [FromRoute] string code, ShortUrlClickEventQueue clickEventQueue, 
         TimeProvider timeProvider, CancellationToken cancellationToken)
     {
@@ -78,29 +82,11 @@ public static class ShortUrlEndpoints
             await clickEventQueue.EnqueueAsync(clickEvent, cancellationToken);
             return TypedResults.Ok(shortUrl.OriginalUrl);
         }
-        else
-        {
-            // failure
-            return result.Error switch
-            {
-                ShortUrlError.NotFound => TypedResults.NotFound(),
-
-                ShortUrlError.InvalidCode => TypedResults.Problem(
-                    statusCode: StatusCodes.Status400BadRequest, 
-                    title: "Invalid URL",
-                    detail: "The provided short url is invalid."),
-
-                ShortUrlError.Expired => TypedResults.Problem(
-                    statusCode: StatusCodes.Status410Gone,
-                    title: "Short URL Expired",
-                    detail: "The short URL has expired"),
-
-                _ => TypedResults.BadRequest(),
-            };
-        }
+        else 
+            return TypedResults.Problem(result.Error.ToProblemDetails());
     }
 
-    public static async Task<Results<Ok<ShortUrlResponse>, NotFound>> UpdateShortUrlAsync(
+    public static async Task<Results<Ok<ShortUrlResponse>, ProblemHttpResult>> UpdateShortUrlAsync(
         IShortUrlService shortUrlService, UpdateShortUrlRequest request, [FromRoute] long id, 
         ClaimsPrincipal principal, CancellationToken cancellationToken)
     {
@@ -108,14 +94,16 @@ public static class ShortUrlEndpoints
         var result = await shortUrlService.UpdateShortUrlAsync(id, request, userId, cancellationToken);
         return result.IsSuccessful
             ? TypedResults.Ok(result.Value!.ToResponse())
-            : TypedResults.NotFound(); // only ShortUrlError.NotFound here
+            : TypedResults.Problem(result.Error.ToProblemDetails());
     }
 
-    public static async Task<Results<NoContent, NotFound>> DeleteShortUrlAsync(
+    public static async Task<Results<NoContent, ProblemHttpResult>> DeleteShortUrlAsync(
         IShortUrlService shortUrlService, [FromRoute] long id, ClaimsPrincipal principal, CancellationToken cancellationToken)
     {
         var userId = principal.GetUserId();
         var result = await shortUrlService.DeleteShortUrlAsync(id, userId, cancellationToken);
-        return result.IsSuccessful ? TypedResults.NoContent() : TypedResults.NotFound(); // only ShortUrlError.NotFound here
+        return result.IsSuccessful 
+            ? TypedResults.NoContent() 
+            : TypedResults.Problem(result.Error.ToProblemDetails());
     }
 }
