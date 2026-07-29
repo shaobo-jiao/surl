@@ -11,7 +11,7 @@ public static class UserEndpoints
         // Admins can access user endpoints
         var group = app.MapGroup("/users")
             .RequireAuthorization(p => p.RequireRole(AppRoles.Admin));
-            
+
         group.MapGet("/", GetUsersAsync)
             .WithValidationFilter<QueryUserParams>();
 
@@ -19,12 +19,16 @@ public static class UserEndpoints
             .WithName("GetUserById");
 
         group.MapPost("/", CreateUserAsync)
-            .WithValidationFilter<CreateUserRequest>();
+            .WithValidationFilter<CreateUserRequest>()
+            .ProducesProblem(StatusCodes.Status400BadRequest);
 
         group.MapPut("/{id:int}", UpdateUserAsync)
-            .WithValidationFilter<UpdateUserRequest>();
+            .WithValidationFilter<UpdateUserRequest>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapDelete("/{id:int}", DeleteUserAsync);
+        group.MapDelete("/{id:int}", DeleteUserAsync)
+            .ProducesProblem(StatusCodes.Status404NotFound);
     }
 
     public static async Task<Ok<PagedResult<UserResponse>>> GetUsersAsync(
@@ -38,40 +42,37 @@ public static class UserEndpoints
         IUserService userService, [FromRoute] int id, CancellationToken cancellationToken)
     {
         User? user = await userService.GetUserByIdAsync(id, cancellationToken);
-        if (user == null) return TypedResults.NotFound();
-        return TypedResults.Ok(user.ToResponse());
+        return user == null
+            ? TypedResults.NotFound()
+            : TypedResults.Ok(user.ToResponse());
     }
 
-    public static async Task<Results<CreatedAtRoute<UserResponse>, BadRequest<string>>> CreateUserAsync(
+    public static async Task<Results<CreatedAtRoute<UserResponse>, ProblemHttpResult>> CreateUserAsync(
         IUserService userService, [FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
         var result = await userService.CreateUserAsync(request, cancellationToken);
         return result.IsSuccessful
             ? TypedResults.CreatedAtRoute(
                 result.Value!.ToResponse(), "GetUserById", new { id = result.Value!.Id })
-            : TypedResults.BadRequest("Username already exists");
+            : TypedResults.Problem(result.Error.ToProblemDetails());
     }
 
-    public static async Task<Results<Ok<UserResponse>, NotFound, BadRequest<string>>> UpdateUserAsync(
+    public static async Task<Results<Ok<UserResponse>, ProblemHttpResult>> UpdateUserAsync(
         IUserService userService, [FromRoute] int id, [FromBody] UpdateUserRequest request,
         CancellationToken cancellationToken)
     {
         var result = await userService.UpdateUserAsync(id, request, cancellationToken);
-        if (result.IsSuccessful)
-            return TypedResults.Ok(result.Value!.ToResponse());
-
-        return result.Error switch
-        {
-            UserError.UserNotFound => TypedResults.NotFound(),
-            UserError.DuplicateUsername => TypedResults.BadRequest("Username already exists"),
-            _ => TypedResults.BadRequest("Unable to update user"),
-        };
+        return result.IsSuccessful
+            ? TypedResults.Ok(result.Value!.ToResponse())
+            : TypedResults.Problem(result.Error.ToProblemDetails());
     }
 
-    public static async Task<Results<NoContent, NotFound>> DeleteUserAsync(
+    public static async Task<Results<NoContent, ProblemHttpResult>> DeleteUserAsync(
         IUserService userService, [FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await userService.DeleteUserAsync(id, cancellationToken);
-        return result.IsSuccessful ? TypedResults.NoContent() : TypedResults.NotFound();
+        return result.IsSuccessful
+            ? TypedResults.NoContent()
+            : TypedResults.Problem(result.Error.ToProblemDetails());
     }
 }
