@@ -24,23 +24,17 @@ public class AuthService(AppDbContext dbContext, IUserService userService, IPass
         var createUserRequest = new CreateUserRequest(
             registerRequest.Username, registerRequest.Password, registerRequest.Email, AppRoles.User);
 
-        try
-        {
-            // TODO: later to modify user service
-            var user = await _userService.CreateUserAsync(createUserRequest);
-            return Result<User, AuthError>.Success(user);
-        }
-        catch (DuplicateUsernameException)
-        {
-            return Result<User, AuthError>.Failure(AuthError.DuplicateUsername);
-        }
+        var result = await _userService.CreateUserAsync(createUserRequest, cancellationToken);
+        return result.IsSuccessful
+            ? Result<User, AuthError>.Success(result.Value!)
+            : Result<User, AuthError>.Failure(AuthError.DuplicateUsername); // the only error as of now
     }
 
     public async Task<Result<LoginResponse, AuthError>> LoginAsync(
         LoginRequest loginRequest, CancellationToken cancellationToken)
     {
         // find user
-        var user = await _userService.GetUserByUsernameAsync(loginRequest.Username);
+        var user = await _userService.GetUserByUsernameAsync(loginRequest.Username, cancellationToken);
         if (user is null)
             return Result<LoginResponse, AuthError>.Failure(AuthError.InvalidCredentials);
 
@@ -101,7 +95,7 @@ public class AuthService(AppDbContext dbContext, IUserService userService, IPass
         int userId, ChangePasswordRequest changePasswordRequest, CancellationToken cancellationToken)
     {
         // find user
-        var user = await _userService.GetUserByIdAsync(userId);
+        var user = await _userService.GetUserByIdAsync(userId, cancellationToken);
         if (user is null)
             return Result<User, AuthError>.Failure(AuthError.UserNotFound);
         

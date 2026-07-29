@@ -35,56 +35,43 @@ public static class UserEndpoints
     }
 
     public static async Task<Results<Ok<UserResponse>, NotFound>> GetUserByIdAsync(
-        IUserService userService, [FromRoute] int id)
+        IUserService userService, [FromRoute] int id, CancellationToken cancellationToken)
     {
-        User? user = await userService.GetUserByIdAsync(id);
+        User? user = await userService.GetUserByIdAsync(id, cancellationToken);
         if (user == null) return TypedResults.NotFound();
         return TypedResults.Ok(user.ToResponse());
     }
 
     public static async Task<Results<CreatedAtRoute<UserResponse>, BadRequest<string>>> CreateUserAsync(
-        IUserService userService, [FromBody] CreateUserRequest request)
+        IUserService userService, [FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
-        try
-        {
-            User user = await userService.CreateUserAsync(request);
-            return TypedResults.CreatedAtRoute(user.ToResponse(), "GetUserById", new { id = user.Id });
-        }
-        catch (UserException ex)
-        {
-            return TypedResults.BadRequest(ex.Message);
-        }
+        var result = await userService.CreateUserAsync(request, cancellationToken);
+        return result.IsSuccessful
+            ? TypedResults.CreatedAtRoute(
+                result.Value!.ToResponse(), "GetUserById", new { id = result.Value!.Id })
+            : TypedResults.BadRequest("Username already exists");
     }
 
     public static async Task<Results<Ok<UserResponse>, NotFound, BadRequest<string>>> UpdateUserAsync(
-        IUserService userService, [FromRoute] int id, [FromBody] UpdateUserRequest request)
+        IUserService userService, [FromRoute] int id, [FromBody] UpdateUserRequest request,
+        CancellationToken cancellationToken)
     {
-        try
+        var result = await userService.UpdateUserAsync(id, request, cancellationToken);
+        if (result.IsSuccessful)
+            return TypedResults.Ok(result.Value!.ToResponse());
+
+        return result.Error switch
         {
-            User user = await userService.UpdateUserAsync(id, request);
-            return TypedResults.Ok(user.ToResponse());
-        }
-        catch (UserNotFoundException)
-        {
-            return TypedResults.NotFound();
-        }
-        catch (UserException ex)
-        {
-            return TypedResults.BadRequest(ex.Message);
-        }
+            UserError.UserNotFound => TypedResults.NotFound(),
+            UserError.DuplicateUsername => TypedResults.BadRequest("Username already exists"),
+            _ => TypedResults.BadRequest("Unable to update user"),
+        };
     }
 
     public static async Task<Results<NoContent, NotFound>> DeleteUserAsync(
-        IUserService userService, [FromRoute] int id)
+        IUserService userService, [FromRoute] int id, CancellationToken cancellationToken)
     {
-        try
-        {
-            await userService.DeleteUserAsync(id);
-            return TypedResults.NoContent();
-        }
-        catch (UserNotFoundException)
-        {
-            return TypedResults.NotFound();
-        }
+        var result = await userService.DeleteUserAsync(id, cancellationToken);
+        return result.IsSuccessful ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 }

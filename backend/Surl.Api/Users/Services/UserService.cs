@@ -7,38 +7,9 @@ namespace Surl.Api.Users;
 
 public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordHasher, TimeProvider timeProvider) : IUserService
 {
-    private AppDbContext _dbContext = dbContext;
-    private IPasswordHasher<User> _passwordHasher = passwordHasher;
-    private TimeProvider _timeProvider = timeProvider;
-
-    public async Task<User> CreateUserAsync(CreateUserRequest createUserRequest)
-    {
-        // basic validation done at endpoint filter; check if username already exists here
-        if (await UserExistsAsync(createUserRequest.Username))
-            throw new DuplicateUsernameException();
-
-        var user = new User(createUserRequest.Username)
-        {
-            CreatedAt = _timeProvider.GetUtcNow(),
-            Email = createUserRequest.Email,
-            // registered users always have role "User", while "Admins" can manage users.  
-            Role = createUserRequest.Role,
-        };
-        user.PasswordHash = _passwordHasher.HashPassword(user, createUserRequest.Password);
-
-        await _dbContext.Users.AddAsync(user);
-        await _dbContext.SaveChangesAsync();
-
-        return user;
-    }
-
-    public async Task DeleteUserAsync(int id)
-    {
-        User user = await GetUserByIdAsync(id) ?? throw new UserNotFoundException();
-        // hard-delete users. later may change to soft delete by introducing an IsDeleted flag in the user entity.
-        _dbContext.Users.Remove(user);
-        await _dbContext.SaveChangesAsync();
-    }
+    private readonly AppDbContext _dbContext = dbContext;
+    private readonly IPasswordHasher<User> _passwordHasher = passwordHasher;
+    private readonly TimeProvider _timeProvider = timeProvider;
 
     public async Task<Common.PagedResult<User>> GetUsersAsync(QueryUserParams queryParams, CancellationToken cancellationToken)
     {
@@ -65,33 +36,73 @@ public class UserService(AppDbContext dbContext, IPasswordHasher<User> passwordH
         return await userQuery.ToPagedResultAsync(queryParams.Page, queryParams.PageSize, cancellationToken);
     }
 
-    public Task<User?> GetUserByIdAsync(int id)
+    public Task<User?> GetUserByIdAsync(int id, CancellationToken cancellationToken)
     {
-        return _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+        return _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
     }
 
-    public Task<User?> GetUserByUsernameAsync(string username)
+    public Task<User?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken)
     {
-        return _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
+        return _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
     }
 
-    public async Task<User> UpdateUserAsync(int id, UpdateUserRequest updateRequest)
+    public async Task<bool> UserExistsAsync(string username, CancellationToken cancellationToken)
     {
-        User user = await GetUserByIdAsync(id) ?? throw new UserNotFoundException();
+        return await GetUserByUsernameAsync(username, cancellationToken) != null;
+    }
+
+    public async Task<Result<User, UserError>> CreateUserAsync(
+        CreateUserRequest createUserRequest, CancellationToken cancellationToken)
+    {
+        // check username duplication
+        if (await UserExistsAsync(createUserRequest.Username, cancellationToken))
+            return Result<User, UserError>.Failure(UserError.DuplicateUsername);
+
+        var user = new User(createUserRequest.Username)
+        {
+            CreatedAt = _timeProvider.GetUtcNow(),
+            Email = createUserRequest.Email,
+            // registered users always have role "User", while "Admins" can manage users.  
+            Role = createUserRequest.Role,
+        };
+        user.PasswordHash = _passwordHasher.HashPassword(user, createUserRequest.Password);
+
+        await _dbContext.Users.AddAsync(user, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result<User, UserError>.Success(user);
+    }
+
+    public async Task<Result<User, UserError>> UpdateUserAsync(
+        int id, UpdateUserRequest updateRequest, CancellationToken cancellationToken)
+    {
+        var user = await GetUserByIdAsync(id, cancellationToken);
+        if (user is null)
+            return Result<User, UserError>.Failure(UserError.UserNotFound);
+
         // check if username is being updated to an existing one
-        if (user.Username != updateRequest.Username && await UserExistsAsync(updateRequest.Username))
-            throw new DuplicateUsernameException();
+        if (user.Username != updateRequest.Username &&
+            await UserExistsAsync(updateRequest.Username, cancellationToken))
+            return Result<User, UserError>.Failure(UserError.DuplicateUsername);
 
         user.Username = updateRequest.Username;
         user.PasswordHash = _passwordHasher.HashPassword(user, updateRequest.Password);
         user.Email = updateRequest.Email;
 
-        await _dbContext.SaveChangesAsync();
-        return user;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Result<User, UserError>.Success(user);
     }
 
-    public Task<bool> UserExistsAsync(string username)
+    public async Task<Result<User, UserError>> DeleteUserAsync(int id, CancellationToken cancellationToken)
     {
-        return _dbContext.Users.AnyAsync(u => u.Username == username);
+        var user = await GetUserByIdAsync(id, cancellationToken);
+        if (user is null)
+            return Result<User, UserError>.Failure(UserError.UserNotFound);
+
+        // hard-delete users. later may change to soft delete by introducing an IsDeleted flag in the user entity.
+        _dbContext.Users.Remove(user);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result<User, UserError>.Success(user);
     }
 }

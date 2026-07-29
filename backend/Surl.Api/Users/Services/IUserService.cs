@@ -16,21 +16,28 @@ public interface IUserService
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Task<User?> GetUserByIdAsync(int id);
+    Task<User?> GetUserByIdAsync(int id, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets certain user by username
     /// </summary>
     /// <param name="username"></param>
     /// <returns></returns>
-    Task<User?> GetUserByUsernameAsync(string username);
+    Task<User?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Checks whether there's a user with given username.
+    /// </summary>
+    /// <param name="username"></param>
+    /// <returns></returns>
+    Task<bool> UserExistsAsync(string username, CancellationToken cancellationToken);
 
     /// <summary>
     /// Creates a new user. 
     /// </summary>
     /// <param name="createRequest"></param>
     /// <returns></returns>
-    Task<User> CreateUserAsync(CreateUserRequest createRequest);
+    Task<Result<User, UserError>> CreateUserAsync(CreateUserRequest createRequest, CancellationToken cancellationToken);
 
     /// <summary>
     /// Updates an existing user.
@@ -38,19 +45,12 @@ public interface IUserService
     /// <param name="id"></param>
     /// <param name="updateRequest"></param>
     /// <returns></returns>
-    Task<User> UpdateUserAsync(int id, UpdateUserRequest updateRequest);
+    Task<Result<User, UserError>> UpdateUserAsync(int id, UpdateUserRequest updateRequest, CancellationToken cancellationToken);
 
     /// <summary>
     /// Deletes a user based on id. 
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Task DeleteUserAsync(int id);
-
-    /// <summary>
-    /// Checks whether there's a user with given username.
-    /// </summary>
-    /// <param name="username"></param>
-    /// <returns></returns>
-    Task<bool> UserExistsAsync(string username);
+    Task<Result<User, UserError>> DeleteUserAsync(int id, CancellationToken cancellationToken);
 }
