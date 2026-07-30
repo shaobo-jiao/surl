@@ -13,19 +13,21 @@ namespace Surl.Api.IntegrationTests.Helpers;
 public static class AuthHelper
 {
 
-    public static async Task<UserResponse> RegisterAsync(HttpClient client, string username, CancellationToken cancellationToken)
+    public static async Task<UserResponse> RegisterAsync(HttpClient client,
+        string username, string password = Constants.TestPassword, CancellationToken cancellationToken = default)
     {
-        var registerRequest = new RegisterRequest(username, Constants.TestPassword);
+        var registerRequest = new RegisterRequest(username, password);
         var httpResponse = await client.PostAsJsonAsync("/auth/register", registerRequest, cancellationToken);
-        
+
         var userResponse = await httpResponse.Content.ReadFromJsonAsync<UserResponse>(cancellationToken)
             ?? throw new InvalidOperationException();
         return userResponse;
     }
 
-    public static async Task<LoginResponse> LoginAsync(HttpClient client, string username, CancellationToken cancellationToken)
+    public static async Task<LoginResponse> LoginAsync(HttpClient client, 
+        string username, string password = Constants.TestPassword, CancellationToken cancellationToken = default)
     {
-        var loginRequest = new LoginRequest(username, Constants.TestPassword);
+        var loginRequest = new LoginRequest(username, password);
         var httpResponse = await client.PostAsJsonAsync("/auth/login", loginRequest, cancellationToken);
 
         var loginResponse = await httpResponse.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken)
