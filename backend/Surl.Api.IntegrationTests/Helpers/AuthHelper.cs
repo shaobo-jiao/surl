@@ -35,6 +35,13 @@ public static class AuthHelper
         return loginResponse;
     }
 
+    public static async Task<LoginResponse> RegisterAndLoginAsync(HttpClient client, 
+        string username, string password = Constants.TestPassword, CancellationToken cancellationToken = default)
+    {
+        await RegisterAsync(client, username, password, cancellationToken);
+        return await LoginAsync(client, username, password, cancellationToken);
+    }
+
     public static HttpRequestMessage CreateAuthenticatedHttpRequestMessageAsJson<T>(HttpMethod method, string uri, string accessToken, T value)
     {
         var message = new HttpRequestMessage(method, uri);
