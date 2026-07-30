@@ -1,19 +1,15 @@
-﻿using FluentValidation;
-using Microsoft.Extensions.Localization;
-using Surl.Api.Auth.Resources;
+using FluentValidation;
 
 namespace Surl.Api.Auth;
 
 public class ChangePasswordRequestValidator: AbstractValidator<ChangePasswordRequest>
 {
-    public ChangePasswordRequestValidator(IStringLocalizer<AuthResources> localizer)
+    public ChangePasswordRequestValidator(PasswordValidator passwordValidator)
     {
         RuleFor(r => r.OldPassword)
-            .NotEmpty();
+            .SetValidator(passwordValidator);
 
         RuleFor(r => r.NewPassword)
-            .NotEmpty()
-            .MinimumLength(6)
-            .MaximumLength(100);
+            .SetValidator(passwordValidator);
     }
 }

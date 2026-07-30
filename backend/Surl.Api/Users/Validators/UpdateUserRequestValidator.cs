@@ -1,23 +1,17 @@
-﻿using FluentValidation;
-using Microsoft.Extensions.Localization;
-using Surl.Api.Users.Resources;
+using FluentValidation;
+using Surl.Api.Auth;
 
 namespace Surl.Api.Users;
 
 public class UpdateUserRequestValidator: AbstractValidator<UpdateUserRequest>
 {
-    public UpdateUserRequestValidator(IStringLocalizer<UserResources> localizer)
+    public UpdateUserRequestValidator(UsernameValidator usernameValidator, PasswordValidator passwordValidator)
     {
         RuleFor(x => x.Username)
-            .NotEmpty()
-            .MinimumLength(3)
-            .MaximumLength(20)
-            .Matches("^[a-zA-Z0-9._-]+$").WithMessage(localizer["User_Username_InvalidFormat"]);
+            .SetValidator(usernameValidator);
 
         RuleFor(x => x.Password)
-            .NotEmpty()
-            .MinimumLength(6)
-            .MaximumLength(100);
+            .SetValidator(passwordValidator);
 
         RuleFor(x => x.Email)
             .EmailAddress()
