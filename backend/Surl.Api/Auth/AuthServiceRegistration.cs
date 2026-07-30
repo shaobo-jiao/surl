@@ -65,6 +65,7 @@ public static class AuthServiceRegistration
         // reusable field validators
         services.AddScoped<UsernameValidator>();
         services.AddScoped<PasswordValidator>();
+        services.AddScoped<StrongPasswordValidator>();
 
         // request validators
         services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();

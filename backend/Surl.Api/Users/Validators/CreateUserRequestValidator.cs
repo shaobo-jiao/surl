@@ -8,13 +8,13 @@ namespace Surl.Api.Users;
 public class CreateUserRequestValidator: AbstractValidator<CreateUserRequest>
 {
     public CreateUserRequestValidator(IStringLocalizer<UserResources> localizer,
-        UsernameValidator usernameValidator, PasswordValidator passwordValidator)
+        UsernameValidator usernameValidator, StrongPasswordValidator strongPasswordValidator)
     {
         RuleFor(x => x.Username)
             .SetValidator(usernameValidator);
 
         RuleFor(x => x.Password)
-            .SetValidator(passwordValidator);
+            .SetValidator(strongPasswordValidator);
 
         RuleFor(x => x.Email)
             .EmailAddress()

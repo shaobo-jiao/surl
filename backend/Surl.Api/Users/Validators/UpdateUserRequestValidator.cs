@@ -5,13 +5,13 @@ namespace Surl.Api.Users;
 
 public class UpdateUserRequestValidator: AbstractValidator<UpdateUserRequest>
 {
-    public UpdateUserRequestValidator(UsernameValidator usernameValidator, PasswordValidator passwordValidator)
+    public UpdateUserRequestValidator(UsernameValidator usernameValidator, StrongPasswordValidator strongPasswordValidator)
     {
         RuleFor(x => x.Username)
             .SetValidator(usernameValidator);
 
         RuleFor(x => x.Password)
-            .SetValidator(passwordValidator);
+            .SetValidator(strongPasswordValidator);
 
         RuleFor(x => x.Email)
             .EmailAddress()

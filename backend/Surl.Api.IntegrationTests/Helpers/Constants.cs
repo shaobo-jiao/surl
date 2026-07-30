@@ -7,5 +7,5 @@ public class Constants
     /// </summary>
     public static readonly DateTimeOffset TestStartTime = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-    public const string TestPassword = "P@ssw0rd123";
+    public const string TestPassword = "P@ssw0rd_123";
 }
