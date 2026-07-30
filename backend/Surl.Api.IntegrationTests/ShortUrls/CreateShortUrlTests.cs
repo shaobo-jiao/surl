@@ -19,7 +19,8 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var originalUrl = "https://example.com";
-        var createRequest = new CreateShortUrlRequest(originalUrl);
+        var createRequest = new CreateShortUrlRequest(originalUrl,
+            ExpiresAt: Constants.TestStartTime.AddMinutes(1));
 
         // Act 
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -41,7 +42,7 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         var user = await AuthHelper.RegisterAsync(httpClient, "user1", cancellationToken);
         var authTokens = await AuthHelper.LoginAsync(httpClient, "user1", cancellationToken);
-        
+
         var originalUrl = "https://example.com";
         var createShortUrlRequest = new CreateShortUrlRequest(originalUrl);
         var httpRequestMessage = AuthHelper.CreateAuthenticatedHttpRequestMessageAsJson(
@@ -58,108 +59,30 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         Assert.Equal(user.Id, shortUrlResponse.UserId);
     }
 
+    /// <summary>
+    /// There's only one method here to test the request validator is working. 
+    /// Detailed testing on the request validator are in unit tests. 
+    /// </summary>
+    /// <returns></returns>
     [Fact]
-    public async Task CreateShortUrl_ValidExpiryDate_ShouldSucceed()
+    public async Task CreateShortUrl_InvalidRequestFields_ShouldReturnValidationFailure()
     {
         // Arrange
-        var originalUrl = "https://example.com";
-        var expiresAt = new DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero);
-        var createRequest = new CreateShortUrlRequest(originalUrl, expiresAt);
-
-        // Act 
         var cancellationToken = TestContext.Current.CancellationToken;
-        var httpResponse = await _factory.HttpClient.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
-        var shortUrlResponse = await httpResponse.Content.ReadFromJsonAsync<ShortUrlResponse>(cancellationToken);
+        var client = _factory.HttpClient;
 
-        // Assert
-        Assert.NotNull(shortUrlResponse);
-        Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
-        Assert.Equal(originalUrl, shortUrlResponse.OriginalUrl);
-        Assert.Equal(expiresAt, shortUrlResponse.ExpiresAt);
-    }
-
-    [Fact]
-    public async Task CreateShortUrl_InvalidExpiryDate_ShouldReturnBadRequest()
-    {
-        // Arrange
-        var originalUrl = "https://example.com";
-        var expiresAt = new DateTimeOffset(2025, 12, 31, 23, 59, 59, TimeSpan.Zero);
-        var createRequest = new CreateShortUrlRequest(originalUrl, expiresAt);
-
-        // Act 
-        var cancellationToken = TestContext.Current.CancellationToken;
-        var httpResponse = await _factory.HttpClient.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
-        var validationResponse = await httpResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken);
-
-        // Assert
-        // status code is BadRequest
-        Assert.NotNull(validationResponse);
-        Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
-        
-        // has error on expiresAt
-        Assert.Single(validationResponse.Errors);
-        var error = validationResponse.Errors.First();
-        Assert.Equal("ExpiresAt", error.Key);
-        Assert.Equal("The expiry date must be in the future", error.Value.FirstOrDefault());
-    }
-
-    [Fact]
-    public async Task CreateShortUrl_EmptyOriginalUrl_ShouldReturnBadRequest()
-    {
-        // Arrange
-        var createRequest = new CreateShortUrlRequest(string.Empty);
+        var createRequest = new CreateShortUrlRequest(
+            OriginalUrl: "INVALID_URL",
+            ExpiresAt: Constants.TestStartTime.AddMinutes(-1));
 
         // Act
-        var cancellationToken = TestContext.Current.CancellationToken;
         var httpResponse = await _factory.HttpClient.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
-        var validationResponse = await httpResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken);
+        var validationDetails = await httpResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken);
 
         // Assert
-        Assert.NotNull(validationResponse);
         Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
-        Assert.Single(validationResponse.Errors);
-        var error = validationResponse.Errors.First();
-        Assert.Equal("OriginalUrl", error.Key);
-        Assert.Equal("'Original Url' must not be empty.", error.Value.FirstOrDefault());
-    }
-
-    [Fact]
-    public async Task CreateShortUrl_InvalidOriginalUrl_ShouldReturnBadRequest()
-    {
-        // Arrange
-        var createRequest = new CreateShortUrlRequest("invalid-url");
-
-        // Act
-        var cancellationToken = TestContext.Current.CancellationToken;
-        var httpResponse = await _factory.HttpClient.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
-        var validationResponse = await httpResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken);
-
-        // Assert
-        Assert.NotNull(validationResponse);
-        Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
-        Assert.Single(validationResponse.Errors);
-        var error = validationResponse.Errors.First();
-        Assert.Equal("OriginalUrl", error.Key);
-        Assert.Equal("The URL is invalid", error.Value.FirstOrDefault());
-    }
-
-    [Fact]
-    public async Task CreateShortUrl_DisallowedHostOriginalUrl_ShouldReturnBadRequest()
-    {
-        // Arrange
-        var createRequest = new CreateShortUrlRequest("https://localhost:5001");
-
-        // Act
-        var cancellationToken = TestContext.Current.CancellationToken;
-        var httpResponse = await _factory.HttpClient.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
-        var validationResponse = await httpResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken);
-
-        // Assert
-        Assert.NotNull(validationResponse);
-        Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
-        Assert.Single(validationResponse.Errors);
-        var error = validationResponse.Errors.First();
-        Assert.Equal("OriginalUrl", error.Key);
-        Assert.Equal("The URL host is not allowed", error.Value.FirstOrDefault());
+        Assert.NotNull(validationDetails);
+        Assert.Equivalent(new HashSet<string> { "OriginalUrl", "ExpiresAt" },
+            validationDetails.Errors.Keys);
     }
 }
