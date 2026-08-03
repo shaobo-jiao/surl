@@ -23,23 +23,23 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         var client = _factory.HttpClient;
-        
+
         const string username = "user1";
         const string newPassword = "NewP@ssw0rd123";
-        var loginResponse = await AuthHelper.RegisterAndLoginAsync(client, 
+        var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
             username, Constants.TestPassword, cancellationToken);
+        var accessToken = loginResponse.AccessToken;
 
         var changePasswordRequest = new ChangePasswordRequest(Constants.TestPassword, newPassword);
-        using var request = AuthHelper.CreateAuthenticatedHttpRequestMessageAsJson(
-            HttpMethod.Post, "/auth/change-password", loginResponse.AccessToken, changePasswordRequest);
 
         // Act
-        var httpResponse = await client.SendAsync(request, cancellationToken);
+        var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Post, "/auth/change-password", accessToken, changePasswordRequest, cancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
 
-        var oldPasswordLoginResponse = await client.PostAsJsonAsync("/auth/login", 
+        var oldPasswordLoginResponse = await client.PostAsJsonAsync("/auth/login",
             new LoginRequest(username, Constants.TestPassword), cancellationToken);
         Assert.Equal(HttpStatusCode.Unauthorized, oldPasswordLoginResponse.StatusCode);
 
@@ -57,7 +57,7 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
         var changePasswordRequest = new ChangePasswordRequest(Constants.TestPassword, "NewPassword123");
 
         // Act
-        var httpResponse = await client.PostAsJsonAsync("/auth/change-password", 
+        var httpResponse = await client.PostAsJsonAsync("/auth/change-password",
             changePasswordRequest, cancellationToken);
 
         // Assert
@@ -73,19 +73,19 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(
             client, "user1", Constants.TestPassword, cancellationToken);
+        var accessToken = loginResponse.AccessToken;
 
         var changePasswordRequest = new ChangePasswordRequest("WrongPassword123", "NewP@ssw0rd123");
-        using var request = AuthHelper.CreateAuthenticatedHttpRequestMessageAsJson(
-            HttpMethod.Post, "/auth/change-password", loginResponse.AccessToken, changePasswordRequest);
 
         // Act
-        var httpResponse = await client.SendAsync(request, cancellationToken);
+        var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Post, "/auth/change-password", accessToken, changePasswordRequest, cancellationToken);
         var problemDetails = await httpResponse.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, httpResponse.StatusCode);
         var expected = AuthError.InvalidCredentials.ToProblemDetails();
-        AssertProblemDetailsHelper.AssertProblemDetails(expected, problemDetails);
+        AssertHelper.AssertProblemDetails(expected, problemDetails);
     }
 
     /// <summary>
@@ -97,21 +97,22 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         var client = _factory.HttpClient;
-        var loginResponse = await AuthHelper.RegisterAndLoginAsync(client, 
+
+        var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
             "user1", Constants.TestPassword, cancellationToken);
-
+        var accessToken = loginResponse.AccessToken;
+        
         var changePasswordRequest = new ChangePasswordRequest("123", "456");
-        using var request = AuthHelper.CreateAuthenticatedHttpRequestMessageAsJson(
-            HttpMethod.Post, "/auth/change-password", loginResponse.AccessToken, changePasswordRequest);
-
+        
         // Act
-        var httpResponse = await client.SendAsync(request, cancellationToken);
+        var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Post, "/auth/change-password", accessToken, changePasswordRequest, cancellationToken);
         var validationDetails = await httpResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
         Assert.NotNull(validationDetails);
-        Assert.Equivalent(new HashSet<string> { "OldPassword", "NewPassword" }, 
+        Assert.Equivalent(new HashSet<string> { "OldPassword", "NewPassword" },
             validationDetails.Errors.Keys);
     }
 }

@@ -53,7 +53,7 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         // Assert        
         Assert.Equal(HttpStatusCode.Unauthorized, httpResponse.StatusCode);
         var expected = AuthError.InvalidCredentials.ToProblemDetails();
-        AssertProblemDetailsHelper.AssertProblemDetails(expected, problemDetails);
+        AssertHelper.AssertProblemDetails(expected, problemDetails);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, httpResponse.StatusCode);
         var expected = AuthError.InvalidCredentials.ToProblemDetails();
-        AssertProblemDetailsHelper.AssertProblemDetails(expected, problemDetails);
+        AssertHelper.AssertProblemDetails(expected, problemDetails);
     }
 
     /// <summary>

@@ -118,6 +118,6 @@ public class RefreshTests(CustomWebApplicationFactory factory) : IAsyncLifetime
     {
         Assert.Equal(HttpStatusCode.Unauthorized, httpResponse.StatusCode);
         var expected = AuthError.InvalidRefreshToken.ToProblemDetails();
-        AssertProblemDetailsHelper.AssertProblemDetails(expected, problemDetails);
+        AssertHelper.AssertProblemDetails(expected, problemDetails);
     }
 }

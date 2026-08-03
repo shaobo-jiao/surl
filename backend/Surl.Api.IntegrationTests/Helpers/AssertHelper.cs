@@ -5,7 +5,7 @@ namespace Surl.Api.IntegrationTests.Helpers;
 /// <summary>
 /// Helper class to assert problem details from API.
 /// </summary>
-public class AssertProblemDetailsHelper
+public class AssertHelper
 {
     public static void AssertProblemDetails(ProblemDetails expected, ProblemDetails? actual)
     {

@@ -45,11 +45,10 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         var originalUrl = "https://example.com";
         var createShortUrlRequest = new CreateShortUrlRequest(originalUrl);
-        var httpRequestMessage = AuthHelper.CreateAuthenticatedHttpRequestMessageAsJson(
-            HttpMethod.Post, "/short-urls", authTokens.AccessToken, createShortUrlRequest);
 
         // Act: create a short url for given user;
-        var httpResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+        var httpResponse = await httpClient.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Post, "/short-urls", authTokens.AccessToken, createShortUrlRequest, cancellationToken);
         var shortUrlResponse = await httpResponse.Content.ReadFromJsonAsync<ShortUrlResponse>(cancellationToken);
 
         // Assert

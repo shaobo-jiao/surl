@@ -59,7 +59,7 @@ public class RegisterTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
         
         var expected = AuthError.DuplicateUsername.ToProblemDetails();
-        AssertProblemDetailsHelper.AssertProblemDetails(expected, problemDetails);
+        AssertHelper.AssertProblemDetails(expected, problemDetails);
     }
 
     // <summary>
