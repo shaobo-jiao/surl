@@ -41,7 +41,7 @@ public class GetShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyncL
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
-            HttpMethod.Get, $"/short-urls/{stubShortUrl.Id}", loginResponse.AccessToken, new { }, cancellationToken);
+            HttpMethod.Get, $"/short-urls/{stubShortUrl.Id}", loginResponse.AccessToken, cancellationToken);
         var shortUrlResponse = await httpResponse.Content.ReadFromJsonAsync<ShortUrlResponse>(cancellationToken);
 
         // Assert
@@ -61,7 +61,7 @@ public class GetShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyncL
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
-            HttpMethod.Get, "/short-urls/12345", loginResponse.AccessToken, new { }, cancellationToken);
+            HttpMethod.Get, "/short-urls/12345", loginResponse.AccessToken, cancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, httpResponse.StatusCode);
@@ -84,7 +84,7 @@ public class GetShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyncL
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
-            HttpMethod.Get, $"/short-urls/{stubShortUrl.Id}", user2Login.AccessToken, new { }, cancellationToken);
+            HttpMethod.Get, $"/short-urls/{stubShortUrl.Id}", user2Login.AccessToken, cancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, httpResponse.StatusCode);

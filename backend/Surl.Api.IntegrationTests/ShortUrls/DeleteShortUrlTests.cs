@@ -43,9 +43,9 @@ public class DeleteShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // Act
         var deleteResponse = await client.SendAuthenticatedRequestAsJsonAsync(
-            HttpMethod.Delete, $"/short-urls/{stubShortUrl.Id}", accessToken, new { }, cancellationToken);
+            HttpMethod.Delete, $"/short-urls/{stubShortUrl.Id}", accessToken, cancellationToken);
         var getResponse = await client.SendAuthenticatedRequestAsJsonAsync(
-            HttpMethod.Get, $"/short-urls/{stubShortUrl.Id}", accessToken, new { }, cancellationToken);
+            HttpMethod.Get, $"/short-urls/{stubShortUrl.Id}", accessToken, cancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
@@ -63,7 +63,7 @@ public class DeleteShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
-            HttpMethod.Delete, "/short-urls/12345", loginResponse.AccessToken, new { }, cancellationToken);
+            HttpMethod.Delete, "/short-urls/12345", loginResponse.AccessToken, cancellationToken);
         var problemDetails = await httpResponse.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken);
 
         // Assert
@@ -90,7 +90,7 @@ public class DeleteShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
-            HttpMethod.Delete, $"/short-urls/{stubShortUrl.Id}", user2Login.AccessToken, new { }, cancellationToken);
+            HttpMethod.Delete, $"/short-urls/{stubShortUrl.Id}", user2Login.AccessToken, cancellationToken);
         var problemDetails = await httpResponse.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken);
 
         // Assert

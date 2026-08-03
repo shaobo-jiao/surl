@@ -23,10 +23,25 @@ public static class ShortUrlTestHelper
             ?? throw new InvalidOperationException();
     }
 
-    public static async Task CreateStubShortUrlsAsync(HttpClient client, 
-        IEnumerable<CreateShortUrlRequest> createRequests, string? accessToken = null, 
-        CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Creates a list of short URLs for testing. 
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="createRequests"></param>
+    /// <param name="accessToken"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async Task<IEnumerable<ShortUrlResponse>> CreateStubShortUrlsAsync(HttpClient client,
+        IEnumerable<CreateShortUrlRequest> createRequests, 
+        string? accessToken = null, CancellationToken cancellationToken = default)
     {
-        
+        var responses = new List<ShortUrlResponse>();
+        foreach (var request in createRequests)
+        {
+            var response = await CreateStubShortUrlAsync(client, request.OriginalUrl, request.ExpiresAt,
+                accessToken, cancellationToken);
+            responses.Add(response);
+        }
+        return responses;
     }
 }

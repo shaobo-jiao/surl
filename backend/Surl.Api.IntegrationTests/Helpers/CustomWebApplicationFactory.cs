@@ -7,7 +7,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Time.Testing;
 using Npgsql;
 using Respawn;
+using Surl.Api.Common;
 using Surl.Api.Data;
+using Surl.Api.ShortUrls;
 using Testcontainers.PostgreSql;
 
 namespace Surl.Api.IntegrationTests.Helpers;
@@ -107,5 +109,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         using var dbConnection = new NpgsqlConnection(_dbContainer.GetConnectionString());
         await dbConnection.OpenAsync();
         await _respawner.ResetAsync(dbConnection);
+
+        // reset Id Generator sequence
+        Services.GetRequiredService<IdGenerator<ShortUrl>>()
+            .Reset();
     }
 }

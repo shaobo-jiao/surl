@@ -38,7 +38,7 @@ public class IdGenerator<T>
             if (timestamp >= IdStructure.MaxTimestamp)
                 throw new InvalidOperationException("Max Timestamp reached");
 
-            // if dont have last id; sequence = 0, direct generate;
+            // if don't have last id; sequence = 0, direct generate;
             if (_lastId is null)
             {
                 // 1st id;
@@ -66,6 +66,18 @@ public class IdGenerator<T>
 
             _lastId = new Id(IdStructure, timestamp, WorkerId, sequence);
             return _lastId.Value;
+        }
+    }
+
+
+    /// <summary>
+    /// Clears sequence tracking. Use this method for testing only.
+    /// </summary>
+    public void Reset()
+    {
+        lock (_lock)
+        {
+            _lastId = null;
         }
     }
 

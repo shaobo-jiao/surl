@@ -59,7 +59,8 @@ public static class ShortUrlEndpoints
     }
 
     public static async Task<Ok<PagedResult<ShortUrlResponse>>> GetShortUrlsAsync(
-        IShortUrlService shortUrlService, [AsParameters] QueryShortUrlParams queryParams, ClaimsPrincipal principal, CancellationToken cancellationToken)
+        IShortUrlService shortUrlService, [AsParameters] QueryShortUrlParams queryParams, 
+        ClaimsPrincipal principal, CancellationToken cancellationToken)
     {
         var userId = principal.GetUserId();
         PagedResult<ShortUrl> shortUrls = await shortUrlService.GetShortUrlsAsync(queryParams, userId, cancellationToken);

@@ -57,7 +57,18 @@ public static class AuthHelper
         var message = new HttpRequestMessage(method, uri);
         message.Headers.Authorization = new AuthenticationHeaderValue(
             JwtBearerDefaults.AuthenticationScheme, accessToken);
-        message.Content = JsonContent.Create(value);
+        if (value is not null)
+            message.Content = JsonContent.Create(value);
+        return await client.SendAsync(message, cancellationToken);
+    }
+
+    public static async Task<HttpResponseMessage> SendAuthenticatedRequestAsJsonAsync(
+        this HttpClient client, HttpMethod method, string uri, string accessToken, 
+        CancellationToken cancellationToken = default)
+    {
+        var message = new HttpRequestMessage(method, uri);
+        message.Headers.Authorization = new AuthenticationHeaderValue(
+            JwtBearerDefaults.AuthenticationScheme, accessToken);
         return await client.SendAsync(message, cancellationToken);
     }
 }
