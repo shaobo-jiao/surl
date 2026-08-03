@@ -41,7 +41,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
             Constants.TestUser, Constants.TestPassword, cancellationToken);
         var accessToken = loginResponse.AccessToken;
 
-        var stubShortUrl = await CreateStubShortUrlAsync(client,
+        var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             accessToken: loginResponse.AccessToken,
             cancellationToken: cancellationToken);
 
@@ -96,24 +96,20 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         var client = _factory.HttpClient;
 
         // create a short url for "user1"
-        var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
+        var user1Login = await AuthHelper.RegisterAndLoginAsync(client,
             "user1", Constants.TestPassword, cancellationToken);
-        var accessToken = loginResponse.AccessToken;
-
-        var stubShortUrl = await CreateStubShortUrlAsync(client,
-            accessToken: loginResponse.AccessToken,
+        var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
+            accessToken: user1Login.AccessToken,
             cancellationToken: cancellationToken);
 
         // try update the url as "user2"
-        loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
+        var user2Login = await AuthHelper.RegisterAndLoginAsync(client,
             "user2", Constants.TestPassword, cancellationToken);
-        accessToken = loginResponse.AccessToken;
-
         var updateRequest = new UpdateShortUrlRequest(Constants.TestStartTime.AddDays(1));
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
-            HttpMethod.Patch, $"/short-urls/{stubShortUrl.Id}", accessToken, updateRequest, cancellationToken);
+            HttpMethod.Patch, $"/short-urls/{stubShortUrl.Id}", user2Login.AccessToken, updateRequest, cancellationToken);
         var problemDetails = await httpResponse.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken);
 
         // Assert
@@ -134,7 +130,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
             Constants.TestUser, Constants.TestPassword, cancellationToken);
         var accessToken = loginResponse.AccessToken;
 
-        var stubShortUrl = await CreateStubShortUrlAsync(client,
+        var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             accessToken: loginResponse.AccessToken,
             cancellationToken: cancellationToken);
 
@@ -152,22 +148,5 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         Assert.NotNull(validationDetails);
         Assert.Equivalent(new HashSet<string> { "ExpiresAt" }, 
             validationDetails.Errors.Keys);
-    }
-
-    private static async Task<ShortUrlResponse> CreateStubShortUrlAsync(HttpClient client,
-        string? originalUrl = null, DateTimeOffset? expiresAt = null,
-        string? accessToken = null, CancellationToken cancellationToken = default)
-    {
-        originalUrl ??= "https://www.google.com";
-        expiresAt ??= Constants.TestStartTime.AddMinutes(1);
-        var createRequest = new CreateShortUrlRequest(originalUrl, expiresAt);
-
-        var httpResponse = string.IsNullOrEmpty(accessToken)
-            ? await client.PostAsJsonAsync("/short-urls", createRequest, cancellationToken)
-            : await client.SendAuthenticatedRequestAsJsonAsync(HttpMethod.Post, "/short-urls",
-                accessToken, createRequest, cancellationToken);
-
-        return await httpResponse.Content.ReadFromJsonAsync<ShortUrlResponse>()
-            ?? throw new InvalidOperationException();
     }
 }
