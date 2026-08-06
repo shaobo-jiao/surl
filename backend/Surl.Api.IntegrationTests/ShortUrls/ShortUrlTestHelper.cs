@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using Surl.Api.Common;
 using Surl.Api.IntegrationTests.Helpers;
 using Surl.Api.ShortUrls;
 
@@ -43,5 +44,38 @@ public static class ShortUrlTestHelper
             responses.Add(response);
         }
         return responses;
+    }
+
+    /// <summary>
+    /// Clicks the given short url by given times 
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="shortUrlCode"></param>
+    /// <param name="count"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async Task ClickShortUrlAsync(HttpClient client, string shortUrlCode, long count = 1, 
+        CancellationToken cancellationToken = default)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            await client.GetAsync($"/redirection/{shortUrlCode}", cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Clicks the given list of short urls by corresponding times
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="shortUrlClicks"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async Task ClickShortUrlsAsync(HttpClient client, Dictionary<string, long> shortUrlClicks, 
+        CancellationToken cancellationToken)
+    {
+        foreach (var pair in shortUrlClicks)
+        {
+            await ClickShortUrlAsync(client, pair.Key, pair.Value, cancellationToken);
+        }
     }
 }

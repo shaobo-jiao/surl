@@ -6,7 +6,7 @@ using Surl.Api.ShortUrls;
 namespace Surl.Api.IntegrationTests.ShortUrls;
 
 [Collection("SurlApiIntegrationTests")]
-public class GetShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyncLifetime
+public class QueryShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyncLifetime
 {
     private readonly CustomWebApplicationFactory _factory = factory;
 
@@ -15,7 +15,7 @@ public class GetShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyncL
     public async ValueTask DisposeAsync() => await _factory.ResetStateAsync();
 
     [Fact]
-    public async Task GetShortUrlById_AnonymousRequest_ShouldReturnUnauthorized()
+    public async Task QueryShortUrlById_AnonymousRequest_ShouldReturnUnauthorized()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -28,7 +28,7 @@ public class GetShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyncL
     }
 
     [Fact]
-    public async Task GetShortUrlById_ValidRequest_ShouldReturnShortUrl()
+    public async Task QueryShortUrlById_ValidRequest_ShouldReturnShortUrl()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -51,7 +51,7 @@ public class GetShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyncL
     }
 
     [Fact]
-    public async Task GetShortUrlById_NonExistentShortUrl_ShouldReturnNotFound()
+    public async Task QueryShortUrlById_NonExistentShortUrl_ShouldReturnNotFound()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -68,7 +68,7 @@ public class GetShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyncL
     }
 
     [Fact]
-    public async Task GetShortUrlById_ShortUrlCreatedByAnotherUser_ShouldReturnNotFound()
+    public async Task QueryShortUrlById_ShortUrlCreatedByAnotherUser_ShouldReturnNotFound()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -88,5 +88,31 @@ public class GetShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyncL
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, httpResponse.StatusCode);
+    }
+    
+    [Fact]
+    public async Task QueryShortUrlById_ValidRequestWithClickCount_ShouldReturnShortUrlWithClickCount()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var client = _factory.HttpClient;
+
+        var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
+            Constants.TestUser, Constants.TestPassword, cancellationToken);
+        var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
+            accessToken: loginResponse.AccessToken, cancellationToken: cancellationToken);
+        // generate click count
+        stubShortUrl = stubShortUrl with {ClickCount = 10};
+        await ShortUrlTestHelper.ClickShortUrlAsync(client, stubShortUrl.ShortUrlCode, stubShortUrl.ClickCount, cancellationToken);
+        await Task.Delay(100, cancellationToken); // delay a bit for the click background service  
+        // Act
+        var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Get, $"/short-urls/{stubShortUrl.Id}", loginResponse.AccessToken, cancellationToken);
+        var shortUrlResponse = await httpResponse.Content.ReadFromJsonAsync<ShortUrlResponse>(cancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
+        Assert.NotNull(shortUrlResponse);
+        Assert.Equivalent(stubShortUrl, shortUrlResponse);
     }
 }

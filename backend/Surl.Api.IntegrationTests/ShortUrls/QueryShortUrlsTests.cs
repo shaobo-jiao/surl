@@ -8,7 +8,7 @@ using Surl.Api.ShortUrls;
 namespace Surl.Api.IntegrationTests.ShortUrls;
 
 [Collection("SurlApiIntegrationTests")]
-public class GetShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLifetime
+public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLifetime
 {
     private readonly CustomWebApplicationFactory _factory = factory;
 
@@ -17,7 +17,7 @@ public class GetShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLife
     public async ValueTask DisposeAsync() => await _factory.ResetStateAsync();
 
     [Fact]
-    public async Task GetShortUrls_AnonymousRequest_ShouldReturnUnauthorized()
+    public async Task QueryShortUrls_AnonymousRequest_ShouldReturnUnauthorized()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -31,7 +31,7 @@ public class GetShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLife
     }
 
     [Fact]
-    public async Task GetShortUrls_WithoutQueryParams_ShouldReturnDefaultPagedResult()
+    public async Task QueryShortUrls_WithoutQueryParams_ShouldReturnDefaultPagedResult()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -66,7 +66,7 @@ public class GetShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLife
     }
 
     [Fact]
-    public async Task GetShortUrls_FilteringExpiresAt_ShouldReturnFilteredResult()
+    public async Task QueryShortUrls_FilteringExpiresAt_ShouldReturnFilteredResult()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -102,12 +102,12 @@ public class GetShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLife
         // Assert
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
         Assert.NotNull(queryResult);
-        AssertPagedResult(expectedResult, queryResult);
+        AssertHelper.AssertPagedResult(expectedResult, queryResult);
     }
 
 
     [Fact]
-    public async Task GetShortUrls_OrderbyExpiresAt_ShouldReturnOrderedResult()
+    public async Task QueryShortUrls_OrderbyExpiresAt_ShouldReturnOrderedResult()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -137,21 +137,55 @@ public class GetShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLife
         // Assert
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
         Assert.NotNull(queryResult);
-        AssertPagedResult(expectedResult, queryResult);
+        AssertHelper.AssertPagedResult(expectedResult, queryResult);
     }
 
     [Fact]
-    public async Task GetShortUrls_OrderbyClickCount_ShouldReturnOrderedResult()
-    {
-        // TODO:
-        // - add ClickCount in ShortUrlResponse
-        // - find a way to efficiently return the click counts
-        // - RandomHelper with Distinct ints/longs
-        // - generate random clicks and test OrderByClickCount
+    public async Task QueryShortUrls_OrderbyClickCount_ShouldReturnOrderedResult()
+    {        
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var client = _factory.HttpClient;
+
+        // generate short urls
+        var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
+            Constants.TestUser, Constants.TestPassword, cancellationToken);
+        var data = CreateStubShortUrlRequests();
+        var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
+            client, data, userLogin.AccessToken, cancellationToken);
+        
+        // generate click counts
+        var randomClickCounts = RandomHelper.DistinctIntegers(shortUrls.Count(), 0, 100);
+        shortUrls = shortUrls.Zip(randomClickCounts, 
+            (shortUrl, count) => shortUrl with {ClickCount = count});
+        var clickCounts = shortUrls
+            .Select(x => new KeyValuePair<string, long>(x.ShortUrlCode, x.ClickCount))
+            .ToDictionary();
+        await ShortUrlTestHelper.ClickShortUrlsAsync(client, clickCounts, cancellationToken);
+        await Task.Delay(1000, cancellationToken); // delay a bit for the click background service
+
+        var expectedShortUrls = shortUrls.OrderBy(x => x.ClickCount);
+        var expectedResult = ConvertToPagedResult(expectedShortUrls,
+            PagedResultConstants.DefaultPage, PagedResultConstants.DefaultPageSize);
+
+        // Act
+        var uri = QueryHelpers.AddQueryString("/short-urls", new Dictionary<string, string?>()
+        {
+            ["OrderBy"] = QueryShortUrlAllowedOrderByProperties.ClickCount,
+        });
+        var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Get, uri, userLogin.AccessToken, cancellationToken);
+        var queryResult = await httpResponse.Content.ReadFromJsonAsync<PagedResult<ShortUrlResponse>>(
+            cancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
+        Assert.NotNull(queryResult);
+        AssertHelper.AssertPagedResult(expectedResult, queryResult);
     }
 
     [Fact]
-    public async Task GetShortUrls_OrderbyExpiresAtDescending_ShouldReturnResultInDescendingOrder()
+    public async Task QueryShortUrls_OrderbyExpiresAtDescending_ShouldReturnResultInDescendingOrder()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -182,11 +216,11 @@ public class GetShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLife
         // Assert
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
         Assert.NotNull(queryResult);
-        AssertPagedResult(expectedResult, queryResult);
+        AssertHelper.AssertPagedResult(expectedResult, queryResult);
     }
 
     [Fact]
-    public async Task GetShortUrls_CustomPageAndPageSize_ShouldReturnExpectedPagedResult()
+    public async Task QueryShortUrls_CustomPageAndPageSize_ShouldReturnExpectedPagedResult()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -218,17 +252,7 @@ public class GetShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLife
         // Assert
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
         Assert.NotNull(queryResult);
-        AssertPagedResult(expectedResult, queryResult);
-    }
-
-
-    private static void AssertPagedResult<T>(PagedResult<T> expected, PagedResult<T> actual)
-    {
-        Assert.Equal(expected.Page, actual.Page);
-        Assert.Equal(expected.PageSize, actual.PageSize);
-        Assert.Equal(expected.TotalCount, actual.TotalCount);
-        Assert.Equal(expected.TotalPages, actual.TotalPages);
-        Assert.Equal(expected.Items, actual.Items);
+        AssertHelper.AssertPagedResult(expectedResult, queryResult);
     }
 
     private static PagedResult<T> ConvertToPagedResult<T>(IEnumerable<T> items, int page, int pageSize)
@@ -246,12 +270,7 @@ public class GetShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLife
         var numberOfUrls = 15;
 
         // prepare some random unique expiry day offsets;
-        var daySet = new HashSet<int>();
-        while (daySet.Count < numberOfUrls)
-        {
-            daySet.Add(Random.Shared.Next(1, 100));
-        }
-        var dayList = daySet.ToList();
+        var dayList = RandomHelper.DistinctIntegers(numberOfUrls, 1, 100);
 
         var requests = new List<CreateShortUrlRequest>();
         for (int i = 0; i < numberOfUrls; i++)
