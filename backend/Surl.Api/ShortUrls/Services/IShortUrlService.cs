@@ -24,13 +24,23 @@ public interface IShortUrlService
     Task<ShortUrl?> GetShortUrlByIdAsync(long shortUrlId, int userId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Gets list of short URLs using given query parameters. 
+    /// Queries a short URL and returns the response object.
+    /// The difference from GetXXX methods is that QueryXXX methods are intended for endpoints and returns Response objects. 
+    /// </summary>
+    /// <param name="shortUrlId"></param>
+    /// <param name="userId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<ShortUrlResponse?> QueryShortUrlByIdAsync(long shortUrlId, int userId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Queries a list of short urls using given query parameters.
     /// </summary>
     /// <param name="queryParams"></param>
     /// <param name="userId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<PagedResult<ShortUrl>> GetShortUrlsAsync(QueryShortUrlParams queryParams, int userId, CancellationToken cancellationToken);
+    Task<PagedResult<ShortUrlResponse>> QueryShortUrlsAsync(QueryShortUrlParams queryParams, int userId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets original URL for redirection from given short url code. 

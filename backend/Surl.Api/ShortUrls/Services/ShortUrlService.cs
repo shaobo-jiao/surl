@@ -44,9 +44,24 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
         return shortUrl;
     }
 
-    public async Task<PagedResult<ShortUrl>> GetShortUrlsAsync(QueryShortUrlParams queryParams, int userId, CancellationToken cancellationToken)
+    public async Task<ShortUrlResponse?> QueryShortUrlByIdAsync(long shortUrlId, int userId, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Getting short URLs page {Page} with page size {PageSize} for user {UserId}",
+        _logger.LogDebug("Querying short URL {ShortUrlId} for user {UserId}", shortUrlId, userId);
+        var shortUrl = await _dbContext.ShortUrls
+            .Where(x => x.Id == shortUrlId && x.UserId == userId) // filtering
+            .Select(x => new ShortUrlResponse(
+                x.Id, x.Code, x.OriginalUrl, x.ExpiresAt, x.Clicks.Count, x.UserId)) // project to response
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (shortUrl is null)
+            _logger.LogDebug("Short URL {ShortUrlId} was not found for user {UserId}", shortUrlId, userId);
+
+        return shortUrl;
+    }
+
+    public async Task<PagedResult<ShortUrlResponse>> QueryShortUrlsAsync(QueryShortUrlParams queryParams, int userId, CancellationToken cancellationToken)
+    {
+        _logger.LogDebug("Querying short URLs page {Page} with page size {PageSize} for user {UserId}",
             queryParams.Page, queryParams.PageSize, userId);
 
         var query = _dbContext.ShortUrls.AsQueryable();
@@ -66,8 +81,13 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
             QueryShortUrlAllowedOrderByProperties.ClickCount => query.OrderByDirection(x => x.Clicks.Count(), IsDescending),
             _ => query.OrderByDirection(x => x.Id, IsDescending), // by default: order by id;
         };
+
+        // select into response objects: cannot use x.ToResponse() otherwise the transform will be in memory
+        var resultQuery = query.Select(x => new ShortUrlResponse(
+                x.Id, x.Code, x.OriginalUrl, x.ExpiresAt, x.Clicks.Count, x.UserId));
+
         // pagination
-        return await query.ToPagedResultAsync(queryParams.Page, queryParams.PageSize, cancellationToken);
+        return await resultQuery.ToPagedResultAsync(queryParams.Page, queryParams.PageSize, cancellationToken);
     }
 
     public async Task<Result<ShortUrl, ShortUrlError>> GetRedirectionUrlAsync(string code, CancellationToken cancellationToken)

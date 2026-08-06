@@ -14,12 +14,12 @@ public static class ShortUrlEndpoints
         shortUrlApi.MapPost("/", CreateShortUrlAsync)
             .WithValidationFilter<CreateShortUrlRequest>();
 
-        shortUrlApi.MapGet("/", GetShortUrlsAsync)
+        shortUrlApi.MapGet("/", QueryShortUrlsAsync)
             .WithValidationFilter<QueryShortUrlParams>()
             .RequireAuthorization();
 
-        shortUrlApi.MapGet("/{id:long}", GetShortUrlByIdAsync)
-            .WithName("GetShortUrlById")
+        shortUrlApi.MapGet("/{id:long}", QueryShortUrlByIdAsync)
+            .WithName("QueryShortUrlById")
             .RequireAuthorization();
         
         shortUrlApi.MapPatch("/{id:long}", UpdateShortUrlAsync)
@@ -46,25 +46,25 @@ public static class ShortUrlEndpoints
         
         var shortUrl = await shortUrlSvc.CreateShortUrlAsync(request, userId, cancellationToken);
         var response = shortUrl.ToResponse();
-        return TypedResults.CreatedAtRoute(response, "GetShortUrlById", new { id = shortUrl.Id });
+        return TypedResults.CreatedAtRoute(response, "QueryShortUrlById", new { id = shortUrl.Id });
     }
 
-    public static async Task<Results<Ok<ShortUrlResponse>, NotFound>> GetShortUrlByIdAsync(
+    public static async Task<Results<Ok<ShortUrlResponse>, NotFound>> QueryShortUrlByIdAsync(
         IShortUrlService shortUrlService, [FromRoute] long id, ClaimsPrincipal principal, CancellationToken cancellationToken)
     {
         var userId = principal.GetUserId();
-        var shortUrl = await shortUrlService.GetShortUrlByIdAsync(id, userId, cancellationToken);
+        var shortUrl = await shortUrlService.QueryShortUrlByIdAsync(id, userId, cancellationToken);
         if (shortUrl is null) return TypedResults.NotFound();
-        return TypedResults.Ok(shortUrl.ToResponse());
+        return TypedResults.Ok(shortUrl);
     }
 
-    public static async Task<Ok<PagedResult<ShortUrlResponse>>> GetShortUrlsAsync(
+    public static async Task<Ok<PagedResult<ShortUrlResponse>>> QueryShortUrlsAsync(
         IShortUrlService shortUrlService, [AsParameters] QueryShortUrlParams queryParams, 
         ClaimsPrincipal principal, CancellationToken cancellationToken)
     {
         var userId = principal.GetUserId();
-        PagedResult<ShortUrl> shortUrls = await shortUrlService.GetShortUrlsAsync(queryParams, userId, cancellationToken);
-        return TypedResults.Ok(shortUrls.Map(u => u.ToResponse()));
+        var shortUrls = await shortUrlService.QueryShortUrlsAsync(queryParams, userId, cancellationToken);
+        return TypedResults.Ok(shortUrls);
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ public static class ShortUrlEndpoints
         var userId = principal.GetUserId();
         var result = await shortUrlService.UpdateShortUrlAsync(id, request, userId, cancellationToken);
         return result.IsSuccessful
-            ? TypedResults.Ok(result.Value!.ToResponse())
+            ? TypedResults.Ok(await shortUrlService.QueryShortUrlByIdAsync(id, userId, cancellationToken))
             : TypedResults.Problem(result.Error.ToProblemDetails());
     }
 

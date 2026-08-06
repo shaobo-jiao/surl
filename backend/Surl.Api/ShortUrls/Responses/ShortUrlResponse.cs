@@ -5,6 +5,7 @@ public record ShortUrlResponse(
     string ShortUrlCode,
     string OriginalUrl,
     DateTimeOffset ExpiresAt,
+    long ClickCount,
     int? UserId);
 
 public static class ShortUrlResponseMapper
@@ -15,6 +16,7 @@ public static class ShortUrlResponseMapper
             shortUrl.Code,
             shortUrl.OriginalUrl,
             shortUrl.ExpiresAt,
+            shortUrl.Clicks.Count, // ensure Clicks are loaded
             shortUrl.UserId);
     }
 }
