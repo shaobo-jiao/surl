@@ -74,13 +74,15 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
         if (queryParams.ExpiresTo.HasValue) query = query.Where(x => x.ExpiresAt <= queryParams.ExpiresTo);
 
         // order by
-        bool IsDescending = queryParams.IsDescending ?? false;
-        query = queryParams.OrderBy switch
-        {
-            QueryShortUrlAllowedOrderByProperties.ExpiresAt => query.OrderByDirection(x => x.ExpiresAt, IsDescending),
-            QueryShortUrlAllowedOrderByProperties.ClickCount => query.OrderByDirection(x => x.Clicks.Count(), IsDescending),
-            _ => query.OrderByDirection(x => x.Id, IsDescending), // by default: order by id;
-        };
+        var orderBy = queryParams.OrderBy ?? string.Empty;
+        var isDescending = queryParams.IsDescending ?? false;
+        
+        if (orderBy.Equals(QueryShortUrlAllowedOrderByProperties.ExpiresAt, StringComparison.InvariantCultureIgnoreCase))
+            query = query.OrderByDirection(x => x.ExpiresAt, isDescending);
+        else if (orderBy.Equals(QueryShortUrlAllowedOrderByProperties.ClickCount, StringComparison.InvariantCultureIgnoreCase))
+            query = query.OrderByDirection(x => x.Clicks.Count, isDescending);
+        else
+            query = query.OrderByDirection(x => x.Id, isDescending);
 
         // select into response objects: cannot use x.ToResponse() otherwise the transform will be in memory
         var resultQuery = query.Select(x => new ShortUrlResponse(

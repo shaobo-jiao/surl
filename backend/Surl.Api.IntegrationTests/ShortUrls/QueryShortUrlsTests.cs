@@ -127,7 +127,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
         // Act
         var uri = QueryHelpers.AddQueryString("/short-urls", new Dictionary<string, string?>()
         {
-            ["OrderBy"] = QueryShortUrlAllowedOrderByProperties.ExpiresAt,
+            ["OrderBy"] = QueryShortUrlAllowedOrderByProperties.ExpiresAt.ToLowerInvariant(),
         });
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
             HttpMethod.Get, uri, userLogin.AccessToken, cancellationToken);
@@ -171,7 +171,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
         // Act
         var uri = QueryHelpers.AddQueryString("/short-urls", new Dictionary<string, string?>()
         {
-            ["OrderBy"] = QueryShortUrlAllowedOrderByProperties.ClickCount,
+            ["OrderBy"] = QueryShortUrlAllowedOrderByProperties.ClickCount.ToLowerInvariant(),
         });
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
             HttpMethod.Get, uri, userLogin.AccessToken, cancellationToken);

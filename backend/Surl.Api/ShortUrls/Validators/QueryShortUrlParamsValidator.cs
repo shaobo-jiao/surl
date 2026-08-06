@@ -8,7 +8,7 @@ public class QueryShortUrlParamsValidator : AbstractValidator<QueryShortUrlParam
     {
         var allowOrderByProperties = QueryShortUrlAllowedOrderByProperties.All();
         RuleFor(x => x.OrderBy)
-            .Must(x => x == null || allowOrderByProperties.Contains(x))
+            .Must(x => x == null || allowOrderByProperties.Contains(x, StringComparer.InvariantCultureIgnoreCase))
             .WithMessage(string.Format("OrderBy can only be one of: {0}", string.Join(", ", allowOrderByProperties)));
         
         RuleFor(x => x.Page).GreaterThan(0);
