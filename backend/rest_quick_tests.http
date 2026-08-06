@@ -1,0 +1,52 @@
+@API_BASE_PATH = http://localhost:5002
+
+@TestUser = user2
+@TestPassword = P@ssw0rd_123
+
+# register
+POST {{API_BASE_PATH}}/auth/register
+Content-Type: application/json
+
+{
+    "username": "{{TestUser}}",
+    "password": "{{TestPassword}}"
+}
+
+# login
+POST {{API_BASE_PATH}}/auth/login
+Content-Type: application/json
+
+{
+    "username": "{{TestUser}}",
+    "password": "{{TestPassword}}"
+}
+
+@ACCESS_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzdXJsLWFwaSIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTAwMiIsImV4cCI6MTc4NjAwMDE5MywiaWF0IjoxNzg1OTk5MjkzLCJuYmYiOjE3ODU5OTkyOTMsInN1YiI6IjUiLCJuYW1lIjoidXNlcjIiLCJyb2xlIjoiVXNlciJ9.1ddDtbNWZgDAyr2buHnEzcat-v42Azbcdm7N39lx_Oo
+
+# create a short url as test user
+POST {{API_BASE_PATH}}/short-urls/
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+{
+    "originalUrl": "https://www.google.com",
+    "expiresAt": null
+}
+
+@ShortUrlCode = 5odpw4QKHY
+@ShortUrlId = 78742730993303552
+
+# click a url
+GET {{API_BASE_PATH}}/redirection/{{ShortUrlCode}}
+Content-Type: application/json
+
+# query users created by the user
+GET {{API_BASE_PATH}}/short-urls?orderBy=ClickCount&age=2&pagesize=1
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
+# query certain short url by its id
+GET {{API_BASE_PATH}}/short-urls/{{ShortUrlId}}
+Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
+
