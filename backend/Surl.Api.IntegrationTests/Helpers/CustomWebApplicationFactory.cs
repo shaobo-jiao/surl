@@ -102,8 +102,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     /// <returns></returns>
     public async Task ResetStateAsync()
     {
-        // reset time 
-        TimeProvider.SetUtcNow(Constants.TestStartTime);
+        // reset test start time 
+        TimeProvider.AdjustTime(Constants.TestStartTime);
 
         // reset db data
         using var dbConnection = new NpgsqlConnection(_dbContainer.GetConnectionString());
