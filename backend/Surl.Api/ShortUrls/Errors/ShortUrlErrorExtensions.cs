@@ -26,7 +26,7 @@ public static class ShortUrlErrorExtensions
                 title: "Short Url expired"),
             
             ShortUrlError.InvalidCode => ProblemDetailsHelper.Create(
-                status: StatusCodes.Status400BadRequest, 
+                status: StatusCodes.Status404NotFound, 
                 code: "short_url_invalid",
                 title: "Invalid short Url"),
             
