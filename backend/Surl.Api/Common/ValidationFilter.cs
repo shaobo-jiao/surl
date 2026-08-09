@@ -1,9 +1,10 @@
-﻿using FluentValidation;
+﻿using System.Text.Json;
+using FluentValidation;
 
 namespace Surl.Api.Common;
 
 /// <summary>
-/// Represents a validation filter of given type of request.
+/// Represents a validation filter for given type of request.
 /// </summary>
 /// <typeparam name="T">Type of request to validate</typeparam>
 public class ValidationFilter<T>(IValidator<T> validator) : IEndpointFilter where T : class
@@ -14,10 +15,16 @@ public class ValidationFilter<T>(IValidator<T> validator) : IEndpointFilter wher
     {
         T model = context.Arguments.OfType<T>().First();
 
-        var validationResults = await _validator.ValidateAsync(model, context.HttpContext.RequestAborted);
-        if (!validationResults.IsValid)
-            return TypedResults.ValidationProblem(validationResults.ToDictionary());
-
+        var result = await _validator.ValidateAsync(model, context.HttpContext.RequestAborted);
+        if (!result.IsValid)
+        {
+            var errors = result.Errors
+                .GroupBy(x => x.PropertyName)
+                .ToDictionary(
+                    g => JsonNamingPolicy.CamelCase.ConvertName(g.Key), // convert keys to camelCase
+                    g => g.Select(x => x.ErrorMessage).ToArray());
+            return TypedResults.ValidationProblem(errors);
+        }
         return await next(context);
     }
 }
