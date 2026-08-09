@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { createShortUrl, type ShortUrl } from "@/ShortUrlApi";
+import { createShortUrl, type ShortUrl } from "@/api/shortUrlApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
