@@ -20,9 +20,13 @@ const Header = () => {
                 <a href="/urls" className="font-medium">URLs</a>
               </NavigationMenuLink>
             </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild>
+                <a href="/register" className="font-medium">Sign Up</a>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
-        <h4 className="text-sm font-medium italic">Hi, XXX</h4>
       </div>
     </header>
   );
