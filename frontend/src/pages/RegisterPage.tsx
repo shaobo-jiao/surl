@@ -1,20 +1,34 @@
 import * as authApi from "@/api/authApi";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel, FieldTitle } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
-import { CircleCheck } from "lucide-react";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronRight, CircleCheck, CircleX } from "lucide-react";
 import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import z from "zod";
 
+const RegisterFormDataSchema = z
+  .object({
+    username: z.string().min(6).max(50)
+      .regex(/^[a-zA-Z0-9._-]+$/, "Username can only contain letters, numbers, underscores, dots and hyphens"),
+    password: z.string().min(12).max(50)
+      .regex(/[A-Z]/, "Password must contain an uppercase letter.")
+      .regex(/[a-z]/, "Password must contain a lowercase letter.")
+      .regex(/[0-9]/, "Password must contain a number.")
+      .regex(/[^a-zA-Z0-9]/, "Password must contain a special character.")
+      .regex(/^\S+$/, "Password must not contain whitespaces."),
+    confirmPassword: z.string(),
+    email: z.email().optional().or(z.literal(''))
+  })
+  .refine(data => data.confirmPassword === data.password, {
+    path: ["confirmPassword"],
+    error: "Passwords don't match"
+  });
+type RegisterFormData = z.infer<typeof RegisterFormDataSchema>;
 
-interface RegisterFormData {
-  username: string,
-  password: string,
-  confirmPassword: string,
-  email: string
-}
 
 export default function RegisterPage() {
   const [success, setSuccess] = useState<boolean>(false);
@@ -24,11 +38,12 @@ export default function RegisterPage() {
     handleSubmit,
     setError,
     formState: { errors }
-  } = useForm<RegisterFormData>(); // todo: add client validation with zod
+  } = useForm({ resolver: zodResolver(RegisterFormDataSchema) });
+
 
   const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
-    // handle submit after validation
     console.log(data);
+    setSuccess(false);
 
     // api call
     const apiResponse = await authApi.register(data);
@@ -38,9 +53,10 @@ export default function RegisterPage() {
       console.log(result);
     }
     else {
+      setSuccess(false);
       const result = apiResponse.error;
-      // set server error title
-      setError("root.serverError", { type: "server", message: result.title })
+      // set errors: server error and field errors
+      setError("root.serverError", { type: "server", message: result.detail })
       if (result.errors !== undefined) {
         for (const [field, messages] of Object.entries(result.errors)) {
           // set field error using the first error message of each field
@@ -51,17 +67,16 @@ export default function RegisterPage() {
     }
   };
 
-
   return (
     <Card className="w-full max-w-2xl rounded-md">
       <CardHeader>
         <CardTitle>Sign Up</CardTitle>
         <CardDescription>Enter your username and password to sign up</CardDescription>
-        <CardAction><Button variant="link">Sign In</Button></CardAction>
+        <CardAction><a href="/login" target="_blank">Sign In</a></CardAction>
       </CardHeader>
 
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
           <Field>
             <FieldLabel htmlFor="username">Username*</FieldLabel>
             <Input id="username" type="text" {...register("username")} />
@@ -88,17 +103,30 @@ export default function RegisterPage() {
         </form>
       </CardContent>
 
-      <CardFooter>
-        {success &&
+      {success &&
+        <CardFooter>
           <Item asChild>
             <a href="/login">
-              <ItemMedia><CircleCheck /></ItemMedia>
+              <ItemMedia><CircleCheck className="size-4" /></ItemMedia>
               <ItemContent><ItemTitle>Your registration is successful.</ItemTitle></ItemContent>
-              <ItemActions></ItemActions>
+              <ItemActions><ChevronRight className="size-4" /></ItemActions>
             </a>
-          </Item>}
-        {errors.root?.serverError && <FieldError>{errors.root.serverError.message}</FieldError>}
-      </CardFooter>
+          </Item>
+        </CardFooter>
+      }
+
+      {errors.root?.serverError &&
+        <CardFooter>
+          <Item>
+            <ItemMedia><CircleX className="size-4" /></ItemMedia>
+            <ItemContent>
+              <ItemTitle>Something went wrong.</ItemTitle>
+              <ItemDescription>{errors.root.serverError.message}</ItemDescription>
+            </ItemContent>
+          </Item>
+        </CardFooter>
+      }
+
     </Card>
   );
 }

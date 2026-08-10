@@ -7,7 +7,7 @@ export interface ProblemDetails<F extends string> {
   status: number,
   title: string,
   detail: string,
-  code: string,
+  code?: string,
   errors?: Partial<Record<F, string[]>>
 }
 
@@ -29,8 +29,8 @@ export const GeneralFailureResult = {
   success: false,
   error: {
     status: 400,
-    title: "General Error",
-    detail: "There is an error happened",
+    title: "Something went wrong.",
+    detail: "There's something wrong with the application. Please try again later.",
     code: "general_error"
   }
 } as const
