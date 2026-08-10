@@ -1,9 +1,10 @@
 import * as authApi from "@/api/authApi";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Field, FieldError, FieldLabel, FieldTitle } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
+import { Spinner } from "@/components/ui/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronRight, CircleCheck, CircleX } from "lucide-react";
 import { useState } from "react";
@@ -29,9 +30,10 @@ const RegisterFormDataSchema = z
   });
 type RegisterFormData = z.infer<typeof RegisterFormDataSchema>;
 
+type Status = "editing" | "submitting" | "success";
 
 export default function RegisterPage() {
-  const [success, setSuccess] = useState<boolean>(false);
+  const [status, setStatus] = useState<Status>("editing");
 
   const {
     register,
@@ -43,17 +45,17 @@ export default function RegisterPage() {
 
   const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     console.log(data);
-    setSuccess(false);
+    setStatus("submitting");
 
     // api call
     const apiResponse = await authApi.register(data);
     if (apiResponse.success) {
-      setSuccess(true);
+      setStatus("success");
       const result = apiResponse.data;
       console.log(result);
     }
     else {
-      setSuccess(false);
+      setStatus("editing");
       const result = apiResponse.error;
       // set errors: server error and field errors
       setError("root.serverError", { type: "server", message: result.detail })
@@ -98,12 +100,16 @@ export default function RegisterPage() {
             {errors.confirmPassword && <FieldError>{errors.confirmPassword.message}</FieldError>}
           </Field>
           <Field>
-            <Button type="submit" className="w-full">Submit</Button>
+            {
+              status === "submitting"
+                ? <Button disabled> <Spinner /> Submitting...</Button>
+                : <Button type="submit">Submit</Button>
+            }
           </Field>
         </form>
       </CardContent>
 
-      {success &&
+      {status === "success" &&
         <CardFooter>
           <Item asChild>
             <a href="/login">
