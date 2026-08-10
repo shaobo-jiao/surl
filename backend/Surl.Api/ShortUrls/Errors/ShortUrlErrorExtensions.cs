@@ -1,5 +1,4 @@
-﻿using System.Security.Principal;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Surl.Api.Common;
 
 namespace Surl.Api.ShortUrls;

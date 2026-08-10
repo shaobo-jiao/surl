@@ -4,12 +4,12 @@ namespace Surl.Api.Auth;
 
 public class ChangePasswordRequestValidator: AbstractValidator<ChangePasswordRequest>
 {
-    public ChangePasswordRequestValidator(PasswordValidator passwordValidator, StrongPasswordValidator strongPasswordValidator)
+    public ChangePasswordRequestValidator()
     {
-        RuleFor(r => r.OldPassword)
-            .SetValidator(passwordValidator);
+        RuleFor(r => r.OldPassword).Password();
 
         RuleFor(r => r.NewPassword)
-            .SetValidator(strongPasswordValidator);
+            .Cascade(CascadeMode.Stop)
+            .StrongPassword();
     }
 }

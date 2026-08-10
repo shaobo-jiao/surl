@@ -4,12 +4,13 @@ namespace Surl.Api.Auth;
 
 public class LoginRequestValidator: AbstractValidator<LoginRequest>
 {
-    public LoginRequestValidator(UsernameValidator usernameValidator, PasswordValidator passwordValidator)
+    public LoginRequestValidator()
     {
         RuleFor(x => x.Username)
-            .SetValidator(usernameValidator);
+            .Username();
 
         RuleFor(x => x.Password)
-            .SetValidator(passwordValidator);
+            .Cascade(CascadeMode.Stop)
+            .Password();
     }
 }

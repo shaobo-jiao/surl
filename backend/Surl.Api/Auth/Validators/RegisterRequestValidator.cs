@@ -4,13 +4,14 @@ namespace Surl.Api.Auth;
 
 public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
-    public RegisterRequestValidator(UsernameValidator usernameValidator, StrongPasswordValidator strongPasswordValidator)
+    public RegisterRequestValidator()
     {
         RuleFor(x => x.Username)
-            .SetValidator(usernameValidator);
+            .Username();
 
         RuleFor(x => x.Password)
-            .SetValidator(strongPasswordValidator);
+            .Cascade(CascadeMode.Stop)
+            .StrongPassword();
 
         RuleFor(x => x.Email)
             .EmailAddress()

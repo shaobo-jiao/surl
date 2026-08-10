@@ -1,20 +1,17 @@
 using FluentValidation;
-using Microsoft.Extensions.Localization;
 using Surl.Api.Auth;
-using Surl.Api.Users.Resources;
 
 namespace Surl.Api.Users;
 
-public class CreateUserRequestValidator: AbstractValidator<CreateUserRequest>
+public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 {
-    public CreateUserRequestValidator(IStringLocalizer<UserResources> localizer,
-        UsernameValidator usernameValidator, StrongPasswordValidator strongPasswordValidator)
+    public CreateUserRequestValidator()
     {
-        RuleFor(x => x.Username)
-            .SetValidator(usernameValidator);
+        RuleFor(x => x.Username).Username();
 
         RuleFor(x => x.Password)
-            .SetValidator(strongPasswordValidator);
+            .Cascade(CascadeMode.Stop)
+            .StrongPassword();
 
         RuleFor(x => x.Email)
             .EmailAddress()
@@ -22,6 +19,6 @@ public class CreateUserRequestValidator: AbstractValidator<CreateUserRequest>
 
         RuleFor(x => x.Role)
             .Must(x => AppRoles.All().Contains(x))
-            .WithMessage(string.Format(localizer["User_Role_Invalid"], string.Join(", ", AppRoles.All())));
+            .WithMessage(string.Format("Role must be one of: {0}", string.Join(", ", AppRoles.All())));
     }
 }
