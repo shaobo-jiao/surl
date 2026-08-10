@@ -1,0 +1,40 @@
+import { API_BASE_URL, GeneralFailureResult, type ProblemDetails, type Result } from "../shared";
+
+interface LoginRequest {
+  username: string,
+  password: string
+}
+
+interface LoginResponse {
+  accessToken: string
+  // refreshToken: string // moved to cookie
+}
+
+export type LoginFields = "username" | "password";
+
+export async function login(request: LoginRequest)
+  : Promise<Result<LoginResponse, ProblemDetails<LoginFields>>> {
+    try {
+    // call login api
+    const httpResponse = await fetch(new URL("/auth/login", API_BASE_URL), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(request)
+    });
+
+    if (httpResponse.ok) {
+      // success with data
+      return { success: true, data: await httpResponse.json() };
+    }
+    else {
+      // failure with error
+      return { success: false, error: await httpResponse.json() };
+    }
+  } catch (e) {
+    // unexpected error happened;
+    return GeneralFailureResult;
+  }
+}
+

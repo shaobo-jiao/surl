@@ -1,5 +1,4 @@
-import { API_BASE_URL, GeneralFailureResult, type ProblemDetails, type Result } from "./shared"
-
+import { API_BASE_URL, GeneralFailureResult, type ProblemDetails, type Result } from "../shared";
 
 interface RegisterRequest {
   username: string,

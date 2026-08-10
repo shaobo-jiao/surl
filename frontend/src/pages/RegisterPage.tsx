@@ -1,6 +1,6 @@
-import * as authApi from "@/api/authApi";
+import * as registerApi from "@/api/auth/register";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
@@ -44,15 +44,12 @@ export default function RegisterPage() {
 
 
   const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
-    console.log(data);
     setStatus("submitting");
 
     // api call
-    const apiResponse = await authApi.register(data);
+    const apiResponse = await registerApi.register(data);
     if (apiResponse.success) {
       setStatus("success");
-      const result = apiResponse.data;
-      console.log(result);
     }
     else {
       setStatus("editing");
@@ -62,19 +59,17 @@ export default function RegisterPage() {
       if (result.errors !== undefined) {
         for (const [field, messages] of Object.entries(result.errors)) {
           // set field error using the first error message of each field
-          setError(field as authApi.RegisterFields, { type: "server", message: messages[0] });
+          setError(field as registerApi.RegisterFields, { type: "server", message: messages[0] });
         }
       }
-      console.log(result);
     }
   };
 
   return (
-    <Card className="w-full max-w-2xl rounded-md">
+    <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle>Sign Up</CardTitle>
-        <CardDescription>Enter your username and password to sign up</CardDescription>
-        <CardAction><a href="/login" target="_blank">Sign In</a></CardAction>
+        <CardDescription>Enter your username and password below</CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -102,8 +97,8 @@ export default function RegisterPage() {
           <Field>
             {
               status === "submitting"
-                ? <Button disabled> <Spinner /> Submitting...</Button>
-                : <Button type="submit">Submit</Button>
+                ? <Button disabled> <Spinner /> Signing Up...</Button>
+                : <Button type="submit">Sign Up</Button>
             }
           </Field>
         </form>
@@ -111,7 +106,7 @@ export default function RegisterPage() {
 
       {status === "success" &&
         <CardFooter>
-          <Item asChild>
+          <Item asChild className="p-0">
             <a href="/login">
               <ItemMedia><CircleCheck className="size-4" /></ItemMedia>
               <ItemContent><ItemTitle>Your registration is successful.</ItemTitle></ItemContent>
@@ -123,7 +118,7 @@ export default function RegisterPage() {
 
       {errors.root?.serverError &&
         <CardFooter>
-          <Item>
+          <Item className="p-0">
             <ItemMedia><CircleX className="size-4" /></ItemMedia>
             <ItemContent>
               <ItemTitle>Something went wrong.</ItemTitle>
