@@ -4,39 +4,28 @@ import * as loginApi from "@/api/auth/login";
 // states of currently logged in user. 
 interface UserLogin {
   isAuthenticated: boolean,
-  // userId: number | null,
   username: string | null,
   accessToken: string | null,
-  // isLogging: boolean
 }
 
 // actions to dispatch UserLogin states
 type UserLoginAction =
-  // | { type: "logging", }
   | {
     type: "logged_in",
     payload: {
-      // userId: number,
       username: string,
       accessToken: string
     }
   }
   | { type: "logged_out" }
-// | { type: "logging_failed" }
 
 // reducer to update UserLogin states
 function userLoginReducer(userLogin: UserLogin, action: UserLoginAction): UserLogin {
   switch (action.type) {
-    // case "logging":
-    //   return {
-    //     ...userLogin,
-    //     isLogging: true
-    //   }
     case "logged_in":
       return {
         ...userLogin,
         isAuthenticated: true,
-        // userId: action.payload.userId,
         username: action.payload.username,
         accessToken: action.payload.accessToken,
       }
@@ -44,15 +33,9 @@ function userLoginReducer(userLogin: UserLogin, action: UserLoginAction): UserLo
       return {
         ...userLogin,
         isAuthenticated: false,
-        // userId: null,
         username: null,
         accessToken: null
       }
-    // case "logging_failed":
-    //   return {
-    //     ...userLogin,
-    //     isLogging: false
-    //   }
   }
 }
 
@@ -68,7 +51,6 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userLogin, dispatchUserLogin] = useReducer(userLoginReducer, {
     isAuthenticated: false,
-    // userId: null,
     username: null,
     accessToken: null
   });
@@ -81,7 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       dispatchUserLogin({
         type: "logged_in",
         payload: {
-          // userId: 123,
           username: username,
           accessToken: loginResponse.data.accessToken
         }
