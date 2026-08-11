@@ -9,7 +9,7 @@ import { CircleX } from "lucide-react";
 import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
 
 
@@ -23,6 +23,7 @@ type LoginFormData = z.infer<typeof LoginFormDataSchema>;
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   const [isLogging, setIsLogging] = useState<boolean>(false);
@@ -38,9 +39,9 @@ export default function LoginPage() {
 
     const success = await login(data.username, data.password);
     if (success) {
-      navigate("/urls");
+      navigate(location.state?.from ?? "/urls");
     }
-    if (!success) {
+    else {
       // set a general error message for login failure;
       setError("root.serverError", {
         type: "server",
