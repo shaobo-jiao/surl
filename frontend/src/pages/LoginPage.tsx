@@ -9,8 +9,8 @@ import { CircleX } from "lucide-react";
 import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod";
-import * as loginApi from "@/api/auth/login";
 import { useNavigate } from "react-router";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 const LoginFormDataSchema = z.object({
@@ -21,11 +21,11 @@ const LoginFormDataSchema = z.object({
 });
 type LoginFormData = z.infer<typeof LoginFormDataSchema>;
 
-type Status = "editing" | "submitting" | "success";
-
 export default function LoginPage() {
-  const [status, setStatus] = useState<Status>("editing");
   const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const [isLogging, setIsLogging] = useState<boolean>(false);
   const {
     register,
     handleSubmit,
@@ -34,28 +34,20 @@ export default function LoginPage() {
   } = useForm({ resolver: zodResolver(LoginFormDataSchema) });
 
   const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
-    setStatus("submitting");
+    setIsLogging(true);
 
-    // call api
-    const apiResponse = await loginApi.login(data);
-    if (apiResponse.success) {
-      // todo: save access token
-      setStatus("success");
-      console.log(apiResponse.data);
-      navigate("/urls", { replace: true });
+    const success = await login(data.username, data.password);
+    if (success) {
+      navigate("/urls");
     }
-    else {
-      setStatus("editing");
-      const result = apiResponse.error;
-      // set errors: server error and field errors
-      setError("root.serverError", { type: "server", message: result.detail })
-      if (result.errors !== undefined) {
-        for (const [field, messages] of Object.entries(result.errors)) {
-          // set field error using the first error message of each field
-          setError(field as loginApi.LoginFields, { type: "server", message: messages[0] });
-        }
-      }
+    if (!success) {
+      // set a general error message for login failure;
+      setError("root.serverError", {
+        type: "server",
+        message: "The username or password is incorrect."
+      });
     }
+    setIsLogging(false);
   };
 
   return (
@@ -79,7 +71,7 @@ export default function LoginPage() {
           </Field>
           <Field>
             {
-              status === "submitting"
+              isLogging
                 ? <Button disabled> <Spinner /> Logging In...</Button>
                 : <Button type="submit">Log In</Button>
             }
@@ -100,7 +92,6 @@ export default function LoginPage() {
           </Item>
         </CardFooter>
       }
-
     </Card>
   )
 } 
