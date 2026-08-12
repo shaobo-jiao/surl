@@ -10,13 +10,11 @@ namespace Surl.Api.IntegrationTests.Auth;
 [Collection("SurlApiIntegrationTests")]
 public class RegisterTests(CustomWebApplicationFactory factory) : IAsyncLifetime
 {
-    #region Life Cycle
     public readonly CustomWebApplicationFactory _factory = factory;
 
     public ValueTask InitializeAsync() => ValueTask.CompletedTask;
 
     public async ValueTask DisposeAsync() => await _factory.ResetStateAsync();
-    #endregion
 
 
     [Fact]

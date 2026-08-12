@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Surl.Api.Auth;
+using Surl.Api.IntegrationTests.Auth.Helpers;
 using Surl.Api.IntegrationTests.Helpers;
 
 namespace Surl.Api.IntegrationTests.Auth;
@@ -9,13 +10,11 @@ namespace Surl.Api.IntegrationTests.Auth;
 [Collection("SurlApiIntegrationTests")]
 public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
 {
-    #region Life Cycle
     private readonly CustomWebApplicationFactory _factory = factory;
 
     public ValueTask InitializeAsync() => ValueTask.CompletedTask;
 
     public async ValueTask DisposeAsync() => await _factory.ResetStateAsync();
-    #endregion
 
     [Fact]
     public async Task Login_ValidCredentials_ShouldSucceed()
@@ -26,7 +25,7 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
 
         await AuthHelper.RegisterAsync(client, "user1", Constants.TestPassword, cancellationToken);
         var loginRequest = new LoginRequest("user1", Constants.TestPassword);
-
+        
         // Act
         var httpResponse = await client.PostAsJsonAsync("/auth/login", loginRequest, cancellationToken);
         var loginResponse = await httpResponse.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken);
@@ -35,7 +34,7 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
         Assert.NotNull(loginResponse);
         Assert.NotEmpty(loginResponse.AccessToken);
-        Assert.NotEmpty(loginResponse.RefreshToken);
+        AuthTestHelper.AssertRefreshTokenCookieSet(httpResponse, Constants.TestStartTime);
     }
 
     [Fact]
