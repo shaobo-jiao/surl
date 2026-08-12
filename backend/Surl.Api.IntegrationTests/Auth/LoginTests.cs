@@ -21,7 +21,7 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         await AuthHelper.RegisterAsync(client, "user1", Constants.TestPassword, cancellationToken);
         var loginRequest = new LoginRequest("user1", Constants.TestPassword);
@@ -42,7 +42,7 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
         var loginRequest = new LoginRequest("unknown-user", Constants.TestPassword);
 
         // Act
@@ -60,7 +60,7 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         await AuthHelper.RegisterAsync(client, "user1", Constants.TestPassword, cancellationToken);
         var loginRequest = new LoginRequest("user1", "WrongPassword123");
@@ -83,7 +83,7 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
         var loginRequest = new LoginRequest("user@#$", "123");
 
         // Act

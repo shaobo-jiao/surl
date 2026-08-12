@@ -18,13 +18,15 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     public async Task CreateShortUrl_ValidAnonymousRequest_ShouldSucceed()
     {
         // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var client = _factory.CreateClient();
+
         var originalUrl = "https://example.com";
         var createRequest = new CreateShortUrlRequest(originalUrl,
             ExpiresAt: Constants.TestStartTime.AddMinutes(1));
 
         // Act 
-        var cancellationToken = TestContext.Current.CancellationToken;
-        var httpResponse = await _factory.HttpClient.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
+        var httpResponse = await client.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
         var shortUrlResponse = await httpResponse.Content.ReadFromJsonAsync<ShortUrlResponse>(cancellationToken);
 
         // Assert
@@ -37,8 +39,8 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     public async Task CreateShortUrl_ValidAuthenticatedRequest_ShouldSucceed()
     {
         // Arrange: creates a user and creates short url for the user
-        var httpClient = _factory.HttpClient;
         var cancellationToken = TestContext.Current.CancellationToken;
+        using var httpClient = _factory.CreateClient();
 
         var user = await AuthHelper.RegisterAsync(httpClient, "user1", Constants.TestPassword, cancellationToken);
         var authTokens = await AuthHelper.LoginAsync(httpClient, "user1", Constants.TestPassword, cancellationToken);
@@ -68,14 +70,14 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         var createRequest = new CreateShortUrlRequest(
             OriginalUrl: "INVALID_URL",
             ExpiresAt: Constants.TestStartTime.AddMinutes(-1));
 
         // Act
-        var httpResponse = await _factory.HttpClient.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
+        var httpResponse = await client.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
         var validationDetails = await httpResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken);
 
         // Assert

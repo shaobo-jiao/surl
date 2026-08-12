@@ -19,7 +19,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
         var request = new UpdateShortUrlRequest(Constants.TestStartTime.AddDays(1));
 
         // Act
@@ -34,7 +34,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // create a short url
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
@@ -69,7 +69,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
             Constants.TestUser, Constants.TestPassword, cancellationToken);
@@ -93,7 +93,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // create a short url for "user1"
         var user1Login = await AuthHelper.RegisterAndLoginAsync(client,
@@ -123,7 +123,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // create a short url
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,

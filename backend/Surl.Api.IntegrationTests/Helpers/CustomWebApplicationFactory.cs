@@ -24,17 +24,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
     private Respawner _respawner = default!;
 
-    public HttpClient HttpClient { get; private set; } = default!;
-
     public FakeTimeProvider TimeProvider { get; private set; } = new FakeTimeProvider(Constants.TestStartTime);
 
     public async ValueTask InitializeAsync()
     {
         // start containers
         await _dbContainer.StartAsync();
-
-        // start application
-        HttpClient = CreateClient();
 
         // apply migration
         await using var scope = Services.CreateAsyncScope();

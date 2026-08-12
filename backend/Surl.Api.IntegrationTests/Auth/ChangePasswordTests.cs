@@ -22,7 +22,7 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         const string username = "user1";
         const string newPassword = "NewP@ssw0rd123";
@@ -53,7 +53,7 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
         var changePasswordRequest = new ChangePasswordRequest(Constants.TestPassword, "NewPassword123");
 
         // Act
@@ -69,7 +69,7 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(
             client, "user1", Constants.TestPassword, cancellationToken);
@@ -96,7 +96,7 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
             "user1", Constants.TestPassword, cancellationToken);

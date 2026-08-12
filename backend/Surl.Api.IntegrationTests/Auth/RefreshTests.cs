@@ -25,7 +25,7 @@ public class RefreshTests(CustomWebApplicationFactory factory) : IAsyncLifetime
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client, 
             "user1", Constants.TestPassword, cancellationToken);
@@ -51,7 +51,7 @@ public class RefreshTests(CustomWebApplicationFactory factory) : IAsyncLifetime
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client, 
             "user1", Constants.TestPassword, cancellationToken);
@@ -73,7 +73,7 @@ public class RefreshTests(CustomWebApplicationFactory factory) : IAsyncLifetime
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
         var refreshRequest = new RefreshRequest("refresh-token-that-does-not-exist");
 
         // Act
@@ -89,7 +89,7 @@ public class RefreshTests(CustomWebApplicationFactory factory) : IAsyncLifetime
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client, 
             "user1", Constants.TestPassword, cancellationToken);
 

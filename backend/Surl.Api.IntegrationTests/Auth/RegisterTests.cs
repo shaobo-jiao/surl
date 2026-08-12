@@ -22,7 +22,7 @@ public class RegisterTests(CustomWebApplicationFactory factory) : IAsyncLifetime
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
         var registerRequest = new RegisterRequest("user1", Constants.TestPassword, "a@a.com");
 
         // Act
@@ -44,7 +44,7 @@ public class RegisterTests(CustomWebApplicationFactory factory) : IAsyncLifetime
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         await AuthHelper.RegisterAsync(client, "user1", Constants.TestPassword, cancellationToken);
         var registerRequest = new RegisterRequest("user1", Constants.TestPassword, "a@a.com");
@@ -70,7 +70,7 @@ public class RegisterTests(CustomWebApplicationFactory factory) : IAsyncLifetime
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         var registerRequest = new RegisterRequest("user@#$", "123", "INVALID_EMAIL");
 

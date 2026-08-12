@@ -23,7 +23,7 @@ public class RedirectShortUrlTests(CustomWebApplicationFactory factory) : IAsync
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // Act
         var httpResponse = await client.GetAsync("/redirection/INVALID_CODE", cancellationToken);
@@ -40,7 +40,7 @@ public class RedirectShortUrlTests(CustomWebApplicationFactory factory) : IAsync
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // Act
         var httpResponse = await client.GetAsync("/redirection/12345", cancellationToken);
@@ -57,7 +57,7 @@ public class RedirectShortUrlTests(CustomWebApplicationFactory factory) : IAsync
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         var shortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             originalUrl: "https://www.example.com",
@@ -80,7 +80,7 @@ public class RedirectShortUrlTests(CustomWebApplicationFactory factory) : IAsync
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         var userLogin = await AuthHelper.RegisterAndLoginAsync(
             client, Constants.TestUser, Constants.TestPassword, cancellationToken);

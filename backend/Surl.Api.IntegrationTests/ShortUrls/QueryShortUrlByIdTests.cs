@@ -21,7 +21,8 @@ public class QueryShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyn
         var cancellationToken = TestContext.Current.CancellationToken;
 
         // Act
-        var response = await _factory.HttpClient.GetAsync("/short-urls/1", cancellationToken);
+        using var client = _factory.CreateClient();
+        var response = await client.GetAsync("/short-urls/1", cancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -32,7 +33,7 @@ public class QueryShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyn
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
             Constants.TestUser, Constants.TestPassword, cancellationToken);
@@ -55,7 +56,7 @@ public class QueryShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyn
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
             Constants.TestUser, Constants.TestPassword, cancellationToken);
 
@@ -72,7 +73,7 @@ public class QueryShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyn
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         var user1Login = await AuthHelper.RegisterAndLoginAsync(client,
             "user1", Constants.TestPassword, cancellationToken);
@@ -95,7 +96,7 @@ public class QueryShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyn
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
             Constants.TestUser, Constants.TestPassword, cancellationToken);

@@ -19,9 +19,10 @@ public class DeleteShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
+        using var client = _factory.CreateClient();
 
         // Act
-        var response = await _factory.HttpClient.DeleteAsync("/short-urls/1", cancellationToken);
+        var response = await client.DeleteAsync("/short-urls/1", cancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -32,7 +33,7 @@ public class DeleteShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // create a test url
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
@@ -57,7 +58,7 @@ public class DeleteShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
             Constants.TestUser, Constants.TestPassword, cancellationToken);
 
@@ -77,7 +78,7 @@ public class DeleteShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // create a test url of user1
         var user1Login = await AuthHelper.RegisterAndLoginAsync(client,

@@ -21,7 +21,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // Act: query without any parameters
         var response = await client.GetAsync("/short-urls", cancellationToken);
@@ -35,7 +35,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
@@ -70,7 +70,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
@@ -111,7 +111,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
@@ -145,7 +145,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
     {        
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // generate short urls
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
@@ -189,7 +189,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
@@ -224,7 +224,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var client = _factory.HttpClient;
+        using var client = _factory.CreateClient();
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
