@@ -23,8 +23,8 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
 
-        await AuthHelper.RegisterAsync(client, Constants.TestUser1, Constants.TestPassword, cancellationToken);
-        var loginRequest = new LoginRequest(Constants.TestUser1, Constants.TestPassword);
+        await AuthHelper.RegisterAsync(client, TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
+        var loginRequest = new LoginRequest(TestConstants.TestUser1, TestConstants.TestPassword);
         
         // Act
         var httpResponse = await client.PostAsJsonAsync("/auth/login", loginRequest, cancellationToken);
@@ -34,7 +34,7 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
         Assert.NotNull(loginResponse);
         Assert.NotEmpty(loginResponse.AccessToken);
-        AuthTestHelper.AssertRefreshTokenCookieSet(httpResponse, Constants.TestStartTime);
+        AuthTestHelper.AssertRefreshTokenCookieSet(httpResponse, TestConstants.TestStartTime);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
-        var loginRequest = new LoginRequest("unknown-user", Constants.TestPassword);
+        var loginRequest = new LoginRequest("unknown-user", TestConstants.TestPassword);
 
         // Act
         var httpResponse = await client.PostAsJsonAsync("/auth/login", loginRequest, cancellationToken);
@@ -62,8 +62,8 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
 
-        await AuthHelper.RegisterAsync(client, Constants.TestUser1, Constants.TestPassword, cancellationToken);
-        var loginRequest = new LoginRequest(Constants.TestUser1, "WrongPassword123");
+        await AuthHelper.RegisterAsync(client, TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
+        var loginRequest = new LoginRequest(TestConstants.TestUser1, "WrongPassword123");
 
         // Act
         var httpResponse = await client.PostAsJsonAsync("/auth/login", loginRequest, cancellationToken);
@@ -93,6 +93,6 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
         Assert.NotNull(validationDetails);
-        Assert.Equivalent(new HashSet<string> { "Username", "Password" }, validationDetails.Errors.Keys);
+        Assert.Equivalent(new HashSet<string> { "username", "password" }, validationDetails.Errors.Keys);
     }
 }

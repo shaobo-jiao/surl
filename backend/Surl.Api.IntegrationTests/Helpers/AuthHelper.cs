@@ -14,7 +14,7 @@ public static class AuthHelper
 {
 
     public static async Task<UserResponse> RegisterAsync(HttpClient client,
-        string username, string password = Constants.TestPassword, CancellationToken cancellationToken = default)
+        string username, string password = TestConstants.TestPassword, CancellationToken cancellationToken = default)
     {
         var registerRequest = new RegisterRequest(username, password);
         var httpResponse = await client.PostAsJsonAsync("/auth/register", registerRequest, cancellationToken);
@@ -25,7 +25,7 @@ public static class AuthHelper
     }
 
     public static async Task<LoginResponse> LoginAsync(HttpClient client, 
-        string username, string password = Constants.TestPassword, CancellationToken cancellationToken = default)
+        string username, string password = TestConstants.TestPassword, CancellationToken cancellationToken = default)
     {
         var loginRequest = new LoginRequest(username, password);
         var httpResponse = await client.PostAsJsonAsync("/auth/login", loginRequest, cancellationToken);
@@ -36,7 +36,7 @@ public static class AuthHelper
     }
 
     public static async Task<LoginResponse> RegisterAndLoginAsync(HttpClient client, 
-        string username, string password = Constants.TestPassword, CancellationToken cancellationToken = default)
+        string username, string password = TestConstants.TestPassword, CancellationToken cancellationToken = default)
     {
         await RegisterAsync(client, username, password, cancellationToken);
         return await LoginAsync(client, username, password, cancellationToken);

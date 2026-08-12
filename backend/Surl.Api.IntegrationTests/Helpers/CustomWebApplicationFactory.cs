@@ -24,7 +24,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
     private Respawner _respawner = default!;
 
-    public FakeTimeProvider TimeProvider { get; private set; } = new FakeTimeProvider(Constants.TestStartTime);
+    public FakeTimeProvider TimeProvider { get; private set; } = new FakeTimeProvider(TestConstants.TestStartTime);
 
     public async ValueTask InitializeAsync()
     {
@@ -98,7 +98,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     public async Task ResetStateAsync()
     {
         // reset test start time 
-        TimeProvider.AdjustTime(Constants.TestStartTime);
+        TimeProvider.AdjustTime(TestConstants.TestStartTime);
 
         // reset db data
         using var dbConnection = new NpgsqlConnection(_dbContainer.GetConnectionString());

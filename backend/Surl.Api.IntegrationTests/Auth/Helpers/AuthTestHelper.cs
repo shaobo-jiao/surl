@@ -14,8 +14,8 @@ public static class AuthTestHelper
     /// </summary>
     public static void AssertRefreshTokenCookieSet(HttpResponseMessage response, DateTimeOffset cookieSetAt)
     {
-        var expectedExpires = cookieSetAt.AddDays(RefreshTokenExpireInDays); 
-        AssertRefreshTokenCookieSet(response, expectedExpires);
+        var expectedExpires = cookieSetAt.AddDays(RefreshTokenExpireInDays);
+        AssertRefreshTokenCookie(response, expectedExpires);
     }
 
     /// <summary>
@@ -31,10 +31,11 @@ public static class AuthTestHelper
     private static void AssertRefreshTokenCookie(HttpResponseMessage response, DateTimeOffset expectedExpiresAt)
     {
         Assert.True(response.Headers.TryGetValues("Set-Cookie", out var setCookies));
-        
+
         // get set-cookie for refresh token
         var cookie = SetCookieHeaderValue.ParseList(setCookies.ToList())
-            .SingleOrDefault(x => x.Name.Value == CookieExtensions.RefreshTokenCookieName);
+            .SingleOrDefault(x => x.Name.Value == CookieExtensions.RefreshTokenCookieName
+                && x.Path == CookieExtensions.RefreshTokenCookiePath);
 
         // assert refresh token set-cookie properties
         Assert.NotNull(cookie);

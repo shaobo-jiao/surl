@@ -12,7 +12,7 @@ public static class ShortUrlTestHelper
         string? accessToken = null, CancellationToken cancellationToken = default)
     {
         originalUrl ??= "https://www.google.com";
-        expiresAt ??= Constants.TestStartTime.AddMinutes(1);
+        expiresAt ??= TestConstants.TestStartTime.AddMinutes(1);
         var createRequest = new CreateShortUrlRequest(originalUrl, expiresAt);
 
         var httpResponse = string.IsNullOrEmpty(accessToken)

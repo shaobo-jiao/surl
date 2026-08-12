@@ -37,7 +37,7 @@ public class DeleteShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // create a test url
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var accessToken = loginResponse.AccessToken;
         var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             accessToken: accessToken, cancellationToken: cancellationToken);
@@ -60,7 +60,7 @@ public class DeleteShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
@@ -82,12 +82,12 @@ public class DeleteShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // create a test url of user1
         var user1Login = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             accessToken: user1Login.AccessToken, cancellationToken: cancellationToken);
         
         var user2Login = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser2, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser2, TestConstants.TestPassword, cancellationToken);
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(

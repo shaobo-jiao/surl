@@ -20,7 +20,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
-        var request = new UpdateShortUrlRequest(Constants.TestStartTime.AddDays(1));
+        var request = new UpdateShortUrlRequest(TestConstants.TestStartTime.AddDays(1));
 
         // Act
         var response = await client.PatchAsJsonAsync("/short-urls/1", request, cancellationToken);
@@ -38,7 +38,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // create a short url
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var accessToken = loginResponse.AccessToken;
 
         var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
@@ -46,7 +46,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
             cancellationToken: cancellationToken);
 
         // create update request
-        var newExpiresAt = Constants.TestStartTime.AddDays(1);
+        var newExpiresAt = TestConstants.TestStartTime.AddDays(1);
         var updateRequest = new UpdateShortUrlRequest(newExpiresAt);
 
         // Act
@@ -72,10 +72,10 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var accessToken = loginResponse.AccessToken;
 
-        var updateRequest = new UpdateShortUrlRequest(Constants.TestStartTime.AddDays(1));
+        var updateRequest = new UpdateShortUrlRequest(TestConstants.TestStartTime.AddDays(1));
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
@@ -97,15 +97,15 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // create a short url for user1
         var user1Login = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             accessToken: user1Login.AccessToken,
             cancellationToken: cancellationToken);
 
         // try update the url as user2
         var user2Login = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser2, Constants.TestPassword, cancellationToken);
-        var updateRequest = new UpdateShortUrlRequest(Constants.TestStartTime.AddDays(1));
+            TestConstants.TestUser2, TestConstants.TestPassword, cancellationToken);
+        var updateRequest = new UpdateShortUrlRequest(TestConstants.TestStartTime.AddDays(1));
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
@@ -127,7 +127,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // create a short url
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var accessToken = loginResponse.AccessToken;
 
         var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
@@ -135,7 +135,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
             cancellationToken: cancellationToken);
 
         // create update request
-        var newExpiresAt = Constants.TestStartTime.AddSeconds(-1);
+        var newExpiresAt = TestConstants.TestStartTime.AddSeconds(-1);
         var updateRequest = new UpdateShortUrlRequest(newExpiresAt);
 
         // Act
@@ -146,7 +146,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
         Assert.NotNull(validationDetails);
-        Assert.Equivalent(new HashSet<string> { "ExpiresAt" }, 
+        Assert.Equivalent(new HashSet<string> { "expiresAt" }, 
             validationDetails.Errors.Keys);
     }
 }

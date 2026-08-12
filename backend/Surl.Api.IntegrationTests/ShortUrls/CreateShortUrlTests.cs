@@ -23,7 +23,7 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         var originalUrl = "https://example.com";
         var createRequest = new CreateShortUrlRequest(originalUrl,
-            ExpiresAt: Constants.TestStartTime.AddMinutes(1));
+            ExpiresAt: TestConstants.TestStartTime.AddMinutes(1));
 
         // Act 
         var httpResponse = await client.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
@@ -42,8 +42,8 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         var cancellationToken = TestContext.Current.CancellationToken;
         using var httpClient = _factory.CreateClient();
 
-        var user = await AuthHelper.RegisterAsync(httpClient, Constants.TestUser1, Constants.TestPassword, cancellationToken);
-        var authTokens = await AuthHelper.LoginAsync(httpClient, Constants.TestUser1, Constants.TestPassword, cancellationToken);
+        var user = await AuthHelper.RegisterAsync(httpClient, TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
+        var authTokens = await AuthHelper.LoginAsync(httpClient, TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
 
         var originalUrl = "https://example.com";
         var createShortUrlRequest = new CreateShortUrlRequest(originalUrl);
@@ -74,7 +74,7 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         var createRequest = new CreateShortUrlRequest(
             OriginalUrl: "INVALID_URL",
-            ExpiresAt: Constants.TestStartTime.AddMinutes(-1));
+            ExpiresAt: TestConstants.TestStartTime.AddMinutes(-1));
 
         // Act
         var httpResponse = await client.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
@@ -83,7 +83,7 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
         Assert.NotNull(validationDetails);
-        Assert.Equivalent(new HashSet<string> { "OriginalUrl", "ExpiresAt" },
+        Assert.Equivalent(new HashSet<string> { "originalUrl", "expiresAt" },
             validationDetails.Errors.Keys);
     }
 }

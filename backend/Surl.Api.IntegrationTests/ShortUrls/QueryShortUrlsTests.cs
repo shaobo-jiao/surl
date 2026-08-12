@@ -39,7 +39,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
@@ -74,13 +74,13 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
 
-        var expiresFrom = Constants.TestStartTime.AddDays(1);
-        var expiresTo = Constants.TestStartTime.AddDays(50);
+        var expiresFrom = TestConstants.TestStartTime.AddDays(1);
+        var expiresTo = TestConstants.TestStartTime.AddDays(50);
         var expectedShortUrls = shortUrls
             .Where(x => x.ExpiresAt >= expiresFrom)
             .Where(x => x.ExpiresAt <= expiresTo)
@@ -115,7 +115,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
@@ -149,7 +149,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // generate short urls
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
@@ -193,7 +193,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
@@ -228,7 +228,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
@@ -275,7 +275,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
         var requests = new List<CreateShortUrlRequest>();
         for (int i = 0; i < numberOfUrls; i++)
         {
-            requests.Add(new("https://www.example.com", Constants.TestStartTime.AddDays(dayList[i])));
+            requests.Add(new("https://www.example.com", TestConstants.TestStartTime.AddDays(dayList[i])));
         }
         return requests;
     }

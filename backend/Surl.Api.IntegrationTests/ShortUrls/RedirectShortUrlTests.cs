@@ -61,7 +61,7 @@ public class RedirectShortUrlTests(CustomWebApplicationFactory factory) : IAsync
 
         var shortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             originalUrl: "https://www.example.com",
-            expiresAt: Constants.TestStartTime.AddDays(1),
+            expiresAt: TestConstants.TestStartTime.AddDays(1),
             cancellationToken: cancellationToken);
 
         // Act
@@ -83,18 +83,19 @@ public class RedirectShortUrlTests(CustomWebApplicationFactory factory) : IAsync
         using var client = _factory.CreateClient();
 
         var userLogin = await AuthHelper.RegisterAndLoginAsync(
-            client, Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            client, TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
 
         var originalUrl = "https://www.example.com";
         var shortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             originalUrl: originalUrl,
-            expiresAt: Constants.TestStartTime.AddDays(1),
+            expiresAt: TestConstants.TestStartTime.AddDays(1),
             accessToken: userLogin.AccessToken,
             cancellationToken: cancellationToken);
 
         // Act
         var httpResponse = await client.GetAsync($"/redirection/{shortUrl.ShortUrlCode}", cancellationToken);
         var actualOriginalUrl = await httpResponse.Content.ReadFromJsonAsync<string>(cancellationToken);
+        await Task.Delay(100, cancellationToken); // wait a bit for click processing
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);

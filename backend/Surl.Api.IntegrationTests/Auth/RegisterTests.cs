@@ -23,7 +23,7 @@ public class RegisterTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
-        var registerRequest = new RegisterRequest(Constants.TestUser1, Constants.TestPassword, "a@a.com");
+        var registerRequest = new RegisterRequest(TestConstants.TestUser1, TestConstants.TestPassword, "a@a.com");
 
         // Act
         var httpResponse = await client.PostAsJsonAsync("/auth/register", registerRequest, cancellationToken);
@@ -32,7 +32,7 @@ public class RegisterTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         // Assert
         Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
         Assert.NotNull(userResponse);
-        var expected = new UserResponse(default, Constants.TestUser1, "a@a.com", default);
+        var expected = new UserResponse(default, TestConstants.TestUser1, "a@a.com", default);
 
         Assert.EquivalentWithExclusions(expected, userResponse,
             user => user.Id,
@@ -46,8 +46,8 @@ public class RegisterTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
 
-        await AuthHelper.RegisterAsync(client, Constants.TestUser1, Constants.TestPassword, cancellationToken);
-        var registerRequest = new RegisterRequest(Constants.TestUser1, Constants.TestPassword, "a@a.com");
+        await AuthHelper.RegisterAsync(client, TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
+        var registerRequest = new RegisterRequest(TestConstants.TestUser1, TestConstants.TestPassword, "a@a.com");
 
         // Act
         var httpResponse = await client.PostAsJsonAsync("/auth/register", registerRequest, cancellationToken);
@@ -81,7 +81,7 @@ public class RegisterTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
         Assert.NotNull(validationDetails);
-        Assert.Equivalent(new HashSet<string> { "Username", "Password", "Email" }, 
+        Assert.Equivalent(new HashSet<string> { "username", "password", "email" }, 
             validationDetails.Errors.Keys);
     }
 }

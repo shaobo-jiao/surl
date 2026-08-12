@@ -26,10 +26,10 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         const string newPassword = "NewP@ssw0rd123";
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var accessToken = loginResponse.AccessToken;
 
-        var changePasswordRequest = new ChangePasswordRequest(Constants.TestPassword, newPassword);
+        var changePasswordRequest = new ChangePasswordRequest(TestConstants.TestPassword, newPassword);
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
@@ -39,11 +39,11 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
 
         var oldPasswordLoginResponse = await client.PostAsJsonAsync("/auth/login",
-            new LoginRequest(Constants.TestUser1, Constants.TestPassword), cancellationToken);
+            new LoginRequest(TestConstants.TestUser1, TestConstants.TestPassword), cancellationToken);
         Assert.Equal(HttpStatusCode.Unauthorized, oldPasswordLoginResponse.StatusCode);
 
         var newPasswordLoginResponse = await client.PostAsJsonAsync(
-            "/auth/login", new LoginRequest(Constants.TestUser1, newPassword), cancellationToken);
+            "/auth/login", new LoginRequest(TestConstants.TestUser1, newPassword), cancellationToken);
         Assert.Equal(HttpStatusCode.OK, newPasswordLoginResponse.StatusCode);
     }
 
@@ -53,7 +53,7 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
-        var changePasswordRequest = new ChangePasswordRequest(Constants.TestPassword, "NewPassword123");
+        var changePasswordRequest = new ChangePasswordRequest(TestConstants.TestPassword, "NewPassword123");
 
         // Act
         var httpResponse = await client.PostAsJsonAsync("/auth/change-password",
@@ -71,7 +71,7 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
         using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(
-            client, Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            client, TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var accessToken = loginResponse.AccessToken;
 
         var changePasswordRequest = new ChangePasswordRequest("WrongPassword123", "NewP@ssw0rd123");
@@ -98,7 +98,7 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
         using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser1, Constants.TestPassword, cancellationToken);
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var accessToken = loginResponse.AccessToken;
         
         var changePasswordRequest = new ChangePasswordRequest("123", "456");
@@ -111,7 +111,7 @@ public class ChangePasswordTests(CustomWebApplicationFactory factory) : IAsyncLi
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, httpResponse.StatusCode);
         Assert.NotNull(validationDetails);
-        Assert.Equivalent(new HashSet<string> { "OldPassword", "NewPassword" },
+        Assert.Equivalent(new HashSet<string> { "oldPassword", "newPassword" },
             validationDetails.Errors.Keys);
     }
 }
