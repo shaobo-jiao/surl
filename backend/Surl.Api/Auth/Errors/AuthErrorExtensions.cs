@@ -30,6 +30,18 @@ public static class AuthErrorExtensions
                 title: "Invalid refresh token", 
                 detail: "The provided refresh token is invalid."),
 
+            AuthError.RefreshTokenNotFound => ProblemDetailsHelper.Create(
+                status: StatusCodes.Status401Unauthorized,
+                code: "auth_refresh_token_not_found",
+                title: "Refresh Token Not Found", 
+                detail: "The provided refresh token is not found."),
+            
+            AuthError.EmptyRefreshToken => ProblemDetailsHelper.Create(
+                status: StatusCodes.Status401Unauthorized,
+                code: "auth_empty_refresh_token",
+                title: "Empty Refresh Token", 
+                detail: "No refresh token is provided."),
+
             AuthError.UserNotFound => ProblemDetailsHelper.Create(
                 status: StatusCodes.Status400BadRequest,
                 code: "auth_user_not_found",

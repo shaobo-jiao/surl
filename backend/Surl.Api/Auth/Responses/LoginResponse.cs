@@ -1,3 +1,3 @@
 ﻿namespace Surl.Api.Auth;
 
-public record LoginResponse(string AccessToken, string RefreshToken);
+public record LoginResponse(string AccessToken);

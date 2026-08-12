@@ -5,10 +5,10 @@ namespace Surl.Api.Auth;
 
 public interface IAuthService
 {
-    Task<Result<User, AuthError>> RegisterAsync(RegisterRequest registerRequest, CancellationToken cancellationToken);
+    Task<Result<User, AuthError>> RegisterAsync(RegisterInput registerInput, CancellationToken cancellationToken);
 
-    Task<Result<LoginResponse, AuthError>> LoginAsync(LoginRequest loginRequest, CancellationToken cancellationToken);
-
+    Task<Result<LoginResult, AuthError>> LoginAsync(LoginInput loginInput, CancellationToken cancellationToken);
+    
     /// <summary>
     /// Refresh the access token upon expiry using refresh token. 
     /// The refresh token will be marked used and can no longer be used afterwards. 
@@ -16,7 +16,9 @@ public interface IAuthService
     /// <param name="refreshRequest"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>New access token and refresh token</returns>
-    Task<Result<RefreshResponse, AuthError>> RefreshAsync(RefreshRequest refreshRequest, CancellationToken cancellationToken);
+    Task<Result<RefreshResult, AuthError>> RefreshAsync(string refreshToken, CancellationToken cancellationToken);
+
+    Task<Result<RefreshToken, AuthError>> LogoutAsync(string refreshToken, CancellationToken cancellationToken);
 
     /// <summary>
     /// Changes password for an authenticated user. 

@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Surl.Api.Auth;
 using Surl.Api.Common;
 
 namespace Surl.Api.ShortUrls;

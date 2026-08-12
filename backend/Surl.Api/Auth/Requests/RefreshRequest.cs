@@ -1,4 +1,0 @@
-﻿namespace Surl.Api.Auth;
-
-public record RefreshRequest(string RefreshToken);
-

@@ -1,6 +1,6 @@
 @API_BASE_PATH = http://localhost:5002
 
-@TestUser = user2
+@TestUser = user16
 @TestPassword = P@ssw0rd_123
 
 # register
@@ -21,20 +21,42 @@ Content-Type: application/json
     "password": "{{TestPassword}}"
 }
 
-@ACCESS_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJzdXJsLWFwaSIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTAwMiIsImV4cCI6MTc4NjAwMDE5MywiaWF0IjoxNzg1OTk5MjkzLCJuYmYiOjE3ODU5OTkyOTMsInN1YiI6IjUiLCJuYW1lIjoidXNlcjIiLCJyb2xlIjoiVXNlciJ9.1ddDtbNWZgDAyr2buHnEzcat-v42Azbcdm7N39lx_Oo
+@AccessToken = XXXXX
+@RefreshTokenCookie = refreshToken=XXXXX
+
+# refresh
+POST {{API_BASE_PATH}}/auth/refresh
+Content-Type: application/json
+Cookie: {{RefreshTokenCookie}}
+
+# logout
+POST {{API_BASE_PATH}}/auth/logout
+Content-Type: application/json
+Cookie: {{RefreshTokenCookie}}
+
+# change password
+POST {{API_BASE_PATH}}/auth/change-password
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
+
+{
+    "oldPassword": "{{TestPassword}}",
+    "newPassword": "{{TestPassword}}_NEW"
+}
+
 
 # create a short url as test user
 POST {{API_BASE_PATH}}/short-urls/
 Content-Type: application/json
-Authorization: Bearer {{ACCESS_TOKEN}}
+Authorization: Bearer {{AccessToken}}
 
 {
     "originalUrl": "https://www.google.com",
     "expiresAt": null
 }
 
-@ShortUrlCode = 5odpw4QKHY
-@ShortUrlId = 78742730993303552
+@ShortUrlCode = XXXXX
+@ShortUrlId = 12345
 
 # click a url
 GET {{API_BASE_PATH}}/redirection/{{ShortUrlCode}}
@@ -43,10 +65,10 @@ Content-Type: application/json
 # query users created by the user
 GET {{API_BASE_PATH}}/short-urls?orderBy=ClickCount&age=2&pagesize=1
 Content-Type: application/json
-Authorization: Bearer {{ACCESS_TOKEN}}
+Authorization: Bearer {{AccessToken}}
 
 # query certain short url by its id
 GET {{API_BASE_PATH}}/short-urls/{{ShortUrlId}}
 Content-Type: application/json
-Authorization: Bearer {{ACCESS_TOKEN}}
+Authorization: Bearer {{AccessToken}}
 

@@ -8,5 +8,7 @@ public enum AuthError
     DuplicateUsername,
     InvalidCredentials,
     InvalidRefreshToken,
+    RefreshTokenNotFound,
+    EmptyRefreshToken,
     UserNotFound,
 }
