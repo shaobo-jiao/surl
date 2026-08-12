@@ -39,7 +39,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser, Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
@@ -74,7 +74,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser, Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
@@ -115,7 +115,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser, Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
@@ -149,7 +149,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // generate short urls
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser, Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
@@ -193,7 +193,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser, Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
@@ -228,7 +228,7 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser, Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);

@@ -83,7 +83,7 @@ public class RedirectShortUrlTests(CustomWebApplicationFactory factory) : IAsync
         using var client = _factory.CreateClient();
 
         var userLogin = await AuthHelper.RegisterAndLoginAsync(
-            client, Constants.TestUser, Constants.TestPassword, cancellationToken);
+            client, Constants.TestUser1, Constants.TestPassword, cancellationToken);
 
         var originalUrl = "https://www.example.com";
         var shortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,

@@ -36,7 +36,7 @@ public class QueryShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyn
         using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser, Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             accessToken: loginResponse.AccessToken, cancellationToken: cancellationToken);
 
@@ -58,7 +58,7 @@ public class QueryShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyn
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser, Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
@@ -76,12 +76,12 @@ public class QueryShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyn
         using var client = _factory.CreateClient();
 
         var user1Login = await AuthHelper.RegisterAndLoginAsync(client,
-            "user1", Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             accessToken: user1Login.AccessToken, cancellationToken: cancellationToken);
         
         var user2Login = await AuthHelper.RegisterAndLoginAsync(client,
-            "user2", Constants.TestPassword, cancellationToken);
+            Constants.TestUser2, Constants.TestPassword, cancellationToken);
 
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
@@ -99,7 +99,7 @@ public class QueryShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyn
         using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser, Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             accessToken: loginResponse.AccessToken, cancellationToken: cancellationToken);
         // generate click count

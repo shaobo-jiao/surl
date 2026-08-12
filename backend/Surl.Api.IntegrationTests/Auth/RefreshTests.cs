@@ -28,7 +28,7 @@ public class RefreshTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client, 
-            "user1", Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var refreshRequest = new RefreshRequest(loginResponse.RefreshToken);
 
         // Act
@@ -54,7 +54,7 @@ public class RefreshTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client, 
-            "user1", Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var refreshRequest = new RefreshRequest(loginResponse.RefreshToken);
 
         var firstResponse = await client.PostAsJsonAsync("/auth/refresh", refreshRequest, cancellationToken);
@@ -91,7 +91,7 @@ public class RefreshTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client, 
-            "user1", Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
 
         // revoke the token first
         await using (var scope = _factory.Services.CreateAsyncScope())

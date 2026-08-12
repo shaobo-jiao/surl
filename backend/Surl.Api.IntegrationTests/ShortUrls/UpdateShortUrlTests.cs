@@ -38,7 +38,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // create a short url
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser, Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var accessToken = loginResponse.AccessToken;
 
         var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
@@ -72,7 +72,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         using var client = _factory.CreateClient();
 
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser, Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var accessToken = loginResponse.AccessToken;
 
         var updateRequest = new UpdateShortUrlRequest(Constants.TestStartTime.AddDays(1));
@@ -95,16 +95,16 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
 
-        // create a short url for "user1"
+        // create a short url for user1
         var user1Login = await AuthHelper.RegisterAndLoginAsync(client,
-            "user1", Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             accessToken: user1Login.AccessToken,
             cancellationToken: cancellationToken);
 
-        // try update the url as "user2"
+        // try update the url as user2
         var user2Login = await AuthHelper.RegisterAndLoginAsync(client,
-            "user2", Constants.TestPassword, cancellationToken);
+            Constants.TestUser2, Constants.TestPassword, cancellationToken);
         var updateRequest = new UpdateShortUrlRequest(Constants.TestStartTime.AddDays(1));
 
         // Act
@@ -127,7 +127,7 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         // create a short url
         var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
-            Constants.TestUser, Constants.TestPassword, cancellationToken);
+            Constants.TestUser1, Constants.TestPassword, cancellationToken);
         var accessToken = loginResponse.AccessToken;
 
         var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,

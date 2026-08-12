@@ -23,8 +23,8 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
 
-        await AuthHelper.RegisterAsync(client, "user1", Constants.TestPassword, cancellationToken);
-        var loginRequest = new LoginRequest("user1", Constants.TestPassword);
+        await AuthHelper.RegisterAsync(client, Constants.TestUser1, Constants.TestPassword, cancellationToken);
+        var loginRequest = new LoginRequest(Constants.TestUser1, Constants.TestPassword);
         
         // Act
         var httpResponse = await client.PostAsJsonAsync("/auth/login", loginRequest, cancellationToken);
@@ -62,8 +62,8 @@ public class LoginTests(CustomWebApplicationFactory factory) : IAsyncLifetime
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
 
-        await AuthHelper.RegisterAsync(client, "user1", Constants.TestPassword, cancellationToken);
-        var loginRequest = new LoginRequest("user1", "WrongPassword123");
+        await AuthHelper.RegisterAsync(client, Constants.TestUser1, Constants.TestPassword, cancellationToken);
+        var loginRequest = new LoginRequest(Constants.TestUser1, "WrongPassword123");
 
         // Act
         var httpResponse = await client.PostAsJsonAsync("/auth/login", loginRequest, cancellationToken);

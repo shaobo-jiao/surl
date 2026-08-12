@@ -42,8 +42,8 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         var cancellationToken = TestContext.Current.CancellationToken;
         using var httpClient = _factory.CreateClient();
 
-        var user = await AuthHelper.RegisterAsync(httpClient, "user1", Constants.TestPassword, cancellationToken);
-        var authTokens = await AuthHelper.LoginAsync(httpClient, "user1", Constants.TestPassword, cancellationToken);
+        var user = await AuthHelper.RegisterAsync(httpClient, Constants.TestUser1, Constants.TestPassword, cancellationToken);
+        var authTokens = await AuthHelper.LoginAsync(httpClient, Constants.TestUser1, Constants.TestPassword, cancellationToken);
 
         var originalUrl = "https://example.com";
         var createShortUrlRequest = new CreateShortUrlRequest(originalUrl);
