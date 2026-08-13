@@ -26,7 +26,7 @@ public static class AuthTestHelper
     /// <param name="response"></param>
     public static void AssertRefreshTokenCookieDeleted(HttpResponseMessage response)
     {
-        AssertRefreshTokenCookieSet(response, DateTimeOffset.UnixEpoch);
+        AssertRefreshTokenCookie(response, DateTimeOffset.UnixEpoch);
     }
 
     private static void AssertRefreshTokenCookie(HttpResponseMessage response, DateTimeOffset expectedExpiresAt)
