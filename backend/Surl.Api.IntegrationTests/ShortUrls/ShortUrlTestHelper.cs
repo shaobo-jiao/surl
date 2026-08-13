@@ -1,5 +1,4 @@
 ﻿using System.Net.Http.Json;
-using Surl.Api.Common;
 using Surl.Api.IntegrationTests.Helpers;
 using Surl.Api.ShortUrls;
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Net.Http.Headers;
+﻿using System.Net;
+using Microsoft.Net.Http.Headers;
 using Surl.Api.Auth;
 using Surl.Api.IntegrationTests.Helpers;
 
@@ -45,5 +46,38 @@ public static class AuthTestHelper
         Assert.Equal(CookieExtensions.RefreshTokenCookiePath, cookie.Path.Value);
 
         Assert.Equal(expectedExpiresAt, cookie.Expires);
+    }
+
+    /// <summary>
+    /// Gets refresh token cookie from the provided CookieContainer instance
+    /// </summary>
+    /// <param name="cookieContainer"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static Cookie GetRefreshTokenCookie(this CookieContainer cookieContainer)
+    {
+        var uri = new UriBuilder(TestConstants.TestBaseAddress)
+        {
+            Path = CookieExtensions.RefreshTokenCookiePath
+        }.Uri;
+
+        var refreshTokenCookie = cookieContainer.GetCookies(uri)
+            .SingleOrDefault(x => x.Name == CookieExtensions.RefreshTokenCookieName);
+        return refreshTokenCookie ?? throw new InvalidOperationException();
+    }
+
+    /// <summary>
+    /// Sets refresh token cookie in the provided CookieContainer instance
+    /// </summary>
+    /// <param name="cookieContainer"></param>
+    /// <param name="cookie"></param>
+    public static void SetRefreshTokenCookie(this CookieContainer cookieContainer, Cookie cookie)
+    {
+        var uri = new UriBuilder(TestConstants.TestBaseAddress)
+        {
+            Path = CookieExtensions.RefreshTokenCookiePath
+        }.Uri;
+
+        cookieContainer.Add(uri, cookie);
     }
 }

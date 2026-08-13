@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using System.Net;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Mvc.Testing.Handlers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -108,5 +110,32 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         // reset Id Generator sequence
         Services.GetRequiredService<IdGenerator<ShortUrl>>()
             .Reset();
+    }
+
+    /// <summary>
+    /// Creates a default HttpClient instance together with a CookieContainer instance to access cookies.
+    /// </summary>
+    /// <returns></returns>
+    public (HttpClient, CookieContainer) CreateClientWithCookieContainer()
+    {
+        var cookieContainer = new CookieContainer();
+        var cookieContainerHandler = new CookieContainerHandler(cookieContainer);
+        
+        var httpClient = CreateDefaultClient(new Uri(TestConstants.TestBaseAddress), cookieContainerHandler);
+        return (httpClient, cookieContainer);
+    }
+
+    /// <summary>
+    /// Creates a HttpClient instance that handles cookie and uses https base address "https://localhost".
+    /// </summary>
+    /// <returns></returns>
+    public new HttpClient CreateClient()
+    {
+        return CreateClient(new WebApplicationFactoryClientOptions()
+        {
+            // use https so that refresh token cookie (secure = true) can be sent.
+            BaseAddress = new Uri(TestConstants.TestBaseAddress),
+            HandleCookies = true, 
+        });
     }
 }

@@ -12,7 +12,6 @@ namespace Surl.Api.IntegrationTests.Helpers;
 /// </summary>
 public static class AuthHelper
 {
-
     public static async Task<UserResponse> RegisterAsync(HttpClient client,
         string username, string password = TestConstants.TestPassword, CancellationToken cancellationToken = default)
     {
@@ -24,7 +23,7 @@ public static class AuthHelper
         return userResponse;
     }
 
-    public static async Task<LoginResponse> LoginAsync(HttpClient client, 
+    public static async Task<LoginResponse> LoginAsync(HttpClient client,
         string username, string password = TestConstants.TestPassword, CancellationToken cancellationToken = default)
     {
         var loginRequest = new LoginRequest(username, password);
@@ -35,7 +34,14 @@ public static class AuthHelper
         return loginResponse;
     }
 
-    public static async Task<LoginResponse> RegisterAndLoginAsync(HttpClient client, 
+    public static async Task LogoutAsync(HttpClient client, CancellationToken cancellationToken = default)
+    {
+        var httpResponse = await client.PostAsync("/auth/logout", null, cancellationToken);
+        if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
+            throw new InvalidOperationException();
+    }
+
+    public static async Task<LoginResponse> RegisterAndLoginAsync(HttpClient client,
         string username, string password = TestConstants.TestPassword, CancellationToken cancellationToken = default)
     {
         await RegisterAsync(client, username, password, cancellationToken);
@@ -51,7 +57,7 @@ public static class AuthHelper
     }
 
     public static async Task<HttpResponseMessage> SendAuthenticatedRequestAsJsonAsync<T>(
-        this HttpClient client, HttpMethod method, string uri, string accessToken, T value, 
+        this HttpClient client, HttpMethod method, string uri, string accessToken, T value,
         CancellationToken cancellationToken = default)
     {
         var message = new HttpRequestMessage(method, uri);
@@ -63,7 +69,7 @@ public static class AuthHelper
     }
 
     public static async Task<HttpResponseMessage> SendAuthenticatedRequestAsJsonAsync(
-        this HttpClient client, HttpMethod method, string uri, string accessToken, 
+        this HttpClient client, HttpMethod method, string uri, string accessToken,
         CancellationToken cancellationToken = default)
     {
         var message = new HttpRequestMessage(method, uri);
