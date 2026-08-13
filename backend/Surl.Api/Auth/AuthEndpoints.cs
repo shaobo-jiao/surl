@@ -79,17 +79,21 @@ public static class AuthEndpoints
     }
 
     public static async Task<Results<Ok<string>, ProblemHttpResult>> LogoutAsync(
-        IAuthService authService, HttpRequest httpRequest, CancellationToken cancellationToken)
+        IAuthService authService, HttpContext httpContext, CancellationToken cancellationToken)
     {
         // get refresh token from cookie
-        var refreshToken = httpRequest.Cookies.GetRefreshToken();
+        var refreshToken = httpContext.Request.Cookies.GetRefreshToken();
         if (refreshToken is null)
             return TypedResults.Problem(AuthError.EmptyRefreshToken.ToProblemDetails());
         
         var result = await authService.LogoutAsync(refreshToken, cancellationToken);
-        return result.IsSuccessful
-            ? TypedResults.Ok("Logged out successfully")
-            : TypedResults.Problem(result.Error.ToProblemDetails());
+
+        if (!result.IsSuccessful)
+            return TypedResults.Problem(result.Error.ToProblemDetails());
+        
+        // clear refresh token cookie
+        httpContext.Response.Cookies.DeleteRefreshToken();
+        return TypedResults.Ok("Logged out successfully"); 
     }
     
     public static async Task<Results<Ok<string>, ProblemHttpResult>> ChangePasswordAsync(
