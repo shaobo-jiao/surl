@@ -35,6 +35,6 @@ public static class AuthValidatorExtensions
     {
         return ruleBuilder.NotEmpty()
             .MinimumLength(6)
-            .MaximumLength(100);
+            .MaximumLength(50);
     }
 }
