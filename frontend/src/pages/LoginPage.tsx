@@ -11,12 +11,12 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
-
+import * as loginApi from "@/api/auth/login";
 
 const LoginFormDataSchema = z.object({
   username: z.string().min(6).max(50)
     .regex(/^[a-zA-Z0-9._-]+$/, "Username can only contain letters, numbers, underscores, dots and hyphens"),
-  password: z.string().min(1).max(50)
+  password: z.string().min(6).max(50)
     .regex(/^\S+$/, "Password must not contain whitespaces.") // simply check no whitespace
 });
 type LoginFormData = z.infer<typeof LoginFormDataSchema>;
@@ -24,7 +24,7 @@ type LoginFormData = z.infer<typeof LoginFormDataSchema>;
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { dispatchLogin } = useAuth();
 
   const [isLogging, setIsLogging] = useState<boolean>(false);
   const {
@@ -37,16 +37,20 @@ export default function LoginPage() {
   const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
     setIsLogging(true);
 
-    const success = await login(data.username, data.password);
-    if (success) {
+    const apiResponse = await loginApi.login(data);
+    if (apiResponse.success) {
+      dispatchLogin(data.username, apiResponse.data.accessToken);
       navigate(location.state?.from ?? "/urls");
     }
     else {
-      // set a general error message for login failure;
-      setError("root.serverError", {
-        type: "server",
-        message: "The username or password is incorrect."
-      });
+      const result = apiResponse.error;
+      setError("root.serverError", { type: "server", message: result.detail })
+      if (result.errors !== undefined) {
+        for (const [field, messages] of Object.entries(result.errors)) {
+          // set field error using the first error message of each field
+          setError(field as loginApi.LoginFields, { type: "server", message: messages[0] });
+        }
+      }
     }
     setIsLogging(false);
   };

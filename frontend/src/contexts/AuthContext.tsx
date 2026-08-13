@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useReducer } from "react";
-import * as loginApi from "@/api/auth/login";
 
 // states of currently logged in user. 
 interface UserLogin {
@@ -41,8 +40,8 @@ function userLoginReducer(userLogin: UserLogin, action: UserLoginAction): UserLo
 
 interface AuthContextValue {
   userLogin: UserLogin,
-  login: (username: string, password: string) => Promise<boolean>,
-  logout: () => Promise<void>,
+  dispatchLogin: (username: string, accessToken: string) => void,
+  dispatchLogout: () => void;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -54,32 +53,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     username: null,
     accessToken: null
   });
-  const login = async (username: string, password: string) => {
-    const loginResponse = await loginApi.login({
-      username: username,
-      password: password
-    });
-    if (loginResponse.success) {
-      dispatchUserLogin({
-        type: "logged_in",
-        payload: {
-          username: username,
-          accessToken: loginResponse.data.accessToken
-        }
-      });
-      return true;
-    }
-    else {
-      // ignore the login error from API since login failure error is rather trivial.
-      // the login page will just display a general error message.
-      return false;
-    }
-  }
-  const logout = async () => {
 
+  const dispatchLogin = (username: string, accessToken: string) => {
+    dispatchUserLogin({
+      type: "logged_in",
+      payload: {
+        username: username,
+        accessToken: accessToken
+      }
+    });
   };
 
-  return <AuthContext value={{ userLogin, login, logout }}>
+  const dispatchLogout = () => {
+    dispatchUserLogin({
+      type: "logged_out"
+    });
+  };
+
+  return <AuthContext value={{ userLogin, dispatchLogin, dispatchLogout }}>
     {children}
   </AuthContext>
 }
