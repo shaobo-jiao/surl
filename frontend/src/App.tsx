@@ -8,6 +8,7 @@ import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProfilePage from "./pages/ProfilePage";
 
 
 const App = () => {
@@ -22,6 +23,7 @@ const App = () => {
             <Route path="/:shortUrlCode" element={<RedirectionPage />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/urls" element={<UrlsPage />} />  
+              <Route path="/me" element={<ProfilePage />} />
             </Route>
           </Route>
         </Routes>

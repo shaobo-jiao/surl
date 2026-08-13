@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronRight, CircleCheck, CircleX } from "lucide-react";
 import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { Link } from "react-router";
 import z from "zod";
 
 const RegisterFormDataSchema = z
@@ -107,11 +108,11 @@ export default function RegisterPage() {
       {status === "success" &&
         <CardFooter>
           <Item asChild className="p-0">
-            <a href="/login">
+            <Link to="/login">
               <ItemMedia><CircleCheck className="size-4" /></ItemMedia>
               <ItemContent><ItemTitle>Your registration is successful.</ItemTitle></ItemContent>
               <ItemActions><ChevronRight className="size-4" /></ItemActions>
-            </a>
+            </Link>
           </Item>
         </CardFooter>
       }
