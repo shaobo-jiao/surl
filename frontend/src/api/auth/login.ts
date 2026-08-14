@@ -21,6 +21,7 @@ export async function login(request: LoginRequest)
       headers: {
         "Content-Type": "application/json"
       },
+      credentials: "include", 
       body: JSON.stringify(request)
     });
 

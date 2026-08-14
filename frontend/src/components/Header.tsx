@@ -2,10 +2,11 @@ import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
 import { Link, NavLink } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
+import LogoutButton from "./LogoutButton";
 
 // Header contains a "Logo" that links to homepage and a nav bar 
 // the nav bar contains: Home, URLs only as for now. later need to add Login/Logout links
-const Header = () => {
+const Header = () => {  
   const { userLogin } = useAuth();
   const isAuthenticated = userLogin.isAuthenticated;
 
@@ -37,8 +38,7 @@ const Header = () => {
           {
             isAuthenticated && <>
               <Separator orientation="vertical" />
-              {/* to put logout button in a separate component */}
-              <Button asChild variant="link"><NavLink to="/logout">Log out</NavLink></Button>
+              <LogoutButton />
 
               <Separator orientation="vertical" />
               <Button asChild variant="link"><NavLink to="/me">Hi, {usernameForDisplay}</NavLink></Button>
