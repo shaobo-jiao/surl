@@ -430,9 +430,73 @@ $ sudo docker run -d --name surl-api --network surl --env-file /etc/surl/.env.ap
 ```
 
 
-## Docker Compose
 
 
 
+# NOTE ON HTTPS
+When developing frontend, cookie plays a important role in the auth process.
+There's a need to support running the application over HTTPS.
+e.g. refresh token is sent over cookie with secure and SameSite=Strict.
 
+The configuration is on both frontend and backend, differing between Production
+and Development.
+
+The setup is to be as follows:
+- Production: 
+    - API runs over http locally in the server, 
+    - Cloudflare Tunnel provides https for both the frontend and backend.
+- Development
+    - runs both API and frontend over https.
+    - API: can use asp.net core developer cert
+    - frontend: use `mkcert` to install locally trusted cert.
+
+A few things to modify:
+- development certs management
+- frontend https configuration
+- backend cert configuration
+- compose file update and related certs setup
+
+## Reference (for further study)
+- [Enable Cross-Origin Requests (CORS) in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-10.0)
+- [Enforce HTTPS in ASP.NET CORE](https://learn.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-10.0&tabs=visual-studio%2Clinux-ubuntu)
+- [Eight ways to set URLs for an ASP.NET Core app](https://andrewlock.net/8-ways-to-set-the-urls-for-an-aspnetcore-app/)
+- [ASP.NET Core Use Forwarded Headers](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-10.0)
+
+- [Using HTTP Cookie](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies)
+- [Using the Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
+- [Vite Server Options](https://v4.vitejs.dev/config/server-options.html)
+
+- [web.dev Safe and Secure Articles](https://web.dev/articles/how-to-use-local-https)
+- [mkcert](https://github.com/FiloSottile/mkcert)
+
+## Development
+To configuring HTTPS for the frontend:
+- Install `mkcert` and generate certs:
+- update `vite.config.ts` server options.
+
+```bash
+# install mkcert using choco
+$ choco install mkcert
+
+# create cert
+$ mkdir certs/
+$ cd certs/
+$ mkcert -install
+$ mkcert localhost
+
+# outputs: certs/localhost.pem, certs/localhost-key.pem
+```
+
+
+To configure HTTPS for the backend:
+- may need https redirection and use forwarded headers for production (to be examined)
+- for now, trust dev cert and update launchSetting URL
+
+```bash
+# trust https dev cert
+$ dotnet dev-certs https --trust
+```
+
+More to be updated:
+- docker: cert file mounts, nginx.conf update, diff dev and prd, etc
 

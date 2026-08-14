@@ -9,3 +9,6 @@
 secrets/*
 !secrets/*.example
 !secrets/README.md
+
+# local cert management
+certs/
