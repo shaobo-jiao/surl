@@ -1,6 +1,6 @@
 # this file contains dev specific settings, e.g.
-# - image is replace with build; 
-# - https is enabled with cert mounts
+# - images are replaced with build; 
+# - https is enabled with cert file mounts
 # - some file paths are different
 
 services:

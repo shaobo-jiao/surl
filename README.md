@@ -26,22 +26,42 @@ $ cd ./surl/
 # install dotnet ef if it's not installed
 $ dotnet tool install --global dotnet-ef --version 10.0.*
 
+# trust asp.ne core dev cert if it's not trusted
+$ dotnet dev-certs https --trust
+
+# prepare dev cert files:
+$ mkdir certs
+$ dotnet dev-certs https -ep certs/localhost.crt --format Pem -np
+
 # prepare necessary secrets
 $ cp ./secrets/postgres_password.example ./secrets/postgres_password
 $ cp ./secrets/surl_owner_password.example ./secrets/surl_owner_password
 $ cp ./secrets/surl_rw_password.example ./secrets/surl_rw_password
+$ cp ./secrets/jwt_secret_key.example ./secrets/jwt_secret_key
 
 # generate migration script
 $ dotnet restore ./backend/Surl.Api/
-$ dotnet ef migrations script -i -p ./backend/Surl.Api/ -o ./backend/Surl.Api/bin/db_schema.sql
+$ dotnet ef migrations script -i -p ./backend/Surl.Api/ -o ./migrations/db_schema.sql
 
 # start the containers
 $ docker compose up -d
 ```
 
-visit the application locally at [http://localhost:5001](http://localhost:5001)
+visit the application locally at [https://localhost:5001](https://localhost:5001)
+
 
 # Project Details
+
+
+## Update on 15 Aug 2026
+Pending:
+- frontend: auth refresh logic 
+- frontend: short urls page
+- frontend: Me page & related /me api
+- rate limiting
+- api global exception handler
+- short url password protection feature
+
 
 ## Version 2 (User Registration and URL Management)
 ...

@@ -1,5 +1,4 @@
 # this file is the base compose file for all environments.
-# dev and prod has their own settings in corresponding files.
 
 name: surl
 
