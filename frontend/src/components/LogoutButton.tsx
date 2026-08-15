@@ -1,4 +1,3 @@
-import type React from "react";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { Spinner } from "./ui/spinner";
@@ -10,7 +9,7 @@ export default function LogoutButton() {
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const { dispatchLogout } = useAuth();
 
-  const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = async () => {
     setIsLoggingOut(true);
 
     await logoutApi.logout();    

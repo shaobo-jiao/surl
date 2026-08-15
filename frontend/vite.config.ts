@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 import fs from "node:fs";
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({command}) => ({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -15,9 +15,9 @@ export default defineConfig({
   server: {
     host: "localhost",
     port: 5001,
-    https: {
-      key: fs.readFileSync('../certs/localhost-key.pem'),
-      cert: fs.readFileSync('../certs/localhost.pem'),
+    https: command === "build" ? undefined : {
+      key: fs.readFileSync('../certs/localhost.key'),
+      cert: fs.readFileSync('../certs/localhost.crt'),
     }
   },
-})
+}))
