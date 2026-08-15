@@ -32,6 +32,7 @@ public static class ShortUrlEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .RequireAuthorization();
 
+        // need to be changed to POST as it's changing something? and later a password may be provided
         app.MapGet("/redirection/{code}", GetRedirectionUrlAsync)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)

@@ -339,7 +339,7 @@ Refer to [Surl.API Dockerfile](Surl.Api/Dockerfile) for the details, and refer t
 # build the image
 $ docker build -t surl-api --platform linux/amd64,linux/arm64 ./Surl.Api
 
-# build the container (with env file)
+# run the container (with env file)
 $ docker run -d --name surl-api --network surl --env-file Surl.Api/.env -p 5002:8080 surl-api
 ```
 
@@ -499,4 +499,19 @@ $ dotnet dev-certs https --trust
 
 More to be updated:
 - docker: cert file mounts, nginx.conf update, diff dev and prd, etc
+
+
+Another Update:
+- `mkcert` isn't needed as we can simply ASP.NET Core development certificates
+
+
+```bash
+# trust https dev cert
+$ dotnet dev-certs https --trust
+
+# export dev cert and key files (no password)
+$ mkdir ./certs
+$ cd certs
+$ dotnet dev-certs https -ep localhost.crt --format Pem -np
+```
 

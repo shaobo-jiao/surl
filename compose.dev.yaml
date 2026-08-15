@@ -1,0 +1,55 @@
+# this file contains dev specific settings, e.g.
+# - image is replace with build; 
+# - https is enabled with cert mounts
+# - some file paths are different
+
+services:
+  db:
+    volumes:
+      - type: bind
+        source: ./env/db_init.sh
+        target: /docker-entrypoint-initdb.d/db_init.sh
+        read_only: true
+        
+  migration:
+    volumes:
+      - type: bind
+        source: ./migrations/db_schema.sql
+        target: /migration/db_schema.sql
+        read_only: true
+
+  api:
+    image: !reset null
+    build: ./backend/Surl.Api/
+    ports: !override
+      - ${API_PORT:-5002}:8081
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - Kestrel__Certificates__Default__Path=/certs/localhost.crt
+      - Kestrel__Certificates__Default__KeyPath=/certs/localhost.key
+    volumes:
+      - type: bind
+        source: ./certs/
+        target: /certs/
+        read_only: true
+
+  frontend:
+    image: !reset null
+    build: 
+      context: ./frontend/
+      args:
+        - VITE_API_BASE_URL=https://localhost:${API_PORT:-5002}
+        - VITE_APP_URL=https://localhost:${FRONTEND_PORT:-5001}
+    ports: !override
+      - ${FRONTEND_PORT:-5001}:443
+    volumes:
+      - type: bind
+        source: ./certs/
+        target: /certs/
+        read_only: true
+      - type: bind
+        source: ./config/nginx.https.conf
+        target: /etc/nginx/conf.d/surl.conf
+        read_only: true
+

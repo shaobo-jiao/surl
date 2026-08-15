@@ -14,7 +14,7 @@ public static class AppDbContextExtensions
             // build connection string
             var connectionStringBuilder = new NpgsqlConnectionStringBuilder(configuration.GetConnectionString("Default"));
             // get password from secret file if exists
-            var passwordFile = configuration.GetValue<string>("Secrets:DB_Default_Password_File");
+            var passwordFile = configuration.GetValue<string>("Secrets:DbDefaultPasswordFile");
             if (File.Exists(passwordFile))
             {
                 connectionStringBuilder.Password = File.ReadAllText(passwordFile).TrimEnd();

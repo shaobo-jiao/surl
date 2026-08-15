@@ -10,9 +10,9 @@ RUN npm install
 
 # build app
 COPY . .
-ARG VITE_APP_URL=http://localhost:5001
+ARG VITE_APP_URL
 ENV VITE_APP_URL=$VITE_APP_URL
-ARG VITE_API_BASE_URL=http://localhost:5000/api/short-urls
+ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
@@ -26,7 +26,9 @@ RUN rm /etc/nginx/conf.d/default.conf
 
 # copy over surl site
 COPY --from=build /build/dist/ /usr/share/nginx/surl/
-COPY nginx.conf /etc/nginx/conf.d/surl.conf
+
+# copy over nginx file
+COPY ./nginx.conf /etc/nginx/conf.d/surl.conf
 RUN nginx -t
 
 EXPOSE 80

@@ -12,3 +12,6 @@ secrets/*
 
 # local cert management
 certs/
+
+# local migration scripts
+migrations/

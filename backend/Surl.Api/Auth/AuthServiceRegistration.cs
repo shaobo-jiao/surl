@@ -25,7 +25,7 @@ public static class AuthServiceRegistration
             .PostConfigure<IConfiguration>((options, configuration) =>
             {
                 // overwrite jwt secret from the secret file
-                var jwtSecretKeyFile = configuration.GetValue<string>("Secrets:JWT_SECRET_KEY_FILE");
+                var jwtSecretKeyFile = configuration.GetValue<string>("Secrets:JwtSecretKeyFile");
                 if (File.Exists(jwtSecretKeyFile))
                 {
                     options.SecretKey = File.ReadAllText(jwtSecretKeyFile).TrimEnd();
