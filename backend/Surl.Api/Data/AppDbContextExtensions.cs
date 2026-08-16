@@ -19,44 +19,62 @@ public static class AppDbContextExtensions
             {
                 connectionStringBuilder.Password = File.ReadAllText(passwordFile).TrimEnd();
             }
-            
+
             // postgres database
             opts.UseNpgsql(connectionStringBuilder.ConnectionString)
                 .UseSnakeCaseNamingConvention();
 
-            // seed a default Admin;
-            // NOTE: this is applied when applying migration with `dotnet ef database update`, but not with migration scripts.
-            var defaultAdminUsername = configuration["DefaultAdmin:Username"] ?? throw new InvalidOperationException("Default admin username not configured");
-            var defaultAdminPassword = configuration["DefaultAdmin:Password"] ?? throw new InvalidOperationException("Default admin password not configured");
+            // seed a default Admin (outdated)
+            opts.SeedDefaultAdmin(configuration);
+        });
+    }
 
-            opts.UseSeeding((context, _) =>
+    /// <summary>
+    /// Seeds a default admin using info from app settings. 
+    /// This was used to test User endpoints, but are less relevant now.
+    /// </summary>
+    /// <param name="opts"></param>
+    /// <param name="configuration"></param>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static void SeedDefaultAdmin(this DbContextOptionsBuilder opts, IConfiguration configuration)
+    {
+        var hasDefaultAdminSeeding = configuration.GetValue("DefaultAdmin:Enabled", false);
+
+        if (!hasDefaultAdminSeeding)
+            return;
+
+        // seed a default Admin;
+        // NOTE: this is applied when applying migration with `dotnet ef database update`, but not with migration scripts.
+        var defaultAdminUsername = configuration["DefaultAdmin:Username"] ?? throw new InvalidOperationException("Default admin username not configured");
+        var defaultAdminPassword = configuration["DefaultAdmin:Password"] ?? throw new InvalidOperationException("Default admin password not configured");
+
+        opts.UseSeeding((context, _) =>
+        {
+            if (!context.Set<User>().Any(u => u.Username == defaultAdminUsername))
             {
-                if (!context.Set<User>().Any(u => u.Username == defaultAdminUsername))
+                var user = new User(defaultAdminUsername)
                 {
-                    var user = new User(defaultAdminUsername)
-                    {
-                        CreatedAt = new DateTimeOffset(2001, 1, 1, 0, 0, 0, TimeSpan.Zero), // default CreatedAt
-                        Role = AppRoles.Admin,
-                    };
-                    user.PasswordHash = new PasswordHasher<User>().HashPassword(user, defaultAdminPassword);
-                    context.Set<User>().Add(user);
-                    context.SaveChanges();
-                }
-            })
-            .UseAsyncSeeding(async (context, _, cancellationToken) =>
+                    CreatedAt = new DateTimeOffset(2001, 1, 1, 0, 0, 0, TimeSpan.Zero), // default CreatedAt
+                    Role = AppRoles.Admin,
+                };
+                user.PasswordHash = new PasswordHasher<User>().HashPassword(user, defaultAdminPassword);
+                context.Set<User>().Add(user);
+                context.SaveChanges();
+            }
+        })
+        .UseAsyncSeeding(async (context, _, cancellationToken) =>
+        {
+            if (!await context.Set<User>().AnyAsync(u => u.Username == defaultAdminUsername, cancellationToken))
             {
-                if (!await context.Set<User>().AnyAsync(u => u.Username == defaultAdminUsername, cancellationToken))
+                var user = new User(defaultAdminUsername)
                 {
-                    var user = new User(defaultAdminUsername)
-                    {
-                        CreatedAt = new DateTimeOffset(2001, 1, 1, 0, 0, 0, TimeSpan.Zero), // default CreatedAt
-                        Role = AppRoles.Admin,
-                    };
-                    user.PasswordHash = new PasswordHasher<User>().HashPassword(user, defaultAdminPassword);
-                    await context.Set<User>().AddAsync(user, cancellationToken);
-                    await context.SaveChangesAsync(cancellationToken);
-                }
-            });
+                    CreatedAt = new DateTimeOffset(2001, 1, 1, 0, 0, 0, TimeSpan.Zero), // default CreatedAt
+                    Role = AppRoles.Admin,
+                };
+                user.PasswordHash = new PasswordHasher<User>().HashPassword(user, defaultAdminPassword);
+                await context.Set<User>().AddAsync(user, cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
+            }
         });
     }
 }
