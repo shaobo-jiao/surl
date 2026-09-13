@@ -94,7 +94,7 @@ app.UseRequestLocalization();
 // application endpoints
 app.MapHealthChecks("/healthz");
 app.MapShortUrlEndpoints();
-app.MapUserEndpoints();
+// app.MapUserEndpoints();
 app.MapAuthEndpoints();
 
 app.Run();

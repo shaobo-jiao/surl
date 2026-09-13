@@ -44,7 +44,7 @@ const HomePage = () => {
       <h1 className="font-bold text-5xl my-8">Shorten. Manage. Share</h1>
       <p className="font-medium text-md mb-8">
         An easy-to-use platform to shorten, organize, and manage your URLs</p>
-      <Card className="w-full max-w-2xl rounded-md">
+      <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle>Try It Out</CardTitle>
           <CardDescription>Enter your URL to shorten.</CardDescription>
@@ -53,13 +53,13 @@ const HomePage = () => {
         <CardContent>
           <form onSubmit={handleSubmit}>
             <Field orientation="horizontal">
-              <Input id="original-url" type="url" placeholder="https://example.com" className="rounded-md" 
+              <Input id="original-url" type="url" placeholder="https://example.com"
                 value={originalUrl} onChange={e => setOriginalUrl(e.target.value)} />
               {!isCreating 
-                ? <Button type="submit" variant="outline" className="rounded-md" disabled={isCreating}>
+                ? <Button type="submit" variant="outline" disabled={isCreating}>
                     Shorten
                   </Button>
-                : <Button variant="outline" className="rounded-md" disabled>
+                : <Button variant="outline" disabled>
                     <Spinner data-icon="inline-start" /> Shortening...
                   </Button>
               }
@@ -77,7 +77,7 @@ const HomePage = () => {
                 <a href={shortUrl.absoluteUrl} target="_blank" className="hover:underline flex-1 ">
                   {shortUrl.absoluteUrl}
                 </a>
-                <Button type="button" variant="outline" size="icon" className="ml-auto rounded-md" 
+                <Button type="button" variant="outline" size="icon" className="ml-auto" 
                   onClick={handleCopy}>
                   {copied ? <CopyCheck /> : <Copy />}
                 </Button>
