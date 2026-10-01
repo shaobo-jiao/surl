@@ -8,7 +8,8 @@ export interface ShortUrlResponse {
   id: string, // long Id from backend
   originalUrl: string,
   shortUrlCode: string,
-  expiresAt: string
+  expiresAt: string,
+  clickCount: number
 }
 
 export interface ShortUrl {
@@ -16,22 +17,13 @@ export interface ShortUrl {
   originalUrl: string,
   code: string,
   absoluteUrl: string,
-  expiresAt: Date
+  expiresAt: Date,
+  clickCount: number
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function createShortUrl(request: CreateShortUrlRequest): Promise<ShortUrl> {
-  // return new Promise((resolve) => {
-  //     setTimeout(() => {
-  //         resolve({
-  //             id: "123",
-  //             shortUrl: "http://short.url/abc123",
-  //             originalUrl: "https://www.google.com",
-  //             expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days
-  //         })
-  //     }, 3000);
-  // });
   const response = await fetch(new URL("short-urls/", API_BASE_URL), {
     method: "POST",
     headers: {
@@ -51,6 +43,7 @@ export async function createShortUrl(request: CreateShortUrlRequest): Promise<Sh
     code: data.shortUrlCode,
     absoluteUrl: new URL(data.shortUrlCode, import.meta.env.VITE_APP_URL).toString(),
     expiresAt: new Date(data.expiresAt),
+    clickCount: data.clickCount,
   }
   return shortUrl;
 }

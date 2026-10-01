@@ -1,6 +1,6 @@
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Spinner } from "@/components/ui/spinner";
-import { getOriginalUrl } from "@/api/shortUrlApi";
+import { getOriginalUrl } from "@/api/shortUrls/shortUrlApi";
 import { CircleX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
