@@ -34,7 +34,7 @@ export default function LoginPage() {
     formState: { errors }
   } = useForm({ resolver: zodResolver(LoginFormDataSchema) });
 
-  const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
+  const handleLoginSubmit: SubmitHandler<LoginFormData> = async (data) => {
     setIsLogging(true);
 
     const apiResponse = await loginApi.login(data);
@@ -63,7 +63,7 @@ export default function LoginPage() {
       </CardHeader>
 
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" >
+        <form onSubmit={handleSubmit(handleLoginSubmit)} className="flex flex-col gap-4" >
           <Field>
             <FieldLabel htmlFor="username">Username</FieldLabel>
             <Input id="username" type="text" {...register("username")}></Input>

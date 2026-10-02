@@ -44,7 +44,7 @@ export default function RegisterPage() {
   } = useForm({ resolver: zodResolver(RegisterFormDataSchema) });
 
 
-  const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
+  const handleRegisterSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     setStatus("submitting");
 
     // api call
@@ -74,7 +74,7 @@ export default function RegisterPage() {
       </CardHeader>
 
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
+        <form onSubmit={handleSubmit(handleRegisterSubmit)} className="flex flex-col gap-2">
           <Field>
             <FieldLabel htmlFor="username">Username*</FieldLabel>
             <Input id="username" type="text" {...register("username")} />
