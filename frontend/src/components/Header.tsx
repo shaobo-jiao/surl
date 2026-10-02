@@ -21,26 +21,18 @@ const Header = () => {
 
         <div className="flex ml-auto">
           <Button asChild variant="link"><NavLink to="/">Home</NavLink></Button>
-
-          <Separator orientation="vertical" />
           <Button asChild variant="link"><NavLink to="/urls">URLs</NavLink></Button>
 
           {
             !isAuthenticated && <>
-              <Separator orientation="vertical" />
               <Button asChild variant="link"><NavLink to="/register">Register</NavLink></Button>
-
-              <Separator orientation="vertical" />
               <Button asChild variant="link"><NavLink to="/login">Login</NavLink></Button>
             </>
           }
 
           {
             isAuthenticated && <>
-              <Separator orientation="vertical" />
               <LogoutButton />
-
-              <Separator orientation="vertical" />
               <Button asChild variant="link"><NavLink to="/me">Hi, {usernameForDisplay}</NavLink></Button>
             </>
           }
