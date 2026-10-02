@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import CopyUrlButton from "@/components/shortUrls/copyUrlButton";
 import { Item, ItemContent, ItemDescription, ItemHeader } from "../ui/item";
+import { format } from "date-fns";
 
 interface ShortUrlCardProps {
   shortUrl: ShortUrl;
@@ -56,7 +57,7 @@ export default function ShortUrlCard({ shortUrl, onDelete }: ShortUrlCardProps) 
               {shortUrl.clickCount.toLocaleString()} clicks
             </ItemDescription>
             <ItemDescription>
-              Expiring at {shortUrl.expiresAt.toLocaleString()}
+              Expiring at {format(shortUrl.expiresAt, "PP p")}
             </ItemDescription>
           </ItemContent>
         </Item>

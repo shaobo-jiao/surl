@@ -10,9 +10,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Card, CardContent, CardFooter } from "./ui/card"
-import { Field } from "./ui/field"
-import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Field } from "@/components/ui/field"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 
 export interface DateTimePickerProps {
   value: Date | null,

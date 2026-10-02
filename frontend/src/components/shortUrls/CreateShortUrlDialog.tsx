@@ -12,8 +12,11 @@ import z from "zod";
 import { useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Spinner } from "../ui/spinner";
-import DateTimePicker from "../DateTimePicker";
+import { Spinner } from "@/components/ui/spinner";
+import DateTimePicker from "@/components/DateTimePicker";
+import { useAuth } from "@/contexts/AuthContext";
+import { createShortUrl, type CreateShortUrlFields, type ShortUrl } from "@/api/shortUrls/shortUrlApi";
+import { toast } from "sonner";
 
 
 const CreateShortUrlFormDataScheme = z.object({
@@ -34,35 +37,59 @@ const CreateShortUrlFormDataScheme = z.object({
 });
 type CreateShortUrlFormData = z.infer<typeof CreateShortUrlFormDataScheme>
 
+interface CreateShortUrlDialogProps {
+  onCreate: (shortUrl: ShortUrl) => void;
+}
 
-export default function CreateShortUrlDialog() {
+export default function CreateShortUrlDialog({ onCreate }: CreateShortUrlDialogProps) {
+  const { userLogin } = useAuth();
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const {
     register,
     control,
     handleSubmit,
+    reset,
     setError,
     formState: { errors }
   } = useForm({ resolver: zodResolver(CreateShortUrlFormDataScheme) });
 
-  const onSubmit: SubmitHandler<CreateShortUrlFormData> = async (data) => {
+  const handleCreateShortUrlSubmit: SubmitHandler<CreateShortUrlFormData> = async (data) => {
     setIsSubmitting(true);
 
-    // call API to create and get response; parse error or result and then handle callback
+    const apiResponse = await createShortUrl({
+      originalUrl: data.originalUrl,
+      expiresAt: data.expiresAt ?? undefined
+    }, userLogin.accessToken!
+    );
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-    }, 2000);
-    // setIsSubmitting(false);
+    if (apiResponse.success) {
+      onCreate(apiResponse.data);
+      reset();
+      setIsOpen(false);
+      toast.success("Short URL has been created");
+    }
+    else {
+      const result = apiResponse.error;
+      setError("root.serverError", { type: "server", message: result.detail })
+      if (result.errors !== undefined) {
+        for (const [field, messages] of Object.entries(result.errors)) {
+          // set field error using the first error message of each field
+          setError(field as CreateShortUrlFields, { type: "server", message: messages[0] });
+        }
+      }
+    }
+
+    setIsSubmitting(false);
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button size="lg" className="ml-auto">Create New</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit(handleCreateShortUrlSubmit)} className="flex flex-col gap-4">
           {/* create short url form inputs */}
           <FieldGroup>
             <Field>
@@ -85,6 +112,8 @@ export default function CreateShortUrlDialog() {
               {errors.expiresAt && <FieldError>{errors.expiresAt.message}</FieldError>}
             </Field>
           </FieldGroup>
+
+          {errors.root?.serverError && <FieldError>{errors.root.serverError.message}</FieldError>}
 
           <DialogFooter>
             <DialogClose asChild>

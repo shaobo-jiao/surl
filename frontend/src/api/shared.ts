@@ -1,5 +1,6 @@
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+export const APP_URL = import.meta.env.VITE_APP_URL;
 
 // defines API error responses. the type parameter F should be 
 // a union of string literals for validation fields.
@@ -22,7 +23,6 @@ interface FailureResult<E> {
 }
 
 export type Result<T, E> = SuccessResult<T> | FailureResult<E>;
-
 
 export const GeneralFailureResult = {
   success: false,

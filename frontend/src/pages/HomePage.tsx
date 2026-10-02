@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { createShortUrl, type ShortUrl } from "@/api/shortUrls/shortUrlApi";
+import { createAnonymousShortUrl, type ShortUrl } from "@/api/shortUrls/shortUrlApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
@@ -21,14 +21,14 @@ const HomePage = () => {
     setShortUrl(null);
     setIsCreating(true);
     setHasError(false);
-    try {
-      setShortUrl(await createShortUrl({ originalUrl }));
-      setIsCreating(false);
+    const apiResponse = await createAnonymousShortUrl({ originalUrl });
+    if (apiResponse.success) {
+      setShortUrl(apiResponse.data);
     }
-    catch (e) {
+    else {
       setHasError(true);
-      setIsCreating(false);
     }
+    setIsCreating(false);
   }
 
   const [copied, setCopied] = useState(false);

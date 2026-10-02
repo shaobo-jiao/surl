@@ -2,6 +2,7 @@ import { type ShortUrl } from "@/api/shortUrls/shortUrlApi";
 import CreateShortUrlDialog from "@/components/shortUrls/CreateShortUrlDialog";
 import ShortUrlCard from "@/components/shortUrls/ShortUrlCard";
 import { Link2 } from "lucide-react";
+import { useState } from "react";
 
 // TEMPORARY sample data for checking the ShortUrlCard layout.
 const sampleShortUrls: ShortUrl[] = [
@@ -24,6 +25,12 @@ const sampleShortUrls: ShortUrl[] = [
 ];
 
 export default function UrlsPage() {
+  const [urls, setUrls] = useState<ShortUrl[]>(sampleShortUrls);
+
+  const handleCreate = (created: ShortUrl) => {
+    setUrls((previousUrls) => [created, ...previousUrls]);
+  };
+
   return (
     <div className="flex flex-col items-center w-full max-w-3xl">
 
@@ -34,11 +41,11 @@ export default function UrlsPage() {
           <h1 className="font-bold text-2xl">My URLs</h1>
           <p className="text-muted-foreground">Manage and track your shortened URLs</p>
         </div>
-        <CreateShortUrlDialog />
+        <CreateShortUrlDialog onCreate={handleCreate} />
       </div>
 
       <div className="flex flex-col w-full gap-4">
-        {sampleShortUrls.map((shortUrl) => (
+        {urls.map((shortUrl) => (
           <ShortUrlCard
             key={shortUrl.id}
             shortUrl={shortUrl}
