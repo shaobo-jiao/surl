@@ -2,10 +2,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -13,9 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import z from "zod";
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Spinner } from "../ui/spinner";
+import DateTimePicker from "../DateTimePicker";
 
 
 const CreateShortUrlFormDataScheme = z.object({
@@ -41,6 +39,7 @@ export default function CreateShortUrlDialog() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const {
     register,
+    control,
     handleSubmit,
     setError,
     formState: { errors }
@@ -48,9 +47,9 @@ export default function CreateShortUrlDialog() {
 
   const onSubmit: SubmitHandler<CreateShortUrlFormData> = async (data) => {
     setIsSubmitting(true);
-    
+
     // call API to create and get response; parse error or result and then handle callback
-    
+
     setTimeout(() => {
       setIsSubmitting(false);
     }, 2000);
@@ -64,24 +63,24 @@ export default function CreateShortUrlDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <DialogHeader>
-            <DialogTitle>Create a short URL</DialogTitle>
-            <DialogDescription>
-              Shorten a long URL and optionally choose when it should expire.
-            </DialogDescription>
-          </DialogHeader>
-
           {/* create short url form inputs */}
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="originalUrl">Original URL</FieldLabel>
+              <FieldLabel htmlFor="originalUrl">Shorten your URL</FieldLabel>
               <Input id="originalUrl" type="text" placeholder="https://www.example.com" {...register("originalUrl")} />
               <FieldDescription>Paste the full link, including http:// or https://</FieldDescription>
               {errors.originalUrl && <FieldError>{errors.originalUrl.message}</FieldError>}
             </Field>
             <Field>
-              <FieldLabel htmlFor="expiresAt">Expires At</FieldLabel>
-              <Input id="expiresAt" type="date"  {...register("expiresAt")} />
+              <FieldLabel htmlFor="expiresAt">Expires at</FieldLabel>
+              <Controller
+                control={control}
+                name="expiresAt"
+                defaultValue={null}
+                render={({ field: { value, onChange } }) => (
+                  <DateTimePicker value={value} onChange={onChange} />
+                )}
+              />
               <FieldDescription>Optional. Leave empty for a link that never expires.</FieldDescription>
               {errors.expiresAt && <FieldError>{errors.expiresAt.message}</FieldError>}
             </Field>

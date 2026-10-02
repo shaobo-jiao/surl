@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, CopyCheck } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -23,7 +23,7 @@ export default function CopyUrlButton({ value }: CopyUrlButtonProps) {
       size="icon"
       aria-label="Copy URL"
       onClick={handleCopy}>
-      {copied ? <CopyCheck /> : <Copy />}
+      {copied ? <Check /> : <Copy />}
     </Button>
   );
 }
