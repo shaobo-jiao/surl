@@ -33,7 +33,7 @@ export async function createShortUrlApi(request: CreateShortUrlRequest)
 export async function createAnonymousShortUrlApi(request: CreateShortUrlRequest)
   : Promise<Result<ShortUrl, ProblemDetails<CreateShortUrlFields>>> {
   try {
-    const { data } = await axios.post("short-urls/", request, { baseURL: API_BASE_URL });
+    const { data } = await axios.post("short-urls/anonymous", request, { baseURL: API_BASE_URL });
     return { success: true, data: toShortUrl(data) }
   } catch (error) {
     if (!axios.isAxiosError(error) || !error.response)

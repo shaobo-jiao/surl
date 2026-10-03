@@ -15,7 +15,7 @@ public static class ShortUrlTestHelper
         var createRequest = new CreateShortUrlRequest(originalUrl, expiresAt);
 
         var httpResponse = string.IsNullOrEmpty(accessToken)
-            ? await client.PostAsJsonAsync("/short-urls", createRequest, cancellationToken)
+            ? await client.PostAsJsonAsync("/short-urls/anonymous", createRequest, cancellationToken)
             : await client.SendAuthenticatedRequestAsJsonAsync(HttpMethod.Post, "/short-urls",
                 accessToken, createRequest, cancellationToken);
 

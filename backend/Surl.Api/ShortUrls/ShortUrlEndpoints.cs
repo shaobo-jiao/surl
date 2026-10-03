@@ -11,8 +11,15 @@ public static class ShortUrlEndpoints
     public static void MapShortUrlEndpoints(this IEndpointRouteBuilder app)
     {
         var shortUrlApi = app.MapGroup("/short-urls");
-        
+
+        // authenticated creation: the short url is linked to the caller. Requiring authorization
         shortUrlApi.MapPost("/", CreateShortUrlAsync)
+            .WithValidationFilter<CreateShortUrlRequest>()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .RequireAuthorization();
+
+        // anonymous creation: the short url is not linked to any user. Used by the "Try It Out" form.
+        shortUrlApi.MapPost("/anonymous", CreateAnonymousShortUrlAsync)
             .WithValidationFilter<CreateShortUrlRequest>();
 
         shortUrlApi.MapGet("/", QueryShortUrlsAsync)
@@ -38,17 +45,23 @@ public static class ShortUrlEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status410Gone);
     }
-
+    
     public static async Task<CreatedAtRoute<ShortUrlResponse>> CreateShortUrlAsync(
         IShortUrlService shortUrlSvc, CreateShortUrlRequest request, ClaimsPrincipal principal, CancellationToken cancellationToken)
     {
-        // can create anonymous or user-linked short urls;
-        var authenticated = principal.Identity?.IsAuthenticated ?? false;
-        int? userId = authenticated ? principal.GetUserId() : null;
-        
+        var userId = principal.GetUserId();
+
         var shortUrl = await shortUrlSvc.CreateShortUrlAsync(request, userId, cancellationToken);
         var response = shortUrl.ToResponse();
         return TypedResults.CreatedAtRoute(response, "QueryShortUrlById", new { id = shortUrl.Id });
+    }
+
+    public static async Task<Created<ShortUrlResponse>> CreateAnonymousShortUrlAsync(
+        IShortUrlService shortUrlSvc, CreateShortUrlRequest request, CancellationToken cancellationToken)
+    {
+        var shortUrl = await shortUrlSvc.CreateShortUrlAsync(request, userId: null, cancellationToken);
+        var response = shortUrl.ToResponse();
+        return TypedResults.Created(string.Empty, response);
     }
 
     public static async Task<Results<Ok<ShortUrlResponse>, NotFound>> QueryShortUrlByIdAsync(

@@ -1,6 +1,6 @@
-@API_BASE_PATH = http://localhost:5002
+@API_BASE_PATH = https://localhost:5002
 
-@TestUser = user16
+@TestUser = user20
 @TestPassword = P@ssw0rd_123
 
 # register
@@ -49,6 +49,15 @@ Authorization: Bearer {{AccessToken}}
 POST {{API_BASE_PATH}}/short-urls/
 Content-Type: application/json
 Authorization: Bearer {{AccessToken}}
+
+{
+    "originalUrl": "https://www.google.com",
+    "expiresAt": null
+}
+
+# create an anonymous short url (no user linked)
+POST {{API_BASE_PATH}}/short-urls/anonymous
+Content-Type: application/json
 
 {
     "originalUrl": "https://www.google.com",

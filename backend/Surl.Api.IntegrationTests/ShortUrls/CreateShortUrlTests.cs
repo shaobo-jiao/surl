@@ -26,13 +26,14 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
             ExpiresAt: TestConstants.TestStartTime.AddMinutes(1));
 
         // Act 
-        var httpResponse = await client.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
+        var httpResponse = await client.PostAsJsonAsync("/short-urls/anonymous", createRequest, cancellationToken);
         var shortUrlResponse = await httpResponse.Content.ReadFromJsonAsync<ShortUrlResponse>(cancellationToken);
 
         // Assert
         Assert.NotNull(shortUrlResponse);
         Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
         Assert.Equal(originalUrl, shortUrlResponse.OriginalUrl);
+        Assert.Null(shortUrlResponse.UserId);
     }
 
     [Fact]
@@ -60,6 +61,22 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         Assert.Equal(user.Id, shortUrlResponse.UserId);
     }
 
+    [Fact]
+    public async Task CreateShortUrl_AuthenticatedEndpointWithoutToken_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var client = _factory.CreateClient();
+
+        var createRequest = new CreateShortUrlRequest("https://example.com");
+
+        // Act: hitting the authenticated endpoint anonymously should be rejected, not treated as anonymous creation
+        var httpResponse = await client.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, httpResponse.StatusCode);
+    }
+
     /// <summary>
     /// There's only one method here to test the request validator is working. 
     /// Detailed testing on the request validator are in unit tests. 
@@ -77,7 +94,7 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
             ExpiresAt: TestConstants.TestStartTime.AddMinutes(-1));
 
         // Act
-        var httpResponse = await client.PostAsJsonAsync("/short-urls", createRequest, cancellationToken);
+        var httpResponse = await client.PostAsJsonAsync("/short-urls/anonymous", createRequest, cancellationToken);
         var validationDetails = await httpResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken);
 
         // Assert
