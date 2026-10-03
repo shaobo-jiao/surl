@@ -57,14 +57,17 @@ export default function DateTimePicker({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full justify-start font-normal">
-          <CalendarIcon />
-          {value ? format(value, "PP p") : placeholder}
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full justify-start font-normal"
+          />
+        }
+      >
+        <CalendarIcon />
+        {value ? format(value, "PP p") : placeholder}
       </PopoverTrigger>
 
       <PopoverContent align="start" className="w-auto gap-0 p-0">

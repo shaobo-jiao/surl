@@ -107,12 +107,10 @@ export default function RegisterPage() {
 
       {status === "success" &&
         <CardFooter>
-          <Item asChild className="p-0">
-            <Link to="/login">
-              <ItemMedia><CircleCheck className="size-4" /></ItemMedia>
-              <ItemContent><ItemTitle>Your registration is successful.</ItemTitle></ItemContent>
-              <ItemActions><ChevronRight className="size-4" /></ItemActions>
-            </Link>
+          <Item render={<Link to="/login" />} className="p-0">
+            <ItemMedia><CircleCheck className="size-4" /></ItemMedia>
+            <ItemContent><ItemTitle>Your registration is successful.</ItemTitle></ItemContent>
+            <ItemActions><ChevronRight className="size-4" /></ItemActions>
           </Item>
         </CardFooter>
       }

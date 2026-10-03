@@ -1,5 +1,4 @@
-import { Separator } from "./ui/separator";
-import { Button } from "./ui/button";
+import { buttonVariants } from "./ui/button";
 import { Link, NavLink } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
 import LogoutButton from "./LogoutButton";
@@ -20,20 +19,20 @@ const Header = () => {
         <Link to="/" className="text-3xl font-black">SURL</Link>
 
         <div className="flex ml-auto">
-          <Button asChild variant="link"><NavLink to="/">Home</NavLink></Button>
-          <Button asChild variant="link"><NavLink to="/urls">URLs</NavLink></Button>
+          <NavLink to="/" className={buttonVariants({ variant: "link" })}>Home</NavLink>
+          <NavLink to="/urls" className={buttonVariants({ variant: "link" })}>URLs</NavLink>
 
           {
             !isAuthenticated && <>
-              <Button asChild variant="link"><NavLink to="/register">Register</NavLink></Button>
-              <Button asChild variant="link"><NavLink to="/login">Login</NavLink></Button>
+              <NavLink to="/register" className={buttonVariants({ variant: "link" })}>Register</NavLink>
+              <NavLink to="/login" className={buttonVariants({ variant: "link" })}>Login</NavLink>
             </>
           }
 
           {
             isAuthenticated && <>
               <LogoutButton />
-              <Button asChild variant="link"><NavLink to="/me">Hi, {usernameForDisplay}</NavLink></Button>
+              <NavLink to="/me" className={buttonVariants({ variant: "link" })}>Hi, {usernameForDisplay}</NavLink>
             </>
           }
         </div>

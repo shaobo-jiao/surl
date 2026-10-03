@@ -85,9 +85,7 @@ export default function CreateShortUrlDialog({ onCreate }: CreateShortUrlDialogP
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button size="lg" className="ml-auto">Create New</Button>
-      </DialogTrigger>
+      <DialogTrigger render={<Button size="lg" className="ml-auto" />}>Create New</DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
         <form onSubmit={handleSubmit(handleCreateShortUrlSubmit)} className="flex flex-col gap-4">
           {/* create short url form inputs */}
@@ -116,9 +114,7 @@ export default function CreateShortUrlDialog({ onCreate }: CreateShortUrlDialogP
           {errors.root?.serverError && <FieldError>{errors.root.serverError.message}</FieldError>}
 
           <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
+            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
             {isSubmitting
               ? <Button disabled><Spinner /> Creating...</Button>
               : <Button type="submit">Create</Button>
