@@ -1,5 +1,5 @@
 import { MousePointerClick, Trash2 } from "lucide-react";
-import { type ShortUrl } from "@/api/shortUrls/shortUrlApi";
+import { type ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import CopyUrlButton from "@/components/shortUrls/copyUrlButton";

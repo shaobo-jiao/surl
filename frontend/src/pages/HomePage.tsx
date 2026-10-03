@@ -1,5 +1,4 @@
 import React, { useState } from "react"
-import { createAnonymousShortUrl, type ShortUrl } from "@/api/shortUrls/shortUrlApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
@@ -7,6 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/components/ui/separator";
 import { CircleCheck, CircleX, Copy, CopyCheck } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
+import { createAnonymousShortUrlApi } from "@/api/shortUrls/createShortUrl";
+import type { ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 
 // HomePage: contains a hero section and URL Shortener form
 const HomePage = () => {
@@ -21,7 +22,7 @@ const HomePage = () => {
     setShortUrl(null);
     setIsCreating(true);
     setHasError(false);
-    const apiResponse = await createAnonymousShortUrl({ originalUrl });
+    const apiResponse = await createAnonymousShortUrlApi({ originalUrl });
     if (apiResponse.success) {
       setShortUrl(apiResponse.data);
     }

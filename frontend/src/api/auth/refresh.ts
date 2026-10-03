@@ -1,12 +1,10 @@
-
-
 import { API_BASE_URL, GeneralFailureResult, type ProblemDetails, type Result } from "../shared";
 
-interface RefreshResponse {
+export interface RefreshResponse {
   accessToken: string,
 }
 
-export async function refresh(): Promise<Result<RefreshResponse, ProblemDetails>> {
+export async function refreshApi(): Promise<Result<RefreshResponse, ProblemDetails>> {
   // request: empty body, refresh token sent in cookie;
   // response: new access token in body, new refresh token received in cookie
   try {

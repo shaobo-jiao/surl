@@ -1,7 +1,6 @@
 import { API_BASE_URL, GeneralFailureResult, type ProblemDetails, type Result } from "../shared";
 
-
-export async function logout(): Promise<Result<null, ProblemDetails>> {
+export async function logoutApi(): Promise<Result<null, ProblemDetails>> {
   try {
     const httpResponse = await fetch(new URL("/auth/logout", API_BASE_URL), {
       method: "POST",

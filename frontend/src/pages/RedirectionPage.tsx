@@ -1,9 +1,9 @@
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Spinner } from "@/components/ui/spinner";
-import { getOriginalUrl } from "@/api/shortUrls/shortUrlApi";
 import { CircleX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
+import { getRedirectionUrlApi } from "@/api/shortUrls/getRedirectionUrl";
 
 const RedirectionPage = () => {
   const { shortUrlCode } = useParams();
@@ -18,7 +18,7 @@ const RedirectionPage = () => {
     // immediately invoked the async function to get original url and redirect
     (async () => {
       try {
-        const originalUrl = await getOriginalUrl(shortUrlCode);
+        const originalUrl = await getRedirectionUrlApi(shortUrlCode);
         window.location.href = originalUrl;
       }
       catch {

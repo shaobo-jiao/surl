@@ -1,21 +1,16 @@
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { Spinner } from "./ui/spinner";
-import * as logoutApi from "@/api/auth/logout";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 
 export default function LogoutButton() {
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
-  const { dispatchLogout } = useAuth();
+  const { logout } = useAuth();
 
   const handleClick = async () => {
     setIsLoggingOut(true);
-
-    await logoutApi.logout();    
-    // no matter of api logout result, clear UserLogin state;
-    dispatchLogout();
-
+    await logout();
     setIsLoggingOut(false);
   };
 

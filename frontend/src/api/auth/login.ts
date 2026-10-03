@@ -1,18 +1,18 @@
 import { API_BASE_URL, GeneralFailureResult, type ProblemDetails, type Result } from "../shared";
 
-interface LoginRequest {
+export interface LoginRequest {
   username: string,
   password: string
 }
 
-interface LoginResponse {
+// access token in memory, refresh token in cookie
+export interface LoginResponse {
   accessToken: string
-  // refreshToken: string // moved to cookie
 }
 
 export type LoginFields = "username" | "password";
 
-export async function login(request: LoginRequest)
+export async function loginApi(request: LoginRequest)
   : Promise<Result<LoginResponse, ProblemDetails<LoginFields>>> {
     try {
     // call login api

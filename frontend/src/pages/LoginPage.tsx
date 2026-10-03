@@ -10,8 +10,8 @@ import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod";
 import { useLocation, useNavigate } from "react-router";
-import { useAuth } from "@/contexts/AuthContext";
-import * as loginApi from "@/api/auth/login";
+import { useAuth } from "@/hooks/useAuth";
+import type { LoginFields } from "@/api/auth/login";
 
 const LoginFormDataSchema = z.object({
   username: z.string().min(6).max(50)
@@ -24,9 +24,9 @@ type LoginFormData = z.infer<typeof LoginFormDataSchema>;
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { dispatchLogin } = useAuth();
-
+  const { login } = useAuth();
   const [isLogging, setIsLogging] = useState<boolean>(false);
+  
   const {
     register,
     handleSubmit,
@@ -37,21 +37,22 @@ export default function LoginPage() {
   const handleLoginSubmit: SubmitHandler<LoginFormData> = async (data) => {
     setIsLogging(true);
 
-    const apiResponse = await loginApi.login(data);
-    if (apiResponse.success) {
-      dispatchLogin(data.username, apiResponse.data.accessToken);
+    const loginResult = await login(data);
+    if (loginResult.success) {
+      // login success, redirect to previous page;
       navigate(location.state?.from ?? "/urls");
-    }
-    else {
-      const result = apiResponse.error;
-      setError("root.serverError", { type: "server", message: result.detail })
-      if (result.errors !== undefined) {
-        for (const [field, messages] of Object.entries(result.errors)) {
+    } else {
+      // login failure, display errors
+      const loginError = loginResult.error;
+      setError("root.serverError", { type: "server", message: loginError.detail })
+      if (loginError.errors !== undefined) {
+        for (const [field, messages] of Object.entries(loginError.errors)) {
           // set field error using the first error message of each field
-          setError(field as loginApi.LoginFields, { type: "server", message: messages[0] });
+          setError(field as LoginFields, { type: "server", message: messages[0] });
         }
       }
     }
+
     setIsLogging(false);
   };
 

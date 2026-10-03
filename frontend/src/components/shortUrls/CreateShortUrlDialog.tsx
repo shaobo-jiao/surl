@@ -14,9 +14,9 @@ import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Spinner } from "@/components/ui/spinner";
 import DateTimePicker from "@/components/DateTimePicker";
-import { useAuth } from "@/contexts/AuthContext";
-import { createShortUrl, type CreateShortUrlFields, type ShortUrl } from "@/api/shortUrls/shortUrlApi";
 import { toast } from "sonner";
+import type { ShortUrl } from "@/api/shortUrls/shortUrl.shared";
+import { createShortUrlApi, type CreateShortUrlFields } from "@/api/shortUrls/createShortUrl";
 
 
 const CreateShortUrlFormDataScheme = z.object({
@@ -42,7 +42,6 @@ interface CreateShortUrlDialogProps {
 }
 
 export default function CreateShortUrlDialog({ onCreate }: CreateShortUrlDialogProps) {
-  const { userLogin } = useAuth();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const {
@@ -57,23 +56,21 @@ export default function CreateShortUrlDialog({ onCreate }: CreateShortUrlDialogP
   const handleCreateShortUrlSubmit: SubmitHandler<CreateShortUrlFormData> = async (data) => {
     setIsSubmitting(true);
 
-    const apiResponse = await createShortUrl({
+    const createResult = await createShortUrlApi({
       originalUrl: data.originalUrl,
       expiresAt: data.expiresAt ?? undefined
-    }, userLogin.accessToken!
-    );
+    });
 
-    if (apiResponse.success) {
-      onCreate(apiResponse.data);
+    if (createResult.success) {
+      onCreate(createResult.data);
       reset();
       setIsOpen(false);
       toast.success("Short URL has been created");
-    }
-    else {
-      const result = apiResponse.error;
-      setError("root.serverError", { type: "server", message: result.detail })
-      if (result.errors !== undefined) {
-        for (const [field, messages] of Object.entries(result.errors)) {
+    } else {
+      const createError = createResult.error;
+      setError("root.serverError", { type: "server", message: createError.detail })
+      if (createError.errors !== undefined) {
+        for (const [field, messages] of Object.entries(createError.errors)) {
           // set field error using the first error message of each field
           setError(field as CreateShortUrlFields, { type: "server", message: messages[0] });
         }

@@ -1,7 +1,7 @@
 import { buttonVariants } from "./ui/button";
 import { Link, NavLink } from "react-router";
-import { useAuth } from "@/contexts/AuthContext";
 import LogoutButton from "./LogoutButton";
+import { useAuth } from "@/hooks/useAuth";
 
 // Header contains a "Logo" that links to homepage and a nav bar 
 // the nav bar contains: Home, URLs only as for now. later need to add Login/Logout links

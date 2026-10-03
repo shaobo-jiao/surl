@@ -1,4 +1,4 @@
-import { type ShortUrl } from "@/api/shortUrls/shortUrlApi";
+import { type ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 import CreateShortUrlDialog from "@/components/shortUrls/CreateShortUrlDialog";
 import ShortUrlCard from "@/components/shortUrls/ShortUrlCard";
 import { Link2 } from "lucide-react";

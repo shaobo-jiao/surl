@@ -1,4 +1,4 @@
-import * as registerApi from "@/api/auth/register";
+import { registerApi, type RegisterFields } from "@/api/auth/register";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
@@ -47,22 +47,22 @@ export default function RegisterPage() {
   const handleRegisterSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     setStatus("submitting");
 
-    // api call
-    const apiResponse = await registerApi.register(data);
-    if (apiResponse.success) {
+    const registerResult = await registerApi(data);
+    if (registerResult.success) {
       setStatus("success");
     }
     else {
-      setStatus("editing");
-      const result = apiResponse.error;
+      const registerError = registerResult.error;
       // set errors: server error and field errors
-      setError("root.serverError", { type: "server", message: result.detail })
-      if (result.errors !== undefined) {
-        for (const [field, messages] of Object.entries(result.errors)) {
+      setError("root.serverError", { type: "server", message: registerError.detail })
+      if (registerError.errors !== undefined) {
+        for (const [field, messages] of Object.entries(registerError.errors)) {
           // set field error using the first error message of each field
-          setError(field as registerApi.RegisterFields, { type: "server", message: messages[0] });
+          setError(field as RegisterFields, { type: "server", message: messages[0] });
         }
       }
+
+      setStatus("editing");
     }
   };
 

@@ -1,12 +1,12 @@
 import { API_BASE_URL, GeneralFailureResult, type ProblemDetails, type Result } from "../shared";
 
-interface RegisterRequest {
+export interface RegisterRequest {
   username: string,
   password: string,
   email?: string
 }
 
-interface RegisterResponse {
+export interface RegisterResponse {
   id: number,
   username: string,
   email: string,
@@ -15,7 +15,7 @@ interface RegisterResponse {
 
 export type RegisterFields = "username" | "email" | "password";
 
-export async function register(request: RegisterRequest)
+export async function registerApi(request: RegisterRequest)
   : Promise<Result<RegisterResponse, ProblemDetails<RegisterFields>>> {
   try {
     // call register api
