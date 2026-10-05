@@ -52,11 +52,12 @@ function processQueue(token: string | null, error: ProblemDetails | null) {
   failedQueue = [];
 }
 
-
 // request interceptors: handles injecting access token and refresh in advance
 apiClient.interceptors.request.use(async (config) => {
     try {
-      // check if access token is expiring and refresh in advance 
+      // NOTE: we can check if access token is expiring and do preemptive refresh
+      // this requires the backend to return the access token expiry date together with the token
+      // currently this is not implemented as the response interceptor always catches
 
       // inject access token
       if (accessToken) 
