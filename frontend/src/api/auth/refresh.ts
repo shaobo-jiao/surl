@@ -1,26 +1,24 @@
-import { API_BASE_URL, GeneralFailureResult, type ProblemDetails, type Result } from "../shared";
+import axios from "axios";
+import { API_BASE_URL } from "../shared";
 
 export interface RefreshResponse {
   accessToken: string,
 }
 
-export async function refreshApi(): Promise<Result<RefreshResponse, ProblemDetails>> {
-  // request: empty body, refresh token sent in cookie;
-  // response: new access token in body, new refresh token received in cookie
-  try {
-    const httpResponse = await fetch(new URL("/auth/refresh", API_BASE_URL), {
-      method: "POST",
-      credentials: "include"
-    });
-
-    if (httpResponse.ok) {
-      return { success: true, data: await httpResponse.json() };
-    }
-    else {
-      return { success: false, error: await httpResponse.json() };
-    }
-  }
-  catch {
-    return GeneralFailureResult;
-  }
+/**
+ * Rotates the refresh token and returns a new access token.
+ *
+ * request: empty body, refresh token sent in the HttpOnly cookie;
+ * response: new access token in body, new refresh token set in the cookie.
+ *
+ * bare axios instance is used to make API calls here, as it throws errors in the 
+ * same shape as errors in the apiClient; When there's error, the error will 
+ * just be thrown/ There's no wrapping around ProblemDetails
+ */
+export async function refreshApi(): Promise<RefreshResponse> {
+  const { data } = await axios.post<RefreshResponse>("/auth/refresh", null, {
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+  });
+  return data;
 }

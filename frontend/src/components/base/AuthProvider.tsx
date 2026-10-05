@@ -65,24 +65,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // auto login on mount if a valid refresh token is present
     const restoreSession = async () => {
       try {
-        const refreshResponse = await refreshApi();
-        if (!refreshResponse.success) {
-          return;
-        } 
-        
-        // refresh success: set access token and call me api
-        setAccessToken(refreshResponse.data.accessToken);
+        // refreshApi throws if there's no valid refresh token; stay logged out
+        const { accessToken } = await refreshApi();
+        setAccessToken(accessToken);
+
         const meResponse = await meApi();
         if (!meResponse.success) {
           // refresh succeeded but we couldn't load the user; treat as logged out
           setAccessToken(null);
           return;
         }
-  
+
         dispatchUserLogin({
           type: "logged_in",
           payload: { username: meResponse.data.username }
         });
+      } catch {
+        // missing/expired/invalid refresh token, or network error; stay logged out
+        setAccessToken(null);
       } finally {
         setIsLoading(false);
       }

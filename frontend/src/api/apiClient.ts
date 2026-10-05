@@ -16,7 +16,7 @@
 // - response interceptors: catch 401 and trigger refresh; handle duplicate refresh requests
 
 import axios from "axios";
-import { API_BASE_URL, type ProblemDetails } from "./shared";
+import { API_BASE_URL } from "./shared";
 import { refreshApi } from "./auth/refresh";
 
 // the API client for the app to make API calls to authenticated endpoints
@@ -45,7 +45,7 @@ let failedQueue: {
 }[] = [];
 
 // to notify duplicate refresh requests when 1st refresh request completes,
-function processQueue(token: string | null, error: ProblemDetails | null) {
+function processQueue(token: string | null, error: unknown) {
   failedQueue.forEach(({ resolve, reject }) => {
     token ? resolve(token) : reject(error)
   });
@@ -69,7 +69,6 @@ apiClient.interceptors.request.use(async (config) => {
   }
 )
 
-
 // response interceptor: handles token refresh 
 apiClient.interceptors.response.use(
   (response) => response,
@@ -80,7 +79,6 @@ apiClient.interceptors.response.use(
     if (!error.response || error.response.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
-    console.log("Response Interceptor: triggering refresh");
     
     // handle 401 error due to expired access token
     if (isRefreshing) {
@@ -91,7 +89,7 @@ apiClient.interceptors.response.use(
         failedQueue.push({ resolve, reject });
       })
         .then((token) => {
-          originalRequest.headers["Authorization"] = `Bearer ${token}`;
+          originalRequest.headers.Authorization = `Bearer ${token}`;
           return apiClient.request(originalRequest);
         });
     }
@@ -101,25 +99,23 @@ apiClient.interceptors.response.use(
     originalRequest._retry = true;
 
     try {
-      const apiResult = await refreshApi();
-      if (apiResult.success) {
-        // upon successful refresh, update access token, fulfill failedQueue and retry the request
-        const newAccessToken = apiResult.data.accessToken;
-        setAccessToken(newAccessToken);
-        onAuthSuccess?.();
-        
-        processQueue(newAccessToken, null);
-        originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-        return apiClient.request(originalRequest);
-      } else {
-        // upon failed refresh, axios returns rejected promise to catch
-        const error = apiResult.error;
-        setAccessToken(null);
-        onAuthFailure?.();
-      
-        processQueue(null, error);
-        return Promise.reject(error);
-      }
+      // upon successful refresh, update access token, fulfill failedQueue and retry the request
+      const { accessToken: newAccessToken } = await refreshApi();
+      setAccessToken(newAccessToken);
+      onAuthSuccess?.();
+
+      processQueue(newAccessToken, null);
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+      return apiClient.request(originalRequest);
+    } catch (refreshError) {
+      // refreshApi rejects with an AxiosError (the ProblemDetails is in
+      // error.response.data), so callers get the same shape as any other
+      // failed request, and queued requests are rejected the same way
+      setAccessToken(null);
+      onAuthFailure?.();
+
+      processQueue(null, refreshError);
+      return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
     }
