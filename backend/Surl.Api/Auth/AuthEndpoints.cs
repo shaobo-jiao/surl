@@ -31,6 +31,11 @@ public static class AuthEndpoints
             .WithDescription("Change password for authenticated user")
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .RequireAuthorization();
+
+        group.MapGet("/me", MeAsync)
+            .WithDescription("Get the currently authenticated user")
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .RequireAuthorization();
     }
 
     public static async Task<Results<Created<UserResponse>, ProblemHttpResult>> RegisterAsync(
@@ -105,5 +110,15 @@ public static class AuthEndpoints
         return result.IsSuccessful
             ? TypedResults.Ok("Password changed successfully")
             : TypedResults.Problem(result.Error.ToProblemDetails());
+    }
+
+    public static async Task<Results<Ok<UserResponse>, NotFound>> MeAsync(
+        IUserService userService, ClaimsPrincipal user, CancellationToken cancellationToken)
+    {
+        var userId = user.GetUserId();
+        var loadedUser = await userService.GetUserByIdAsync(userId, cancellationToken);
+        return loadedUser == null
+            ? TypedResults.NotFound()
+            : TypedResults.Ok(loadedUser.ToResponse());
     }
 }
