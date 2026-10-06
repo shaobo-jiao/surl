@@ -4,7 +4,7 @@ public record ShortUrlResponse(
     long Id,
     string ShortUrlCode,
     string OriginalUrl,
-    DateTimeOffset ExpiresAt,
+    DateTimeOffset? ExpiresAt,
     long ClickCount,
     int? UserId);
 

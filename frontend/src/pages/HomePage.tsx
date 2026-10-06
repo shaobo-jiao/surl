@@ -85,7 +85,9 @@ const HomePage = () => {
               </div>
               <Separator />
               <p className="text-muted-foreground">
-                The link will expire at {shortUrl.expiresAt.toLocaleString()}
+                {shortUrl.expiresAt
+                  ? `The link will expire at ${shortUrl.expiresAt.toLocaleString()}`
+                  : "The link never expires"}
               </p>
             </div>
           </CardFooter>

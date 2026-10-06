@@ -14,4 +14,4 @@ secrets/*
 certs/
 
 # local migration scripts
-migrations/
+/migrations/

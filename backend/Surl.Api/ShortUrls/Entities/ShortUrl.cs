@@ -7,7 +7,7 @@ public class ShortUrl
     public long Id { get; set; }
     public string Code { get; set; } = string.Empty; // converted from Id to a short code as the short URL identifier.
     public string OriginalUrl { get; set; } = string.Empty; // original long url to shorten
-    public DateTimeOffset ExpiresAt { get; set; } // expiry datetime
+    public DateTimeOffset? ExpiresAt { get; set; } // expiry datetime; null means the url never expires
     public int? UserId { get; set; }
     public User? User { get; set; }
 

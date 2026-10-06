@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using Surl.Api.Common;
@@ -31,21 +31,22 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
     }
 
     [Fact]
-    public async Task QueryShortUrls_WithoutQueryParams_ShouldReturnDefaultPagedResult()
+    public async Task QueryShortUrls_WithoutQueryParams_ShouldReturnAllUrls()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
 
-        // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
             TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
-        var data = CreateStubShortUrlRequests();
+
+        var data = CreateStubShortUrlRequests(numberOfExpiringUrls: 5, numberOfNeverExpiringUrls: 3);
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
 
-        shortUrls = shortUrls.OrderBy(x => x.Id);
-        var expectedResult = ConvertToPagedResult(shortUrls,
+        // no expiry params: every url is returned, ordered by Id ASC
+        var expectedShortUrls = shortUrls.OrderBy(x => x.Id);
+        var expectedResult = ConvertToPagedResult(expectedShortUrls,
             PagedResultConstants.DefaultPage, PagedResultConstants.DefaultPageSize);
 
         // Act
@@ -57,22 +58,16 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
         // Assert
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
         Assert.NotNull(queryResult);
-
-        Assert.Equal(expectedResult.Page, queryResult.Page);
-        Assert.Equal(expectedResult.PageSize, queryResult.PageSize);
-        Assert.Equal(expectedResult.TotalCount, queryResult.TotalCount);
-        Assert.Equal(expectedResult.TotalPages, queryResult.TotalPages);
-        Assert.Equal(expectedResult.Items, queryResult.Items);
+        AssertHelper.AssertPagedResult(expectedResult, queryResult);
     }
 
     [Fact]
-    public async Task QueryShortUrls_FilteringExpiresAt_ShouldReturnFilteredResult()
+    public async Task QueryShortUrls_FilteringByBothExpiresFromAndExpiresTo_ShouldReturnUrlsInRange()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
 
-        // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
             TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
@@ -81,9 +76,9 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
 
         var expiresFrom = TestConstants.TestStartTime.AddDays(1);
         var expiresTo = TestConstants.TestStartTime.AddDays(50);
+        // both bounds given: only urls with an expiry inside the range; never-expiring urls are excluded
         var expectedShortUrls = shortUrls
-            .Where(x => x.ExpiresAt >= expiresFrom)
-            .Where(x => x.ExpiresAt <= expiresTo)
+            .Where(x => x.ExpiresAt >= expiresFrom && x.ExpiresAt <= expiresTo)
             .OrderBy(x => x.Id);
         var expectedResult = ConvertToPagedResult(expectedShortUrls,
             PagedResultConstants.DefaultPage, PagedResultConstants.DefaultPageSize);
@@ -105,6 +100,79 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
         AssertHelper.AssertPagedResult(expectedResult, queryResult);
     }
 
+    [Fact]
+    public async Task QueryShortUrls_FilteringByExpiresFromOnly_ShouldIncludeNeverExpiringUrls()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var client = _factory.CreateClient();
+
+        var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
+        var data = CreateStubShortUrlRequests();
+        var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
+            client, data, userLogin.AccessToken, cancellationToken);
+
+        var expiresFrom = TestConstants.TestStartTime.AddDays(50);
+        // only a lower bound given: never-expiring urls are unbounded, so they are included too
+        var expectedShortUrls = shortUrls
+            .Where(x => x.ExpiresAt is null || x.ExpiresAt >= expiresFrom)
+            .OrderBy(x => x.Id);
+        var expectedResult = ConvertToPagedResult(expectedShortUrls,
+            PagedResultConstants.DefaultPage, PagedResultConstants.DefaultPageSize);
+
+        // Act
+        var uri = QueryHelpers.AddQueryString("/short-urls", new Dictionary<string, string?>()
+        {
+            ["ExpiresFrom"] = expiresFrom.ToString("o"),
+        });
+        var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Get, uri, userLogin.AccessToken, cancellationToken);
+        var queryResult = await httpResponse.Content.ReadFromJsonAsync<PagedResult<ShortUrlResponse>>(
+            cancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
+        Assert.NotNull(queryResult);
+        AssertHelper.AssertPagedResult(expectedResult, queryResult);
+    }
+
+    [Fact]
+    public async Task QueryShortUrls_FilteringByExpiresToOnly_ShouldExcludeNeverExpiringUrls()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var client = _factory.CreateClient();
+
+        var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
+        var data = CreateStubShortUrlRequests();
+        var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
+            client, data, userLogin.AccessToken, cancellationToken);
+
+        var expiresTo = TestConstants.TestStartTime.AddDays(50);
+        // only an upper bound given: only urls expiring on or before it; never-expiring urls are excluded
+        var expectedShortUrls = shortUrls
+            .Where(x => x.ExpiresAt is not null && x.ExpiresAt <= expiresTo)
+            .OrderBy(x => x.Id);
+        var expectedResult = ConvertToPagedResult(expectedShortUrls,
+            PagedResultConstants.DefaultPage, PagedResultConstants.DefaultPageSize);
+
+        // Act
+        var uri = QueryHelpers.AddQueryString("/short-urls", new Dictionary<string, string?>()
+        {
+            ["ExpiresTo"] = expiresTo.ToString("o"),
+        });
+        var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Get, uri, userLogin.AccessToken, cancellationToken);
+        var queryResult = await httpResponse.Content.ReadFromJsonAsync<PagedResult<ShortUrlResponse>>(
+            cancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
+        Assert.NotNull(queryResult);
+        AssertHelper.AssertPagedResult(expectedResult, queryResult);
+    }
 
     [Fact]
     public async Task QueryShortUrls_OrderbyExpiresAt_ShouldReturnOrderedResult()
@@ -113,14 +181,16 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
 
-        // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
             TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
 
-        var expectedShortUrls = shortUrls.OrderBy(x => x.ExpiresAt);
+        var expectedShortUrls = shortUrls
+            .OrderBy(x => x.ExpiresAt is null) // sorts NULLs last for ASC, same as Postgres
+            .ThenBy(x => x.ExpiresAt)
+            .ThenBy(x => x.Id);
         var expectedResult = ConvertToPagedResult(expectedShortUrls,
             PagedResultConstants.DefaultPage, PagedResultConstants.DefaultPageSize);
 
@@ -141,64 +211,22 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
     }
 
     [Fact]
-    public async Task QueryShortUrls_OrderbyClickCount_ShouldReturnOrderedResult()
-    {        
-        // Arrange
-        var cancellationToken = TestContext.Current.CancellationToken;
-        using var client = _factory.CreateClient();
-
-        // generate short urls
-        var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
-            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
-        var data = CreateStubShortUrlRequests();
-        var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
-            client, data, userLogin.AccessToken, cancellationToken);
-        
-        // generate click counts
-        var randomClickCounts = RandomHelper.DistinctIntegers(shortUrls.Count(), 0, 100);
-        shortUrls = shortUrls.Zip(randomClickCounts, 
-            (shortUrl, count) => shortUrl with {ClickCount = count});
-        var clickCounts = shortUrls
-            .Select(x => new KeyValuePair<string, long>(x.ShortUrlCode, x.ClickCount))
-            .ToDictionary();
-        await ShortUrlTestHelper.ClickShortUrlsAsync(client, clickCounts, cancellationToken);
-        await Task.Delay(1000, cancellationToken); // delay a bit for the click background service
-
-        var expectedShortUrls = shortUrls.OrderBy(x => x.ClickCount);
-        var expectedResult = ConvertToPagedResult(expectedShortUrls,
-            PagedResultConstants.DefaultPage, PagedResultConstants.DefaultPageSize);
-
-        // Act
-        var uri = QueryHelpers.AddQueryString("/short-urls", new Dictionary<string, string?>()
-        {
-            ["OrderBy"] = QueryShortUrlAllowedOrderByProperties.ClickCount.ToLowerInvariant(),
-        });
-        var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
-            HttpMethod.Get, uri, userLogin.AccessToken, cancellationToken);
-        var queryResult = await httpResponse.Content.ReadFromJsonAsync<PagedResult<ShortUrlResponse>>(
-            cancellationToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
-        Assert.NotNull(queryResult);
-        AssertHelper.AssertPagedResult(expectedResult, queryResult);
-    }
-
-    [Fact]
     public async Task QueryShortUrls_OrderbyExpiresAtDescending_ShouldReturnResultInDescendingOrder()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
 
-        // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
             TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
 
-        var expectedShortUrls = shortUrls.OrderByDescending(x => x.ExpiresAt);
+        var expectedShortUrls = shortUrls
+            .OrderBy(x => x.ExpiresAt is not null) // sorts NULLs first for DESC, same as Postgres
+            .ThenByDescending(x => x.ExpiresAt)
+            .ThenByDescending(x => x.Id);
         var expectedResult = ConvertToPagedResult(expectedShortUrls,
             PagedResultConstants.DefaultPage, PagedResultConstants.DefaultPageSize);
 
@@ -220,20 +248,63 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
     }
 
     [Fact]
-    public async Task QueryShortUrls_CustomPageAndPageSize_ShouldReturnExpectedPagedResult()
+    public async Task QueryShortUrls_OrderbyClickCount_ShouldReturnOrderedResult()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
 
-        // prepare data
         var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
             TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var data = CreateStubShortUrlRequests();
         var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
             client, data, userLogin.AccessToken, cancellationToken);
 
-        var page = 4;
+        // generate click counts
+        var randomClickCounts = RandomHelper.DistinctIntegers(shortUrls.Count(), 0, 100);
+        shortUrls = shortUrls.Zip(randomClickCounts,
+            (shortUrl, count) => shortUrl with { ClickCount = count });
+        var clickCounts = shortUrls
+            .Select(x => new KeyValuePair<string, long>(x.ShortUrlCode, x.ClickCount))
+            .ToDictionary();
+        await ShortUrlTestHelper.ClickShortUrlsAsync(client, clickCounts, cancellationToken);
+        await Task.Delay(1000, cancellationToken); // delay a bit for the click background service, TO REVIEW
+
+        // ties are broken by Id ASC
+        var expectedShortUrls = shortUrls.OrderBy(x => x.ClickCount).ThenBy(x => x.Id);
+        var expectedResult = ConvertToPagedResult(expectedShortUrls,
+            PagedResultConstants.DefaultPage, PagedResultConstants.DefaultPageSize);
+
+        // Act
+        var uri = QueryHelpers.AddQueryString("/short-urls", new Dictionary<string, string?>()
+        {
+            ["OrderBy"] = QueryShortUrlAllowedOrderByProperties.ClickCount.ToLowerInvariant(),
+        });
+        var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Get, uri, userLogin.AccessToken, cancellationToken);
+        var queryResult = await httpResponse.Content.ReadFromJsonAsync<PagedResult<ShortUrlResponse>>(
+            cancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
+        Assert.NotNull(queryResult);
+        AssertHelper.AssertPagedResult(expectedResult, queryResult);
+    }
+
+    [Fact]
+    public async Task QueryShortUrls_CustomPageAndPageSize_ShouldReturnExpectedPagedResult()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var client = _factory.CreateClient();
+
+        var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
+        var data = CreateStubShortUrlRequests();
+        var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
+            client, data, userLogin.AccessToken, cancellationToken);
+
+        var page = 2;
         var pageSize = 4;
         var expectedShortUrls = shortUrls.OrderBy(x => x.Id);
         var expectedResult = ConvertToPagedResult(expectedShortUrls, page, pageSize);
@@ -255,6 +326,59 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
         AssertHelper.AssertPagedResult(expectedResult, queryResult);
     }
 
+    /// <summary>
+    /// When urls tie on the primary ordering key, the Id secondary ordering must follow the
+    /// requested direction. Never-expiring urls all tie on a null ExpiresAt, which makes them a
+    /// convenient data set for this check.
+    /// </summary>
+    [Fact]
+    public async Task QueryShortUrls_OrderbyExpiresAtWithTies_ShouldBreakTiesById()
+    {
+        // Arrange: only never-expiring urls, so every item ties on ExpiresAt
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var client = _factory.CreateClient();
+
+        var userLogin = await AuthHelper.RegisterAndLoginAsync(client,
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
+        var data = CreateStubShortUrlRequests(numberOfExpiringUrls: 0, numberOfNeverExpiringUrls: 5);
+        var shortUrls = await ShortUrlTestHelper.CreateStubShortUrlsAsync(
+            client, data, userLogin.AccessToken, cancellationToken);
+
+        // Act: ascending
+        var uri = QueryHelpers.AddQueryString("/short-urls", new Dictionary<string, string?>()
+        {
+            ["OrderBy"] = QueryShortUrlAllowedOrderByProperties.ExpiresAt.ToLowerInvariant(),
+        });
+        var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Get, uri, userLogin.AccessToken, cancellationToken);
+        var queryResult = await httpResponse.Content.ReadFromJsonAsync<PagedResult<ShortUrlResponse>>(
+            cancellationToken);
+
+        // Assert: ties are broken by Id ASC
+        Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
+        Assert.NotNull(queryResult);
+
+        var expected = shortUrls.OrderBy(x => x.Id).Select(x => x.Id);
+        Assert.Equal(expected, queryResult.Items.Select(x => x.Id));
+
+        // Act: descending
+        var descendingUri = QueryHelpers.AddQueryString("/short-urls", new Dictionary<string, string?>()
+        {
+            ["OrderBy"] = QueryShortUrlAllowedOrderByProperties.ExpiresAt,
+            ["IsDescending"] = true.ToString(),
+        });
+        var descendingResponse = await client.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Get, descendingUri, userLogin.AccessToken, cancellationToken);
+        var descendingResult = await descendingResponse.Content.ReadFromJsonAsync<PagedResult<ShortUrlResponse>>(
+            cancellationToken);
+
+        // Assert: ties are broken by Id DESC
+        Assert.Equal(HttpStatusCode.OK, descendingResponse.StatusCode);
+        Assert.NotNull(descendingResult);
+        expected = shortUrls.OrderByDescending(x => x.Id).Select(x => x.Id);
+        Assert.Equal(expected, descendingResult.Items.Select(x => x.Id));
+    }
+
     private static PagedResult<T> ConvertToPagedResult<T>(IEnumerable<T> items, int page, int pageSize)
     {
         var filteredItems = items
@@ -265,19 +389,23 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
         return expectedResult;
     }
 
-    private static List<CreateShortUrlRequest> CreateStubShortUrlRequests()
+    /// <summary>
+    /// creates a mix of never-expiring and expiring short urls as testing data
+    /// </summary>
+    private static List<CreateShortUrlRequest> CreateStubShortUrlRequests(
+        int numberOfExpiringUrls = 8, int numberOfNeverExpiringUrls = 2)
     {
-        var numberOfUrls = 15;
-
-        // prepare some random unique expiry day offsets;
-        var dayList = RandomHelper.DistinctIntegers(numberOfUrls, 1, 100);
-
         var requests = new List<CreateShortUrlRequest>();
-        for (int i = 0; i < numberOfUrls; i++)
-        {
-            requests.Add(new("https://www.example.com", TestConstants.TestStartTime.AddDays(dayList[i])));
-        }
+
+        // never-expiring urls: no expiry date is provided
+        for (int i = 0; i < numberOfNeverExpiringUrls; i++)
+            requests.Add(new("https://www.example.com"));
+
+        // expiring urls: distinct expiry day offsets so the expiry ordering is deterministic
+        var dayOffsets = RandomHelper.DistinctIntegers(numberOfExpiringUrls, 1, 100);
+        foreach (var dayOffset in dayOffsets)
+            requests.Add(new("https://www.example.com", TestConstants.TestStartTime.AddDays(dayOffset)));
+
         return requests;
     }
-
 }

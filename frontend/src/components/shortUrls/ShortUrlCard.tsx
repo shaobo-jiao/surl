@@ -57,7 +57,9 @@ export default function ShortUrlCard({ shortUrl, onDelete }: ShortUrlCardProps) 
               {shortUrl.clickCount.toLocaleString()} clicks
             </ItemDescription>
             <ItemDescription>
-              Expiring at {format(shortUrl.expiresAt, "PP p")}
+              {shortUrl.expiresAt
+                ? `Expiring at ${format(shortUrl.expiresAt, "PP p")}`
+                : "Never Expire"}
             </ItemDescription>
           </ItemContent>
         </Item>

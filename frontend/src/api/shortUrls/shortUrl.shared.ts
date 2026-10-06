@@ -5,7 +5,7 @@ export interface ShortUrl {
   originalUrl: string,
   code: string,
   absoluteUrl: string,
-  expiresAt: Date,
+  expiresAt: Date | null,
   clickCount: number
 }
 
@@ -13,7 +13,7 @@ export interface ShortUrlResponse {
   id: string, // long Id from backend
   originalUrl: string,
   shortUrlCode: string,
-  expiresAt: string,
+  expiresAt: string | null,
   clickCount: number
 }
 
@@ -25,7 +25,7 @@ export function toShortUrl(data: ShortUrlResponse): ShortUrl {
     originalUrl: data.originalUrl,
     code: data.shortUrlCode,
     absoluteUrl: new URL(data.shortUrlCode, APP_URL).toString(),
-    expiresAt: new Date(data.expiresAt),
+    expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
     clickCount: data.clickCount,
   }
 }

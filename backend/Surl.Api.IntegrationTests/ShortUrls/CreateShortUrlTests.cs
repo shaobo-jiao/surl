@@ -33,7 +33,27 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         Assert.NotNull(shortUrlResponse);
         Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
         Assert.Equal(originalUrl, shortUrlResponse.OriginalUrl);
+        Assert.Equal(createRequest.ExpiresAt, shortUrlResponse.ExpiresAt);
         Assert.Null(shortUrlResponse.UserId);
+    }
+
+    [Fact]
+    public async Task CreateShortUrl_AnonymousRequestWithoutExpiry_ShouldDefaultToOneDay()
+    {
+        // Arrange: anonymous short urls should get a default 1-day lifetime
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var client = _factory.CreateClient();
+
+        var createRequest = new CreateShortUrlRequest("https://example.com");
+
+        // Act
+        var httpResponse = await client.PostAsJsonAsync("/short-urls/anonymous", createRequest, cancellationToken);
+        var shortUrlResponse = await httpResponse.Content.ReadFromJsonAsync<ShortUrlResponse>(cancellationToken);
+
+        // Assert
+        Assert.NotNull(shortUrlResponse);
+        Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
+        Assert.Equal(TestConstants.TestStartTime.AddDays(1), shortUrlResponse.ExpiresAt);
     }
 
     [Fact]
@@ -58,6 +78,8 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         Assert.NotNull(shortUrlResponse);
         Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
         Assert.Equal(originalUrl, shortUrlResponse.OriginalUrl);
+        // no expiry given: authenticated short urls never expire
+        Assert.Null(shortUrlResponse.ExpiresAt);
         Assert.Equal(user.Id, shortUrlResponse.UserId);
     }
 

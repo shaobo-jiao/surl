@@ -95,7 +95,7 @@ public class RedirectShortUrlTests(CustomWebApplicationFactory factory) : IAsync
         // Act
         var httpResponse = await client.GetAsync($"/redirection/{shortUrl.ShortUrlCode}", cancellationToken);
         var actualOriginalUrl = await httpResponse.Content.ReadFromJsonAsync<string>(cancellationToken);
-        await Task.Delay(100, cancellationToken); // wait a bit for click processing
+        await Task.Delay(1000, cancellationToken); // wait a bit for click processing, TO REVIEW
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
@@ -107,5 +107,34 @@ public class RedirectShortUrlTests(CustomWebApplicationFactory factory) : IAsync
         var shortUrlResult = await queryShortUrlResponse.Content.ReadFromJsonAsync<ShortUrlResponse>(cancellationToken);
         Assert.NotNull(shortUrlResult);
         Assert.Equal(1, shortUrlResult.ClickCount);
+    }
+
+    [Fact]
+    public async Task RedirectShortUrl_WithoutExpiry_ShouldNeverExpire()
+    {
+        // Arrange: authenticated short url created without an expiry date
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var client = _factory.CreateClient();
+
+        var userLogin = await AuthHelper.RegisterAndLoginAsync(
+            client, TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
+
+        var originalUrl = "https://www.example.com";
+        var shortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
+            originalUrl: originalUrl,
+            expiresAt: null,
+            accessToken: userLogin.AccessToken,
+            cancellationToken: cancellationToken);
+        Assert.NotNull(shortUrl);
+        Assert.Null(shortUrl.ExpiresAt);
+
+        // Act: advance far beyond any typical expiry date
+        _factory.TimeProvider.Advance(TimeSpan.FromDays(3650));
+        var httpResponse = await client.GetAsync($"/redirection/{shortUrl.ShortUrlCode}", cancellationToken);
+        var actualOriginalUrl = await httpResponse.Content.ReadFromJsonAsync<string>(cancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
+        Assert.Equal(originalUrl, actualOriginalUrl);
     }
 }

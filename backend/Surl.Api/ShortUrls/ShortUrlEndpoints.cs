@@ -57,9 +57,15 @@ public static class ShortUrlEndpoints
     }
 
     public static async Task<Created<ShortUrlResponse>> CreateAnonymousShortUrlAsync(
-        IShortUrlService shortUrlSvc, CreateShortUrlRequest request, CancellationToken cancellationToken)
+        IShortUrlService shortUrlSvc, CreateShortUrlRequest request, TimeProvider timeProvider, 
+        CancellationToken cancellationToken)
     {
-        var shortUrl = await shortUrlSvc.CreateShortUrlAsync(request, userId: null, cancellationToken);
+        // anonymous short urls default to a 1-day lifetime when no expiry is provided
+        var anonymousRequest = request with
+        {
+            ExpiresAt = request.ExpiresAt ?? timeProvider.GetUtcNow().AddDays(1)
+        };
+        var shortUrl = await shortUrlSvc.CreateShortUrlAsync(anonymousRequest, userId: null, cancellationToken);
         var response = shortUrl.ToResponse();
         return TypedResults.Created(string.Empty, response);
     }

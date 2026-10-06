@@ -21,7 +21,7 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
             Id = newId,
             Code = Base62Encoding.Encode(newId),
             OriginalUrl = request.OriginalUrl,
-            ExpiresAt = request.ExpiresAt ?? _timeProvider.GetUtcNow().AddDays(1),
+            ExpiresAt = request.ExpiresAt, // null means the short url never expires
             UserId = userId,
         };
 
@@ -69,18 +69,24 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
         // filter userId;
         query = query.Where(x => x.UserId == userId);
 
-        // filter param expiry range;
-        if (queryParams.ExpiresFrom.HasValue) query = query.Where(x => x.ExpiresAt >= queryParams.ExpiresFrom);
-        if (queryParams.ExpiresTo.HasValue) query = query.Where(x => x.ExpiresAt <= queryParams.ExpiresTo);
+        // filter param expiry range: never-expiring urls with null expiresAt is treated 
+        // as having a infinitely large expiry date, thus included when using standalone 
+        // expiresFrom filter
+        if (queryParams.ExpiresFrom.HasValue)
+            query = query.Where(x => !x.ExpiresAt.HasValue || x.ExpiresAt >= queryParams.ExpiresFrom);
+        if (queryParams.ExpiresTo.HasValue)
+            query = query.Where(x => x.ExpiresAt <= queryParams.ExpiresTo);
 
-        // order by
+        // order by, always breaking ties by Id in the same direction so the result is deterministic
         var orderBy = queryParams.OrderBy ?? string.Empty;
         var isDescending = queryParams.IsDescending ?? false;
         
         if (orderBy.Equals(QueryShortUrlAllowedOrderByProperties.ExpiresAt, StringComparison.InvariantCultureIgnoreCase))
-            query = query.OrderByDirection(x => x.ExpiresAt, isDescending);
+            query = query.OrderByDirection(x => x.ExpiresAt, isDescending)
+                .ThenByDirection(x => x.Id, isDescending);
         else if (orderBy.Equals(QueryShortUrlAllowedOrderByProperties.ClickCount, StringComparison.InvariantCultureIgnoreCase))
-            query = query.OrderByDirection(x => x.Clicks.Count, isDescending);
+            query = query.OrderByDirection(x => x.Clicks.Count, isDescending)
+                .ThenByDirection(x => x.Id, isDescending);
         else
             query = query.OrderByDirection(x => x.Id, isDescending);
 
@@ -109,7 +115,7 @@ public class ShortUrlService(AppDbContext dbContext, IdGenerator<ShortUrl> idGen
             return Result<ShortUrl, ShortUrlError>.Failure(ShortUrlError.NotFound);
         }
         
-        if (shortUrl.ExpiresAt <= _timeProvider.GetUtcNow())
+        if (shortUrl.ExpiresAt.HasValue && shortUrl.ExpiresAt.Value <= _timeProvider.GetUtcNow())
         {
             _logger.LogDebug("Short URL {ShortUrlId} expired at {ExpiresAt}",
                 id, shortUrl.ExpiresAt);
