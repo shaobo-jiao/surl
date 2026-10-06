@@ -1,34 +1,36 @@
+import { queryShortUrlsApi } from "@/api/shortUrls/queryShortUrls";
 import { type ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 import CreateShortUrlDialog from "@/components/shortUrls/CreateShortUrlDialog";
 import ShortUrlCard from "@/components/shortUrls/ShortUrlCard";
 import { Link2 } from "lucide-react";
-import { useState } from "react";
-
-// TEMPORARY sample data for checking the ShortUrlCard layout.
-const sampleShortUrls: ShortUrl[] = [
-  {
-    id: "1",
-    originalUrl: "https://www.example.com/a/very/long/original/url/path/that/should/be/truncated",
-    code: "abc123",
-    absoluteUrl: "http://surl.local/abc123",
-    expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-    clickCount: 1234,
-  },
-  {
-    id: "2",
-    originalUrl: "https://www.google.com",
-    code: "xyz789",
-    absoluteUrl: "http://surl.local/xyz789",
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    clickCount: 0,
-  },
-];
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function UrlsPage() {
-  const [urls, setUrls] = useState<ShortUrl[]>(sampleShortUrls);
+  const [shortUrls, setShortUrls] = useState<ShortUrl[]>([]);
+
+  useEffect(() => {
+    let ignore = false; // handles effect firing twice
+
+    // load the default short urls page on mount; with no query params,
+    // the backend uses its default page and page size
+    const loadShortUrls = async () => {
+      const queryResult = await queryShortUrlsApi();
+      if (!queryResult.success) {
+        toast.error("Failed loading short URLs", { description: queryResult.error.detail });
+        return;
+      }
+      if (!ignore)
+        setShortUrls(queryResult.data.items);
+    };
+
+    loadShortUrls();
+
+    return () => { ignore = true; };
+  }, []);
 
   const handleCreate = (created: ShortUrl) => {
-    setUrls((previousUrls) => [created, ...previousUrls]);
+    setShortUrls((previousShortUrls) => [created, ...previousShortUrls]);
   };
 
   return (
@@ -45,7 +47,7 @@ export default function UrlsPage() {
       </div>
 
       <div className="flex flex-col w-full gap-4">
-        {urls.map((shortUrl) => (
+        {shortUrls.map((shortUrl) => (
           <ShortUrlCard
             key={shortUrl.id}
             shortUrl={shortUrl}
