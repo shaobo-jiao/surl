@@ -1,6 +1,9 @@
-﻿namespace Surl.Api.ShortUrls;
+﻿using System.Text.Json.Serialization;
+
+namespace Surl.Api.ShortUrls;
 
 public record ShortUrlResponse(
+    [property: JsonNumberHandling(JsonNumberHandling.WriteAsString)]
     long Id,
     string ShortUrlCode,
     string OriginalUrl,

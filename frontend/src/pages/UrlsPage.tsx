@@ -1,4 +1,5 @@
 import { queryShortUrlsApi } from "@/api/shortUrls/queryShortUrls";
+import { deleteShortUrlApi } from "@/api/shortUrls/deleteShortUrl";
 import { type ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 import CreateShortUrlDialog from "@/components/shortUrls/CreateShortUrlDialog";
 import ShortUrlCard from "@/components/shortUrls/ShortUrlCard";
@@ -33,6 +34,17 @@ export default function UrlsPage() {
     setShortUrls((previousShortUrls) => [created, ...previousShortUrls]);
   };
 
+  const handleDelete = async (toDelete: ShortUrl) => {
+    const deleteResult = await deleteShortUrlApi(toDelete.id);
+    if (!deleteResult.success) {
+      toast.error("Failed deleting short URL", { description: deleteResult.error.detail });
+      return;
+    }
+    setShortUrls((previousShortUrls) =>
+      previousShortUrls.filter((existing) => existing.id !== toDelete.id));
+    toast.success("Short URL has been deleted");
+  };
+
   return (
     <div className="flex flex-col items-center w-full max-w-3xl">
 
@@ -51,7 +63,7 @@ export default function UrlsPage() {
           <ShortUrlCard
             key={shortUrl.id}
             shortUrl={shortUrl}
-            onDelete={(deleted) => console.log("delete", deleted.id)}
+            onDelete={handleDelete}
           />
         ))}
       </div>
