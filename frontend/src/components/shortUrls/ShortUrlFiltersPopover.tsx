@@ -81,6 +81,7 @@ export default function UrlFiltersPopover({ filters, onApply }: UrlFiltersPopove
       page: Math.max(1, Number.parseInt(draft.page, 10) || filters.page),
       pageSize: Math.max(1, Number.parseInt(draft.pageSize, 10) || filters.pageSize),
     };
+    
     setIsApplying(true);
     try {
       const success = await onApply(next);

@@ -56,28 +56,30 @@ export default function CreateShortUrlDialog({ onCreate }: CreateShortUrlDialogP
   const handleCreateShortUrlSubmit: SubmitHandler<CreateShortUrlFormData> = async (data) => {
     setIsSubmitting(true);
 
-    const createResult = await createShortUrlApi({
-      originalUrl: data.originalUrl,
-      expiresAt: data.expiresAt ?? undefined
-    });
+    try {
+      const createResult = await createShortUrlApi({
+        originalUrl: data.originalUrl,
+        expiresAt: data.expiresAt ?? undefined
+      });
 
-    if (createResult.success) {
-      onCreate(createResult.data);
-      reset();
-      setIsOpen(false);
-      toast.success("Short URL has been created");
-    } else {
-      const createError = createResult.error;
-      setError("root.serverError", { type: "server", message: createError.detail })
-      if (createError.errors !== undefined) {
-        for (const [field, messages] of Object.entries(createError.errors)) {
-          // set field error using the first error message of each field
-          setError(field as CreateShortUrlFields, { type: "server", message: messages[0] });
+      if (createResult.success) {
+        onCreate(createResult.data);
+        reset();
+        setIsOpen(false);
+        toast.success("Short URL has been created");
+      } else {
+        const createError = createResult.error;
+        setError("root.serverError", { type: "server", message: createError.detail })
+        if (createError.errors !== undefined) {
+          for (const [field, messages] of Object.entries(createError.errors)) {
+            // set field error using the first error message of each field
+            setError(field as CreateShortUrlFields, { type: "server", message: messages[0] });
+          }
         }
       }
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
   };
 
   return (

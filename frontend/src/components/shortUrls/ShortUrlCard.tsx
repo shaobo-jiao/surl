@@ -8,10 +8,12 @@ import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
 import { useState } from "react";
 import { Spinner } from "../ui/spinner";
+import { deleteShortUrlApi } from "@/api/shortUrls/deleteShortUrl";
+import { toast } from "sonner";
 
 interface ShortUrlCardProps {
   shortUrl: ShortUrl;
-  onDelete: (shortUrl: ShortUrl) => Promise<boolean>;
+  onDelete: (shortUrl: ShortUrl) => void;
 }
 
 export default function ShortUrlCard({ shortUrl, onDelete }: ShortUrlCardProps) {
@@ -21,8 +23,15 @@ export default function ShortUrlCard({ shortUrl, onDelete }: ShortUrlCardProps) 
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const success = await onDelete(shortUrl);
-      if (success) setIsOpen(false);
+      const deleteResult = await deleteShortUrlApi(shortUrl.id);
+      if (!deleteResult.success) {
+        toast.error("Failed deleting short URL", { description: deleteResult.error.detail });
+        return;
+      }
+      // on success:
+      onDelete(shortUrl);
+      setIsOpen(false);
+      toast.success("Short URL has been deleted");
     } finally {
       setIsDeleting(false);
     }
