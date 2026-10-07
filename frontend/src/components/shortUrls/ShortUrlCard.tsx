@@ -2,7 +2,7 @@ import { MousePointerClick, Trash2 } from "lucide-react";
 import { type ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import CopyUrlButton from "@/components/shortUrls/copyUrlButton";
+import CopyUrlButton from "@/components/shortUrls/CopyUrlButton";
 import { Item, ItemContent, ItemDescription, ItemHeader } from "../ui/item";
 import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";

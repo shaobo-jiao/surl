@@ -1,7 +1,7 @@
-import { Button } from "./ui/button";
 import { useState } from "react";
-import { Spinner } from "./ui/spinner";
 import { useAuth } from "@/hooks/useAuth";
+import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
 
 
 export default function LogoutButton() {

@@ -6,9 +6,9 @@ import { Route } from "react-router";
 import { BrowserRouter, Routes } from "react-router";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ProfilePage from "./pages/ProfilePage";
-import { AuthProvider } from "./components/base/AuthProvider";
+import { AuthProvider } from "./components/auth/AuthProvider";
 
 
 const App = () => {

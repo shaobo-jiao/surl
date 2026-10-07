@@ -1,4 +1,4 @@
-import { AuthContext, type AuthContextValue } from "@/components/base/AuthProvider";
+import { AuthContext, type AuthContextValue } from "@/components/auth/AuthProvider";
 import { useContext } from "react";
 
 export function useAuth(): AuthContextValue {

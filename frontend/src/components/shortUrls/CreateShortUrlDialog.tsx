@@ -13,7 +13,7 @@ import { useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Spinner } from "@/components/ui/spinner";
-import DateTimePicker from "@/components/DateTimePicker";
+import DateTimePicker from "@/components/common/DateTimePicker";
 import { toast } from "sonner";
 import type { ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 import { createShortUrlApi, type CreateShortUrlFields } from "@/api/shortUrls/createShortUrl";
