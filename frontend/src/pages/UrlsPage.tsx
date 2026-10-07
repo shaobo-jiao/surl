@@ -38,11 +38,12 @@ export default function UrlsPage() {
     const deleteResult = await deleteShortUrlApi(toDelete.id);
     if (!deleteResult.success) {
       toast.error("Failed deleting short URL", { description: deleteResult.error.detail });
-      return;
+      return false;
     }
     setShortUrls((previousShortUrls) =>
       previousShortUrls.filter((existing) => existing.id !== toDelete.id));
     toast.success("Short URL has been deleted");
+    return true;
   };
 
   return (

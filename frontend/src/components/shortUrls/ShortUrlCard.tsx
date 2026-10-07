@@ -5,15 +5,27 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import CopyUrlButton from "@/components/shortUrls/copyUrlButton";
 import { Item, ItemContent, ItemDescription, ItemHeader } from "../ui/item";
 import { format } from "date-fns";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
+import { useState } from "react";
+import { Spinner } from "../ui/spinner";
 
 interface ShortUrlCardProps {
   shortUrl: ShortUrl;
-  onDelete?: (shortUrl: ShortUrl) => void;
+  onDelete: (shortUrl: ShortUrl) => Promise<boolean>;
 }
 
 export default function ShortUrlCard({ shortUrl, onDelete }: ShortUrlCardProps) {
-  const handleDelete = () => {
-    onDelete?.(shortUrl);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const success = await onDelete(shortUrl);
+      if (success) setIsOpen(false);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -27,14 +39,37 @@ export default function ShortUrlCard({ shortUrl, onDelete }: ShortUrlCardProps) 
           {shortUrl.absoluteUrl}
         </a>
         <CopyUrlButton value={shortUrl.absoluteUrl} />
-        <Button type="button"
-          variant="ghost"
-          size="icon"
-          aria-label="Delete short URL"
-          className="ml-auto text-muted-foreground hover:text-destructive"
-          onClick={handleDelete}>
-          <Trash2 />
-        </Button>
+        <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+          <AlertDialogTrigger render={<Button type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Delete short URL"
+            className="ml-auto text-muted-foreground hover:text-destructive">
+            <Trash2 />
+          </Button>} />
+          <AlertDialogContent size="sm">
+            <AlertDialogHeader>
+              <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+                <Trash2 />
+              </AlertDialogMedia>
+              <AlertDialogTitle>Delete short URL?</AlertDialogTitle>
+              <AlertDialogDescription>This will permanently delete this short URL.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                variant="outline"
+                disabled={isDeleting}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                disabled={isDeleting}
+                onClick={handleDelete}>
+                {isDeleting ? <Spinner /> : null} Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardHeader>
 
       {/* Body: original URL with caption, clicks and expiry datetime */}
