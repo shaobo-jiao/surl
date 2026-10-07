@@ -5,7 +5,7 @@ import CreateShortUrlDialog from "@/components/shortUrls/CreateShortUrlDialog";
 import ShortUrlCard from "@/components/shortUrls/ShortUrlCard";
 import UrlFiltersPopover, { DEFAULT_FILTERS, type ShortUrlFilters } from "@/components/shortUrls/ShortUrlFiltersPopover";
 import { Link2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 
@@ -13,24 +13,24 @@ export default function UrlsPage() {
   const [shortUrls, setShortUrls] = useState<ShortUrl[]>([]);
   const [filters, setFilters] = useState<ShortUrlFilters>(DEFAULT_FILTERS);
 
-  useEffect(() => {
-    // load the default short urls page with no query params on mount; 
-    let ignore = false; // handles effect firing twice
-
-    const loadShortUrls = async () => {
-      const queryResult = await queryShortUrlsApi();
-      if (!queryResult.success) {
-        toast.error("Failed loading short URLs", { description: queryResult.error.detail });
-        return;
-      }
-      if (!ignore)
-        setShortUrls(queryResult.data.items);
-    };
-
-    loadShortUrls();
-
-    return () => { ignore = true; };
+  // returns the fetched items, or null when the request failed (already toasted)
+  const fetchShortUrls = useCallback(async (queryParams: ShortUrlFilters) => {
+    const queryResult = await queryShortUrlsApi(queryParams);
+    if (!queryResult.success) {
+      toast.error("Failed loading short URLs", { description: queryResult.error.detail });
+      return null;
+    }
+    return queryResult.data.items;
   }, []);
+
+  useEffect(() => {
+    // load the default short urls page on mount
+    let ignore = false; // handles effect firing twice
+    fetchShortUrls(DEFAULT_FILTERS).then((items) => {
+      if (!ignore && items) setShortUrls(items);
+    });
+    return () => { ignore = true; };
+  }, [fetchShortUrls]);
 
   const handleCreate = (created: ShortUrl) => {
     setShortUrls((previousShortUrls) => [created, ...previousShortUrls]);
@@ -48,8 +48,13 @@ export default function UrlsPage() {
     return true;
   };
 
-  const handleApplyFilters = async () => {
-
+  const handleApplyFilters = async (nextFilters: ShortUrlFilters): Promise<boolean> => {
+    const items = await fetchShortUrls(nextFilters);
+    if (!items) return false;
+    setFilters(nextFilters);
+    setShortUrls(items);
+    toast.success("Filters applied");
+    return true;
   };
 
   return (
@@ -67,7 +72,7 @@ export default function UrlsPage() {
 
       {/* toolbar: filter button on the left, result count on the right */}
       <div className="flex flex-row items-center w-full gap-2 mb-4">
-        <UrlFiltersPopover filters={filters} onApply={setFilters} />
+        <UrlFiltersPopover filters={filters} onApply={handleApplyFilters} />
 
         <p className="ml-auto text-sm text-muted-foreground">
           {shortUrls.length} results
@@ -86,7 +91,7 @@ export default function UrlsPage() {
       </div>
 
       {/* pagination below the list */}
-      
+
     </div>
   );
 };

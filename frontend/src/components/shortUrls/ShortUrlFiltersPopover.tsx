@@ -2,6 +2,7 @@ import DateTimePicker from "@/components/DateTimePicker";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Popover,
   PopoverContent,
@@ -50,11 +51,12 @@ const ORDER_BY_OPTIONS: { value: QueryShortUrlsOrderBy | ""; label: string }[] =
 
 interface UrlFiltersPopoverProps {
   filters: ShortUrlFilters; // current filter used in and passed from UrlsPage
-  onApply: (filters: ShortUrlFilters) => void;
+  onApply: (filters: ShortUrlFilters) => Promise<boolean>;
 }
 
 export default function UrlFiltersPopover({ filters, onApply }: UrlFiltersPopoverProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isApplying, setIsApplying] = useState<boolean>(false);
   const [draft, setDraft] = useState<ShortUrlFiltersDraft>(() => toDraft(filters));
 
   // whenever the popover opens, start from the filters that are currently applied
@@ -72,15 +74,20 @@ export default function UrlFiltersPopover({ filters, onApply }: UrlFiltersPopove
     setDraft(toDraft(DEFAULT_FILTERS));
   }
 
-  const handleApply = () => {
+  const handleApply = async () => {
     const next: ShortUrlFilters = {
       ...draft,
       // parse the input or fallback to current page or page size;
       page: Math.max(1, Number.parseInt(draft.page, 10) || filters.page),
       pageSize: Math.max(1, Number.parseInt(draft.pageSize, 10) || filters.pageSize),
     };
-    onApply(next);
-    setIsOpen(false);
+    setIsApplying(true);
+    try {
+      const success = await onApply(next);
+      if (success) setIsOpen(false);
+    } finally {
+      setIsApplying(false);
+    }
   };
 
   return (
@@ -174,8 +181,10 @@ export default function UrlFiltersPopover({ filters, onApply }: UrlFiltersPopove
         </FieldGroup>
 
         <div className="flex flex-row justify-end gap-2">
-          <Button type="button" variant="outline" onClick={handleReset}>Reset</Button>
-          <Button type="button" onClick={handleApply}>Apply</Button>
+          <Button type="button" variant="outline" onClick={handleReset} disabled={isApplying}>Reset</Button>
+          <Button type="button" onClick={handleApply} disabled={isApplying}>
+            {isApplying ? <Spinner /> : null} Apply
+          </Button>
         </div>
       </PopoverContent>
     </Popover>
