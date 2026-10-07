@@ -18,6 +18,7 @@ export interface DateTimePickerProps {
   value: Date | null,
   onChange: (value: Date | null) => void,
   placeholder?: string,
+  id?: string,
 }
 
 /**
@@ -27,6 +28,7 @@ export default function DateTimePicker({
   value,
   onChange,
   placeholder = "Pick a date and time",
+  id,
 }: DateTimePickerProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -61,6 +63,7 @@ export default function DateTimePicker({
         render={
           <Button
             type="button"
+            id={id}
             variant="outline"
             className="w-full justify-start font-normal"
           />

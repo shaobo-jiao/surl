@@ -3,18 +3,20 @@ import { deleteShortUrlApi } from "@/api/shortUrls/deleteShortUrl";
 import { type ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 import CreateShortUrlDialog from "@/components/shortUrls/CreateShortUrlDialog";
 import ShortUrlCard from "@/components/shortUrls/ShortUrlCard";
+import UrlFiltersPopover, { DEFAULT_FILTERS, type ShortUrlFilters } from "@/components/shortUrls/ShortUrlFiltersPopover";
 import { Link2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+
 export default function UrlsPage() {
   const [shortUrls, setShortUrls] = useState<ShortUrl[]>([]);
+  const [filters, setFilters] = useState<ShortUrlFilters>(DEFAULT_FILTERS);
 
   useEffect(() => {
+    // load the default short urls page with no query params on mount; 
     let ignore = false; // handles effect firing twice
 
-    // load the default short urls page on mount; with no query params,
-    // the backend uses its default page and page size
     const loadShortUrls = async () => {
       const queryResult = await queryShortUrlsApi();
       if (!queryResult.success) {
@@ -46,6 +48,10 @@ export default function UrlsPage() {
     return true;
   };
 
+  const handleApplyFilters = async () => {
+
+  };
+
   return (
     <div className="flex flex-col items-center w-full max-w-3xl">
 
@@ -59,6 +65,16 @@ export default function UrlsPage() {
         <CreateShortUrlDialog onCreate={handleCreate} />
       </div>
 
+      {/* toolbar: filter button on the left, result count on the right */}
+      <div className="flex flex-row items-center w-full gap-2 mb-4">
+        <UrlFiltersPopover filters={filters} onApply={setFilters} />
+
+        <p className="ml-auto text-sm text-muted-foreground">
+          {shortUrls.length} results
+        </p>
+      </div>
+
+      {/* list of short url cards */}
       <div className="flex flex-col w-full gap-4">
         {shortUrls.map((shortUrl) => (
           <ShortUrlCard
@@ -68,7 +84,9 @@ export default function UrlsPage() {
           />
         ))}
       </div>
+
+      {/* pagination below the list */}
+      
     </div>
   );
 };
-

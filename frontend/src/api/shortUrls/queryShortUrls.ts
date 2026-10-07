@@ -4,11 +4,11 @@ import { GeneralFailureResult, type ProblemDetails, type Result } from "../share
 import { toShortUrl, type ShortUrl, type ShortUrlResponse } from "./shortUrl.shared";
 
 // properties the backend allows ordering the query result by
-export type QueryShortUrlsOrderBy = "expiresAt" | "clickCount";
+export type QueryShortUrlsOrderBy = "expiresAt" | "clickCount" | null;
 
 export interface QueryShortUrlsParams {
-  expiresFrom?: Date,
-  expiresTo?: Date,
+  expiresFrom?: Date | null,
+  expiresTo?: Date | null,
   orderBy?: QueryShortUrlsOrderBy,
   isDescending?: boolean,
   page?: number,
@@ -44,7 +44,7 @@ export async function queryShortUrlsApi(queryParams: QueryShortUrlsParams = {})
         pageSize: queryParams.pageSize,
       }
     });
-
+    
     return {
       success: true,
       data: { ...data, items: data.items.map(toShortUrl) }
