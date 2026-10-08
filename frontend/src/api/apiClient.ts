@@ -79,6 +79,14 @@ apiClient.interceptors.response.use(
     if (!error.response || error.response.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
+
+    // attempts to differentiate my own business 401 from the .NET auth framework's 
+    // JWT challenge, which returns plain 401 without body. 
+    // scenario e.g. /change-password returns 401 for wrong password with error code
+    // in the body. This 401 shouldn't trigger a /refresh
+    if (error.response.data?.code !== undefined) {
+      return Promise.reject(error);
+    }
     
     // handle 401 error due to expired access token
     if (isRefreshing) {

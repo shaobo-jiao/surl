@@ -5,6 +5,7 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Spinner } from "@/components/ui/spinner";
+import { strongPasswordSchema } from "@/lib/passwordForm";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronRight, CircleCheck, CircleX } from "lucide-react";
 import { useState } from "react";
@@ -16,12 +17,7 @@ const RegisterFormDataSchema = z
   .object({
     username: z.string().min(6).max(50)
       .regex(/^[a-zA-Z0-9._-]+$/, "Username can only contain letters, numbers, underscores, dots and hyphens"),
-    password: z.string().min(12).max(50)
-      .regex(/[A-Z]/, "Password must contain an uppercase letter.")
-      .regex(/[a-z]/, "Password must contain a lowercase letter.")
-      .regex(/[0-9]/, "Password must contain a number.")
-      .regex(/[^a-zA-Z0-9]/, "Password must contain a special character.")
-      .regex(/^\S+$/, "Password must not contain whitespaces."),
+    password: strongPasswordSchema,
     confirmPassword: z.string(),
     email: z.email().optional().or(z.literal(''))
   })

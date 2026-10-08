@@ -1,10 +1,7 @@
 import z from "zod";
 
 /**
- * Validates that a value is a non-empty, well-formed http(s) URL.
- *
- * Shared between the home page's anonymous "Try It Out" form and the
- * authenticated CreateShortUrlDialog so both validate the same way.
+ * Validates that a value is a non-empty, well-formed http(s) URL
  */
 export const originalUrlSchema = z
   .string()

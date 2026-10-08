@@ -12,12 +12,12 @@ import z from "zod";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
 import type { LoginFields } from "@/api/auth/login";
+import { passwordSchema } from "@/lib/passwordForm";
 
 const LoginFormDataSchema = z.object({
   username: z.string().min(6).max(50)
     .regex(/^[a-zA-Z0-9._-]+$/, "Username can only contain letters, numbers, underscores, dots and hyphens"),
-  password: z.string().min(6).max(50)
-    .regex(/^\S+$/, "Password must not contain whitespaces.") // simply check no whitespace
+  password: passwordSchema
 });
 type LoginFormData = z.infer<typeof LoginFormDataSchema>;
 

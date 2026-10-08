@@ -55,7 +55,7 @@ export default function ShortUrlCard({ shortUrl, onDelete, onUpdate }: ShortUrlC
             </ItemDescription>
             <ItemDescription>
               {shortUrl.expiresAt
-                ? `Expiring at ${format(shortUrl.expiresAt, "PP p")}`
+                ? `Expires at ${format(shortUrl.expiresAt, "PP p")}`
                 : "Never Expire"}
             </ItemDescription>
           </ItemContent>
