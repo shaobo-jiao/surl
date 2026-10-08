@@ -45,12 +45,12 @@ const AppHeader = () => {
   const menuItemClassName = buttonVariants({ variant: "link", className: "w-full justify-start" });
 
   return (
-    <header className="flex justify-center h-16 border-1 p-4">
-      <div className="flex items-center gap-2 w-full max-w-5xl">
+    <header className="w-full border-b">
+      <div className="mx-auto flex flex-row items-center justify-between gap-2 p-4 w-full max-w-5xl">
         <Link to="/" className="text-3xl font-black" onClick={closeMenu}>SURL</Link>
 
         {/* wide screens: inline nav bar */}
-        <nav className="hidden ml-auto items-center sm:flex">
+        <nav className="hidden items-center sm:flex">
           {renderNavItems(desktopItemClassName)}
         </nav>
 
@@ -62,12 +62,12 @@ const AppHeader = () => {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="ml-auto sm:hidden"
+                className="sm:hidden"
                 aria-label="Open navigation menu" />}>
             <Menu />
           </PopoverTrigger>
 
-          <PopoverContent align="end" className="w-48 gap-0.5 p-2">
+          <PopoverContent align="end" className="sm:hidden w-48 gap-0.5 p-2">
             {renderNavItems(menuItemClassName)}
           </PopoverContent>
         </Popover>
