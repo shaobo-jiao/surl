@@ -3,7 +3,7 @@
 namespace Surl.Api.ShortUrls;
 
 public record ShortUrlResponse(
-    [property: JsonNumberHandling(JsonNumberHandling.WriteAsString)]
+    [property: JsonNumberHandling(JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString)]
     long Id,
     string ShortUrlCode,
     string OriginalUrl,
