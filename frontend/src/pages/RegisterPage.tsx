@@ -27,25 +27,24 @@ const RegisterFormDataSchema = z
   });
 type RegisterFormData = z.infer<typeof RegisterFormDataSchema>;
 
-type Status = "editing" | "submitting" | "success";
-
 export default function RegisterPage() {
-  const [status, setStatus] = useState<Status>("editing");
+  const [isRegistered, setIsRegistered] = useState<boolean>(false);
 
   const {
     register,
     handleSubmit,
     setError,
-    formState: { errors }
+    clearErrors,
+    formState: { errors, isSubmitting }
   } = useForm({ resolver: zodResolver(RegisterFormDataSchema) });
 
-
   const handleRegisterSubmit: SubmitHandler<RegisterFormData> = async (data) => {
-    setStatus("submitting");
+    setIsRegistered(false);
+    clearErrors();
 
     const registerResult = await registerApi(data);
     if (registerResult.success) {
-      setStatus("success");
+      setIsRegistered(true);
     }
     else {
       const registerError = registerResult.error;
@@ -57,8 +56,6 @@ export default function RegisterPage() {
           setError(field as RegisterFields, { type: "server", message: messages[0] });
         }
       }
-
-      setStatus("editing");
     }
   };
 
@@ -93,7 +90,7 @@ export default function RegisterPage() {
           </Field>
           <Field>
             {
-              status === "submitting"
+              isSubmitting
                 ? <Button disabled> <Spinner /> Signing Up...</Button>
                 : <Button type="submit">Sign Up</Button>
             }
@@ -101,7 +98,7 @@ export default function RegisterPage() {
         </form>
       </CardContent>
 
-      {status === "success" &&
+      {isRegistered &&
         <CardFooter>
           <Item render={<Link to="/login" />} className="p-0">
             <ItemMedia><CircleCheck className="size-4" /></ItemMedia>

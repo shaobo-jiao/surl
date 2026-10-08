@@ -6,7 +6,6 @@ import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/comp
 import { Spinner } from "@/components/ui/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleX } from "lucide-react";
-import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod";
 import { useLocation, useNavigate } from "react-router";
@@ -25,17 +24,17 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  const [isLogging, setIsLogging] = useState<boolean>(false);
   
   const {
     register,
     handleSubmit,
     setError,
-    formState: { errors }
+    clearErrors,
+    formState: { errors, isSubmitting }
   } = useForm({ resolver: zodResolver(LoginFormDataSchema) });
 
   const handleLoginSubmit: SubmitHandler<LoginFormData> = async (data) => {
-    setIsLogging(true);
+    clearErrors();
 
     const loginResult = await login(data);
     if (loginResult.success) {
@@ -52,8 +51,6 @@ export default function LoginPage() {
         }
       }
     }
-
-    setIsLogging(false);
   };
 
   return (
@@ -77,7 +74,7 @@ export default function LoginPage() {
           </Field>
           <Field>
             {
-              isLogging
+              isSubmitting
                 ? <Button disabled> <Spinner /> Logging In...</Button>
                 : <Button type="submit">Log In</Button>
             }

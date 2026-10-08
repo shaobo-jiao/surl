@@ -25,7 +25,7 @@ const ChangePasswordFormDataSchema = z
 type ChangePasswordFormData = z.infer<typeof ChangePasswordFormDataSchema>;
 
 export default function ChangePasswordFormCard() {
-  const [hasPasswordChanged, setHasPasswordChanged] = useState<boolean>(false);
+  const [isPasswordChanged, setIsPasswordChanged] = useState<boolean>(false);
 
   const {
     register,
@@ -37,7 +37,7 @@ export default function ChangePasswordFormCard() {
   } = useForm({ resolver: zodResolver(ChangePasswordFormDataSchema) });
 
   const handleChangePasswordSubmit: SubmitHandler<ChangePasswordFormData> = async (data) => {
-    setHasPasswordChanged(false);
+    setIsPasswordChanged(false);
     clearErrors();
 
     const changePasswordResult = await changePasswordApi({
@@ -47,7 +47,7 @@ export default function ChangePasswordFormCard() {
 
     if (changePasswordResult.success) {
       reset();
-      setHasPasswordChanged(true);
+      setIsPasswordChanged(true);
       return;
     }
 
@@ -96,7 +96,7 @@ export default function ChangePasswordFormCard() {
         </form>
       </CardContent>
 
-      {hasPasswordChanged &&
+      {isPasswordChanged &&
         <CardFooter>
           <Item className="p-0">
             <ItemMedia><CircleCheck className="size-4" /></ItemMedia>

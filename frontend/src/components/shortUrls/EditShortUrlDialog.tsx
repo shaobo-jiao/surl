@@ -40,13 +40,13 @@ interface EditShortUrlDialogProps {
 // edit icon button with its dialog; updates the short URL's details (currently only the expiry date)
 export default function EditShortUrlDialog({ shortUrl, onUpdate, className }: EditShortUrlDialogProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const {
     control,
     handleSubmit,
     reset,
     setError,
-    formState: { errors }
+    clearErrors,
+    formState: { errors, isSubmitting }
   } = useForm({ resolver: zodResolver(EditShortUrlFormDataScheme) });
 
   // seed the form with the current values whenever the dialog is opened
@@ -56,30 +56,26 @@ export default function EditShortUrlDialog({ shortUrl, onUpdate, className }: Ed
   };
 
   const handleEditShortUrlSubmit: SubmitHandler<EditShortUrlFormData> = async (data) => {
-    setIsSubmitting(true);
+    clearErrors();
 
-    try {
-      const updateResult = await updateShortUrlApi(shortUrl.id, {
-        expiresAt: data.expiresAt
-      });
+    const updateResult = await updateShortUrlApi(shortUrl.id, {
+      expiresAt: data.expiresAt
+    });
 
-      if (updateResult.success) {
-        onUpdate(updateResult.data);
-        reset();
-        setIsOpen(false);
-        toast.success("Short URL has been updated");
-      } else {
-        const updateError = updateResult.error;
-        setError("root.serverError", { type: "server", message: updateError.detail })
-        if (updateError.errors !== undefined) {
-          for (const [field, messages] of Object.entries(updateError.errors)) {
-            // set field error using the first error message of each field
-            setError(field as UpdateShortUrlFields, { type: "server", message: messages[0] });
-          }
+    if (updateResult.success) {
+      onUpdate(updateResult.data);
+      reset();
+      setIsOpen(false);
+      toast.success("Short URL has been updated");
+    } else {
+      const updateError = updateResult.error;
+      setError("root.serverError", { type: "server", message: updateError.detail })
+      if (updateError.errors !== undefined) {
+        for (const [field, messages] of Object.entries(updateError.errors)) {
+          // set field error using the first error message of each field
+          setError(field as UpdateShortUrlFields, { type: "server", message: messages[0] });
         }
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
