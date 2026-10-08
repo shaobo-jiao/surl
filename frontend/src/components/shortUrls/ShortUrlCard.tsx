@@ -3,15 +3,17 @@ import { type ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import CopyUrlButton from "@/components/shortUrls/CopyUrlButton";
 import DeleteShortUrlButton from "@/components/shortUrls/DeleteShortUrlButton";
+import EditShortUrlDialog from "@/components/shortUrls/EditShortUrlDialog";
 import { Item, ItemContent, ItemDescription, ItemHeader } from "../ui/item";
 import { format } from "date-fns";
 
 interface ShortUrlCardProps {
   shortUrl: ShortUrl;
   onDelete: (shortUrl: ShortUrl) => void;
+  onUpdate: (shortUrl: ShortUrl) => void;
 }
 
-export default function ShortUrlCard({ shortUrl, onDelete }: ShortUrlCardProps) {
+export default function ShortUrlCard({ shortUrl, onDelete, onUpdate }: ShortUrlCardProps) {
   return (
     <Card>
       {/* Header: the short URL, copy button, delete icon */}
@@ -23,6 +25,10 @@ export default function ShortUrlCard({ shortUrl, onDelete }: ShortUrlCardProps) 
           {shortUrl.absoluteUrl}
         </a>
         <CopyUrlButton value={shortUrl.absoluteUrl} />
+        <EditShortUrlDialog
+          shortUrl={shortUrl}
+          onUpdate={onUpdate}
+          className="ml-auto" />
         <DeleteShortUrlButton
           shortUrl={shortUrl}
           onDelete={onDelete} />

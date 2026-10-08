@@ -60,6 +60,14 @@ export default function UrlsPage() {
     }));
   };
 
+  const handleUpdate = (updated: ShortUrl) => {
+    setPagedShortUrls((previous) => ({
+      ...previous,
+      items: previous.items.map((existing) =>
+        existing.id === updated.id ? updated : existing),
+    }));
+  };
+
   const handleApplyFilters = async (nextFilters: ShortUrlFilters) => {
     const paged = await fetchShortUrls(nextFilters);
     if (!paged) return false;
@@ -111,6 +119,7 @@ export default function UrlsPage() {
                 key={shortUrl.id}
                 shortUrl={shortUrl}
                 onDelete={handleDelete}
+                onUpdate={handleUpdate}
               />
             ))}
           </div>)

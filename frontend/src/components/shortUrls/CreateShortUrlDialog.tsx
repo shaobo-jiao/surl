@@ -114,10 +114,9 @@ export default function CreateShortUrlDialog({ onCreate }: CreateShortUrlDialogP
 
           <DialogFooter>
             <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
-            {isSubmitting
-              ? <Button disabled><Spinner /> Creating...</Button>
-              : <Button type="submit">Create</Button>
-            }
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <Spinner /> : null} Create
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
