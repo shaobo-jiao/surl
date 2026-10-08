@@ -73,11 +73,12 @@ export default function RegisterPage() {
             <Input id="username" type="text" {...register("username")} />
             {errors.username && <FieldError>{errors.username.message}</FieldError>}
           </Field>
-          <Field>
+          {/* Email field is commented until the backend supports mailing */}
+          {/* <Field>
             <FieldLabel htmlFor="email">Email</FieldLabel>
             <Input id="email" type="text" {...register("email")} />
             {errors.email && <FieldError>{errors.email.message}</FieldError>}
-          </Field>
+          </Field> */}
           <Field>
             <FieldLabel htmlFor="password">Password*</FieldLabel>
             <Input id="password" type="password" {...register("password")} />
