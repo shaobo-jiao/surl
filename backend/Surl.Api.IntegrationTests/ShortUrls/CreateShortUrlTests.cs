@@ -21,8 +21,8 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = _factory.CreateClient();
 
-        var originalUrl = "https://example.com";
-        var createRequest = new CreateShortUrlRequest(originalUrl,
+        var createRequest = new CreateShortUrlRequest(
+            OriginalUrl: "https://example.com",
             ExpiresAt: TestConstants.TestStartTime.AddMinutes(1));
 
         // Act 
@@ -32,7 +32,7 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         // Assert
         Assert.NotNull(shortUrlResponse);
         Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
-        Assert.Equal(originalUrl, shortUrlResponse.OriginalUrl);
+        Assert.Equal(createRequest.OriginalUrl, shortUrlResponse.OriginalUrl);
         Assert.Equal(createRequest.ExpiresAt, shortUrlResponse.ExpiresAt);
         Assert.Null(shortUrlResponse.UserId);
     }
@@ -54,6 +54,7 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         Assert.NotNull(shortUrlResponse);
         Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
         Assert.Equal(TestConstants.TestStartTime.AddDays(1), shortUrlResponse.ExpiresAt);
+        Assert.Null(shortUrlResponse.UserId);
     }
 
     [Fact]
@@ -66,8 +67,9 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         var user = await AuthHelper.RegisterAsync(httpClient, TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var authTokens = await AuthHelper.LoginAsync(httpClient, TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
 
-        var originalUrl = "https://example.com";
-        var createShortUrlRequest = new CreateShortUrlRequest(originalUrl);
+        var createShortUrlRequest = new CreateShortUrlRequest(
+            OriginalUrl: "https://example.com", 
+            ExpiresAt: TestConstants.TestStartTime.AddMinutes(1));
 
         // Act: create a short url for given user;
         var httpResponse = await httpClient.SendAuthenticatedRequestAsJsonAsync(
@@ -77,7 +79,32 @@ public class CreateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
         // Assert
         Assert.NotNull(shortUrlResponse);
         Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
-        Assert.Equal(originalUrl, shortUrlResponse.OriginalUrl);
+        Assert.Equal(createShortUrlRequest.OriginalUrl, shortUrlResponse.OriginalUrl);
+        Assert.Equal(createShortUrlRequest.ExpiresAt, shortUrlResponse.ExpiresAt);
+        Assert.Equal(user.Id, shortUrlResponse.UserId);
+    }
+
+    [Fact]
+    public async Task CreateShortUrl_ValidAuthenticatedRequestWithoutExpiry_ShouldNeverExpire()
+    {
+        // Arrange: creates a user and creates short url for the user
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var httpClient = _factory.CreateClient();
+
+        var user = await AuthHelper.RegisterAsync(httpClient, TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
+        var authTokens = await AuthHelper.LoginAsync(httpClient, TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
+
+        var createShortUrlRequest = new CreateShortUrlRequest("https://example.com");
+
+        // Act: create a short url for given user;
+        var httpResponse = await httpClient.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Post, "/short-urls", authTokens.AccessToken, createShortUrlRequest, cancellationToken);
+        var shortUrlResponse = await httpResponse.Content.ReadFromJsonAsync<ShortUrlResponse>(cancellationToken);
+
+        // Assert
+        Assert.NotNull(shortUrlResponse);
+        Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
+        Assert.Equal(createShortUrlRequest.OriginalUrl, shortUrlResponse.OriginalUrl);
         // no expiry given: authenticated short urls never expire
         Assert.Null(shortUrlResponse.ExpiresAt);
         Assert.Equal(user.Id, shortUrlResponse.UserId);

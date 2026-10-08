@@ -65,6 +65,41 @@ public class UpdateShortUrlTests(CustomWebApplicationFactory factory) : IAsyncLi
     }
 
     [Fact]
+    public async Task UpdateShortUrl_NullExpiresAt_ShouldClearExpiry()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var client = _factory.CreateClient();
+
+        // create a short url that expires
+        var loginResponse = await AuthHelper.RegisterAndLoginAsync(client,
+            TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
+        var accessToken = loginResponse.AccessToken;
+
+        var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
+            expiresAt: TestConstants.TestStartTime.AddDays(1),
+            accessToken: accessToken,
+            cancellationToken: cancellationToken);
+
+        // request to clear the expiry so the short url never expires
+        var updateRequest = new UpdateShortUrlRequest(ExpiresAt: null);
+
+        // Act
+        var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
+            HttpMethod.Patch, $"/short-urls/{stubShortUrl.Id}", accessToken, updateRequest, cancellationToken);
+        var updateResponse = await httpResponse.Content.ReadFromJsonAsync<ShortUrlResponse>(cancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
+        Assert.NotNull(updateResponse);
+        var expected = stubShortUrl with
+        {
+            ExpiresAt = null,
+        };
+        Assert.Equivalent(expected, updateResponse);
+    }
+
+    [Fact]
     public async Task UpdateShortUrl_NonExistentShortUrl_ShouldReturnNotFound()
     {
         // Arrange

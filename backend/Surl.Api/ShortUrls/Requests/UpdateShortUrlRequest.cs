@@ -1,3 +1,4 @@
 namespace Surl.Api.ShortUrls;
 
-public record UpdateShortUrlRequest(DateTimeOffset ExpiresAt);
+// ExpiresAt null means the short URL never expires
+public record UpdateShortUrlRequest(DateTimeOffset? ExpiresAt = null);
