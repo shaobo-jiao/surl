@@ -3,7 +3,7 @@ import { loginApi } from "@/api/auth/login";
 import { logoutApi } from "@/api/auth/logout";
 import { meApi } from "@/api/auth/me";
 import { refreshApi } from "@/api/auth/refresh";
-import { Spinner } from "@/components/ui/spinner";
+import PageLoader from "@/components/common/PageLoader";
 
 import { createContext, useEffect, useReducer, useState } from "react";
 
@@ -135,11 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // while restoring the session, render a full-page placeholder instead of
   // the app, so protected routes don't briefly redirect to /login
   if (isLoading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Spinner className="size-8" />
-      </div>
-    );
+    return <PageLoader className="h-screen" />;
   }
 
   return <AuthContext value={authContextValue}>

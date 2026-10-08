@@ -3,6 +3,8 @@ import { type ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 import CreateShortUrlDialog from "@/components/shortUrls/CreateShortUrlDialog";
 import ShortUrlCard from "@/components/shortUrls/ShortUrlCard";
 import UrlFiltersPopover, { DEFAULT_FILTERS, type ShortUrlFilters } from "@/components/shortUrls/ShortUrlFiltersPopover";
+import EmptyShortUrlsCard from "@/components/shortUrls/EmptyShortUrlsCard";
+import PageLoader from "@/components/common/PageLoader";
 import { Link2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +22,7 @@ const EMPTY_PAGED_SHORT_URLS: PagedResult<ShortUrl> = {
 export default function UrlsPage() {
   const [pagedShortUrls, setPagedShortUrls] = useState<PagedResult<ShortUrl>>(EMPTY_PAGED_SHORT_URLS);
   const [filters, setFilters] = useState<ShortUrlFilters>(DEFAULT_FILTERS);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // returns the fetched paged result, or null when the request failed (already toasted)
   const fetchShortUrls = useCallback(async (queryParams: ShortUrlFilters) => {
@@ -34,9 +37,9 @@ export default function UrlsPage() {
   useEffect(() => {
     // load the default short urls page on mount
     let ignore = false; // handles effect firing twice
-    fetchShortUrls(DEFAULT_FILTERS).then((paged) => {
-      if (!ignore && paged) setPagedShortUrls(paged);
-    });
+    fetchShortUrls(DEFAULT_FILTERS)
+      .then((paged) => { if (!ignore && paged) setPagedShortUrls(paged); })
+      .finally(() => { if (!ignore) setIsLoading(false); });
     return () => { ignore = true; };
   }, [fetchShortUrls]);
 
@@ -97,22 +100,29 @@ export default function UrlsPage() {
         </p>
       </div>
 
-      {/* list of short url cards */}
-      <div className="flex flex-col w-full gap-4">
-        {pagedShortUrls.items.map((shortUrl) => (
-          <ShortUrlCard
-            key={shortUrl.id}
-            shortUrl={shortUrl}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
+      {/* list of short url cards, or a placeholder when there is nothing to show yet */}
+      {isLoading
+        ? (<PageLoader className="py-12" />)
+        : pagedShortUrls.totalCount === 0
+          ? (<EmptyShortUrlsCard />)
+          : (<div className="flex flex-col w-full gap-4">
+            {pagedShortUrls.items.map((shortUrl) => (
+              <ShortUrlCard
+                key={shortUrl.id}
+                shortUrl={shortUrl}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>)
+      }
 
       {/* pagination below the list */}
-      <PaginationBar
-        page={filters.page}
-        totalPages={pagedShortUrls.totalPages}
-        onPageChange={handlePageChange} />
+      {pagedShortUrls.totalCount > 0 && (
+        <PaginationBar
+          page={filters.page}
+          totalPages={pagedShortUrls.totalPages}
+          onPageChange={handlePageChange} />
+      )}
     </div>
   );
 };
