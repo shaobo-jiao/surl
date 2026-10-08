@@ -17,20 +17,11 @@ import DateTimePicker from "@/components/common/DateTimePicker";
 import { toast } from "sonner";
 import type { ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 import { createShortUrlApi, type CreateShortUrlFields } from "@/api/shortUrls/createShortUrl";
+import { originalUrlSchema } from "@/lib/shortUrlForm";
 
 
 const CreateShortUrlFormDataScheme = z.object({
-  originalUrl: z.string().trim()
-    .nonempty()
-    .refine(value => {
-      try {
-        // validate URL is valid and is http or https
-        const url = new URL(value);
-        return url.protocol === "http:" || url.protocol === "https:";
-      } catch {
-        return false
-      }
-    }, "The URL is invalid"),
+  originalUrl: originalUrlSchema,
   expiresAt: z.date()
     .min(new Date(), "The expiry date must be in the future.")
     .nullable(),
