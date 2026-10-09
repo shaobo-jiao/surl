@@ -5,6 +5,7 @@ import { Button, buttonVariants } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import LogoutButton from "./auth/LogoutButton";
 import useAuth from "@/hooks/useAuth";
+import ThemeTrigger from "./common/ThemeTrigger";
 
 // Header contains a "Logo" that links to homepage and a nav bar 
 // the nav bar contains: Home, URLs only as for now. later need to add Login/Logout links
@@ -46,15 +47,17 @@ const AppHeader = () => {
 
   return (
     <header className="w-full border-b">
-      <div className="mx-auto flex flex-row items-center justify-between gap-2 p-4 w-full max-w-5xl">
-        <Link to="/" className="text-3xl font-black" onClick={closeMenu}>SURL</Link>
+      <div className="mx-auto flex flex-row items-center gap-2 p-4 w-full max-w-5xl">
+        <Link to="/" className="text-3xl font-black flex-1" onClick={closeMenu}>SURL</Link>
 
-        {/* wide screens: inline nav bar */}
+        <ThemeTrigger />
+
+        {/* nav bar for wide screens */}
         <nav className="hidden items-center sm:flex">
           {renderNavItems(desktopItemClassName)}
         </nav>
 
-        {/* small screens: nav items collapsed behind a menu icon popover */}
+        {/* nav bar for small screens: nav items collapsed behind a menu icon popover */}
         <Popover open={isMenuOpen} onOpenChange={setIsMenuOpen}>
           <PopoverTrigger
             render={

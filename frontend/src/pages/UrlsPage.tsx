@@ -91,7 +91,7 @@ export default function UrlsPage() {
 
       {/* body header with the title and create new button */}
       <div className="flex flex-row items-center w-full gap-4 mt-4">
-        <Link2 className="bg-black text-white size-12 p-3 rounded-xl" />
+        <Link2 className="bg-primary text-primary-foreground size-12 p-3 rounded-xl" />
         <div className="flex flex-col">
           <h1 className="font-bold text-2xl">My URLs</h1>
           <p className="text-muted-foreground">Manage and track your shortened URLs</p>

@@ -164,6 +164,7 @@ export default function UrlFiltersPopover({ filters, onApply }: UrlFiltersPopove
                 step={1}
                 value={draft.pageSize}
                 onChange={(event) => updateDraft({ pageSize: event.target.value })}
+                className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </Field>
 
@@ -176,6 +177,7 @@ export default function UrlFiltersPopover({ filters, onApply }: UrlFiltersPopove
                 step={1}
                 value={draft.page}
                 onChange={(event) => updateDraft({ page: event.target.value })}
+                className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </Field>
           </div>

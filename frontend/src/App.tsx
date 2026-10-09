@@ -9,26 +9,29 @@ import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ProfilePage from "./pages/ProfilePage";
 import AuthProvider from "./components/auth/AuthProvider";
+import ThemeProvider from "./components/common/ThemeProvider";
 
 
 const App = () => {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/:shortUrlCode" element={<RedirectionPage />} />
-            <Route element={<ProtectedRoute />}>
-              <Route path="/urls" element={<UrlsPage />} />  
-              <Route path="/me" element={<ProfilePage />} />
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<AppLayout />}>
+              <Route index element={<HomePage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/:shortUrlCode" element={<RedirectionPage />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/urls" element={<UrlsPage />} />
+                <Route path="/me" element={<ProfilePage />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 
