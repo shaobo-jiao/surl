@@ -8,7 +8,7 @@ import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ProfilePage from "./pages/ProfilePage";
-import { AuthProvider } from "./components/auth/AuthProvider";
+import AuthProvider from "./components/auth/AuthProvider";
 
 
 const App = () => {

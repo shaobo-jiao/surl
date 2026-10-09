@@ -9,9 +9,9 @@ import { CircleX } from "lucide-react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod";
 import { Link, useLocation, useNavigate } from "react-router";
-import { useAuth } from "@/hooks/useAuth";
 import type { LoginFields } from "@/api/auth/login";
 import { passwordSchema } from "@/lib/passwordForm";
+import useAuth from "@/hooks/useAuth";
 
 const LoginFormDataSchema = z.object({
   username: z.string().min(6).max(50)

@@ -43,7 +43,7 @@ export interface AuthContextValue {
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 // a wrapper component to provide AuthContext to the app
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userLogin, dispatchUserLogin] = useReducer(userLoginReducer, {
     isAuthenticated: false,
     username: null,

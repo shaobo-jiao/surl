@@ -1,5 +1,5 @@
 import ChangePasswordFormCard from "@/components/auth/ChangePasswordFormCard";
-import { useAuth } from "@/hooks/useAuth";
+import useAuth from "@/hooks/useAuth";
 
 export default function ProfilePage() {
   const { userLogin } = useAuth();

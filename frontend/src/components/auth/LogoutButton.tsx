@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
+import useAuth from "@/hooks/useAuth";
 
 
 interface LogoutButtonProps {
