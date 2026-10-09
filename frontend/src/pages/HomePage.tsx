@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
-import { CalendarClock, CircleCheck, CircleX, Link2, MousePointerClick } from "lucide-react";
+import { CalendarClock, ChevronRight, CircleCheck, CircleX, Link2, MousePointerClick, User } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import CopyUrlButton from "@/components/shortUrls/CopyUrlButton";
 import { createAnonymousShortUrlApi } from "@/api/shortUrls/createShortUrl";
@@ -14,6 +14,8 @@ import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
+import { Separator } from "@/components/ui/separator";
+import { Link } from "react-router";
 
 // HomePage's anonymous "Try It Out" form only needs the URL
 // expiry date defaults to the backend setting
@@ -92,7 +94,7 @@ const HomePage = () => {
       {/* feature highlights */}
       <div className="grid w-full max-w-2xl gap-4 sm:grid-cols-3">
         {HIGHLIGHTS.map(({ icon: Icon, title, description }) => (
-          <Item key={title} variant="muted">
+          <Item key={title} variant="outline" className="items-start">
             <ItemMedia variant="icon"><Icon /></ItemMedia>
             <ItemContent>
               <ItemTitle>{title}</ItemTitle>
@@ -128,7 +130,7 @@ const HomePage = () => {
         </CardContent>
 
         {createdShortUrl &&
-          <CardFooter>
+          <CardFooter className="flex flex-col gap-4">
             <Item className="p-0">
               <ItemMedia><CircleCheck className="size-4" /></ItemMedia>
               <ItemContent>
@@ -150,6 +152,18 @@ const HomePage = () => {
                 <CopyUrlButton value={createdShortUrl.absoluteUrl} />
               </ItemActions>
             </Item>
+            
+            <Separator />
+            <Item className="p-0" render={<Link to="/register" />}>
+              <ItemMedia><User className="size-4" /></ItemMedia>
+              <ItemContent>
+                <ItemTitle>Create a free account</ItemTitle>
+                <ItemDescription>Sign up to shorten links, manage them, and track clicks</ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <Button variant="ghost" size="icon"><ChevronRight className="size-4" /></Button>
+              </ItemActions>
+            </Item>
           </CardFooter>
         }
 
@@ -158,7 +172,7 @@ const HomePage = () => {
             <Item className="p-0">
               <ItemMedia><CircleX className="size-4" /></ItemMedia>
               <ItemContent>
-                <ItemTitle>Something went wrong.</ItemTitle>
+                <ItemTitle>Something went wrong</ItemTitle>
                 <ItemDescription>{errors.root.serverError.message}</ItemDescription>
               </ItemContent>
             </Item>

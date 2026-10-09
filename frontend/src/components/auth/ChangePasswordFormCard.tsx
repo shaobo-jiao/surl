@@ -100,7 +100,7 @@ export default function ChangePasswordFormCard() {
         <CardFooter>
           <Item className="p-0">
             <ItemMedia><CircleCheck className="size-4" /></ItemMedia>
-            <ItemContent><ItemTitle>Your password has been changed.</ItemTitle></ItemContent>
+            <ItemContent><ItemTitle>Your password has been changed</ItemTitle></ItemContent>
           </Item>
         </CardFooter>
       }
@@ -110,7 +110,7 @@ export default function ChangePasswordFormCard() {
           <Item className="p-0">
             <ItemMedia><CircleX className="size-4" /></ItemMedia>
             <ItemContent>
-              <ItemTitle>Something went wrong.</ItemTitle>
+              <ItemTitle>Something went wrong</ItemTitle>
               <ItemDescription>{errors.root.serverError.message}</ItemDescription>
             </ItemContent>
           </Item>

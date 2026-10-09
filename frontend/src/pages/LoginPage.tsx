@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleX } from "lucide-react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod";
-import { useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
 import type { LoginFields } from "@/api/auth/login";
 import { passwordSchema } from "@/lib/passwordForm";
@@ -61,7 +61,7 @@ export default function LoginPage() {
       </CardHeader>
 
       <CardContent>
-        <form onSubmit={handleSubmit(handleLoginSubmit)} className="flex flex-col gap-4" >
+        <form onSubmit={handleSubmit(handleLoginSubmit)} className="flex flex-col gap-2" >
           <Field>
             <FieldLabel htmlFor="username">Username</FieldLabel>
             <Input id="username" type="text" {...register("username")}></Input>
@@ -79,6 +79,13 @@ export default function LoginPage() {
                 : <Button type="submit">Log In</Button>
             }
           </Field>
+
+          <p className="text-center text-sm text-muted-foreground">
+            Don't have an account?{" "}
+            <Link to="/register" className="font-medium text-foreground underline underline-offset-4">
+              Sign Up
+            </Link>
+          </p>
         </form>
       </CardContent>
 
@@ -89,7 +96,7 @@ export default function LoginPage() {
           <Item className="p-0">
             <ItemMedia><CircleX className="size-4" /></ItemMedia>
             <ItemContent>
-              <ItemTitle>Something went wrong.</ItemTitle>
+              <ItemTitle>Something went wrong</ItemTitle>
               <ItemDescription>{errors.root.serverError.message}</ItemDescription>
             </ItemContent>
           </Item>

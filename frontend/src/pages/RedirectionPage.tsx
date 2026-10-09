@@ -32,7 +32,7 @@ const RedirectionPage = () => {
       <Item variant="outline" className="w-full max-w-2xl rounded-md">
         <ItemMedia><CircleX className="size-4" /></ItemMedia>
         <ItemContent>
-          <ItemTitle>Redirection Failed</ItemTitle>
+          <ItemTitle>Redirection failed</ItemTitle>
           <ItemDescription>{error}</ItemDescription>
         </ItemContent>
       </Item>

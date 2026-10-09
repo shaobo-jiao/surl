@@ -96,14 +96,26 @@ export default function RegisterPage() {
                 : <Button type="submit">Sign Up</Button>
             }
           </Field>
+
+          {!isRegistered &&
+            <p className="text-center text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link to="/login" className="font-medium text-foreground underline underline-offset-4 hover:text-primary">
+                Sign In
+              </Link>
+            </p>
+          }
         </form>
       </CardContent>
 
       {isRegistered &&
-        <CardFooter>
+        <CardFooter >
           <Item render={<Link to="/login" />} className="p-0">
             <ItemMedia><CircleCheck className="size-4" /></ItemMedia>
-            <ItemContent><ItemTitle>Your registration is successful.</ItemTitle></ItemContent>
+            <ItemContent>
+              <ItemTitle>Your registration is successful</ItemTitle>
+              <ItemDescription>Sign in to shorten links, manage them, and track clicks</ItemDescription>
+              </ItemContent>
             <ItemActions><ChevronRight className="size-4" /></ItemActions>
           </Item>
         </CardFooter>
@@ -114,13 +126,12 @@ export default function RegisterPage() {
           <Item className="p-0">
             <ItemMedia><CircleX className="size-4" /></ItemMedia>
             <ItemContent>
-              <ItemTitle>Something went wrong.</ItemTitle>
+              <ItemTitle>Something went wrong</ItemTitle>
               <ItemDescription>{errors.root.serverError.message}</ItemDescription>
             </ItemContent>
           </Item>
         </CardFooter>
       }
-
     </Card>
   );
 }
