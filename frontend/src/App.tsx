@@ -14,7 +14,7 @@ import ThemeProvider from "./components/common/ThemeProvider";
 
 const App = () => {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <AuthProvider>
         <BrowserRouter>
           <Routes>
