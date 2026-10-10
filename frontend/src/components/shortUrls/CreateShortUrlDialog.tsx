@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import type { ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 import { createShortUrlApi, type CreateShortUrlFields } from "@/api/shortUrls/createShortUrl";
 import { originalUrlSchema } from "@/lib/shortUrlForm";
+import { cn } from "@/lib/utils";
 
 
 const CreateShortUrlFormDataScheme = z.object({
@@ -30,9 +31,10 @@ type CreateShortUrlFormData = z.infer<typeof CreateShortUrlFormDataScheme>
 
 interface CreateShortUrlDialogProps {
   onCreate: (shortUrl: ShortUrl) => void;
+  className?: string
 }
 
-export default function CreateShortUrlDialog({ onCreate }: CreateShortUrlDialogProps) {
+export default function CreateShortUrlDialog({ onCreate, className }: CreateShortUrlDialogProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const {
     register,
@@ -71,7 +73,7 @@ export default function CreateShortUrlDialog({ onCreate }: CreateShortUrlDialogP
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger render={<Button size="lg" className="ml-auto" />}>Create New</DialogTrigger>
+      <DialogTrigger render={<Button size="lg" className={cn(className)} />}>Create New</DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
         <form onSubmit={handleSubmit(handleCreateShortUrlSubmit)} className="flex flex-col gap-4">
           {/* create short url form inputs */}

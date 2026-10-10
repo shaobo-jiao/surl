@@ -1,4 +1,4 @@
-import { MousePointerClick } from "lucide-react";
+import { EllipsisVertical, MousePointerClick } from "lucide-react";
 import { type ShortUrl } from "@/api/shortUrls/shortUrl.shared";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import CopyUrlButton from "@/components/shortUrls/CopyUrlButton";
@@ -6,6 +6,8 @@ import DeleteShortUrlButton from "@/components/shortUrls/DeleteShortUrlButton";
 import EditShortUrlDialog from "@/components/shortUrls/EditShortUrlDialog";
 import { Item, ItemContent, ItemDescription, ItemHeader } from "../ui/item";
 import { format } from "date-fns";
+import { Button } from "../ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 interface ShortUrlCardProps {
   shortUrl: ShortUrl;
@@ -14,35 +16,65 @@ interface ShortUrlCardProps {
 }
 
 export default function ShortUrlCard({ shortUrl, onDelete, onUpdate }: ShortUrlCardProps) {
+  // removes https in the short url to save space
+  const displayUrl = shortUrl.absoluteUrl.replace(/^https?:\/\//, "");
+
   return (
     <Card>
-      {/* Header: the short URL, copy button, delete icon */}
-      <CardHeader className="flex w-full items-center gap-2">
+      {/* Header: the short URL and the action buttons */}
+      <CardHeader className="flex flex-row w-full items-center gap-2">
         <a href={shortUrl.absoluteUrl}
           target="_blank"
           rel="noreferrer"
-          className="bg-muted rounded-lg px-3 py-2 hover:underline font-mono ">
-          {shortUrl.absoluteUrl}
+          className="block rounded-lg px-3 py-2 hover:underline font-mono truncate">
+          {displayUrl}
         </a>
-        <CopyUrlButton value={shortUrl.absoluteUrl} />
-        <EditShortUrlDialog
-          shortUrl={shortUrl}
-          onUpdate={onUpdate}
-          className="ml-auto" />
-        <DeleteShortUrlButton
-          shortUrl={shortUrl}
-          onDelete={onDelete} />
+
+        {/* wide screen: three icons for the three actions */}
+        <div className="hidden sm:flex flex-row ml-auto">
+          <CopyUrlButton
+            value={shortUrl.absoluteUrl}
+            className="text-muted-foreground" />
+          <EditShortUrlDialog
+            shortUrl={shortUrl}
+            onUpdate={onUpdate} />
+          <DeleteShortUrlButton
+            shortUrl={shortUrl}
+            onDelete={onDelete} />
+        </div>
+
+        {/* small screen: single icon that expands to the three icons */}
+        <Popover>
+          <PopoverTrigger render={<Button type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Short URL actions"
+            className="text-muted-foreground sm:hidden ml-auto" />}>
+            <EllipsisVertical />
+          <PopoverContent align="end" className="sm:hidden gap-0.5 p-1 w-fit">
+            <CopyUrlButton
+              value={shortUrl.absoluteUrl}
+              className="text-muted-foreground" />
+            <EditShortUrlDialog
+              shortUrl={shortUrl}
+              onUpdate={onUpdate} />
+            <DeleteShortUrlButton
+              shortUrl={shortUrl}
+              onDelete={onDelete} />
+          </PopoverContent>
+          </PopoverTrigger>
+        </Popover>
       </CardHeader>
 
       {/* Body: original URL with caption, clicks and expiry datetime */}
       <CardContent>
-        <Item>
+        <Item className="py-0 px-3">
           <ItemContent>
             <ItemHeader>Original URL</ItemHeader>
             <a href={shortUrl.originalUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-sm text-muted-foreground hover:underline">
+              className="block text-sm text-muted-foreground hover:underline break-all">
               {shortUrl.originalUrl}
             </a>
           </ItemContent>

@@ -90,13 +90,16 @@ export default function UrlsPage() {
     <div className="flex flex-col items-center w-full max-w-3xl gap-4">
 
       {/* body header with the title and create new button */}
-      <div className="flex flex-row items-center w-full gap-4 mt-4">
-        <Link2 className="bg-primary text-primary-foreground size-12 p-3 rounded-xl" />
-        <div className="flex flex-col">
-          <h1 className="font-bold text-2xl">My URLs</h1>
-          <p className="text-muted-foreground">Manage and track your shortened URLs</p>
+
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full">
+        <div className="flex flex-row items-center gap-4">
+          <Link2 className="bg-primary text-primary-foreground size-12 p-3 rounded-xl shrink-0" />
+          <div className="flex flex-col">
+            <h1 className="font-bold text-2xl">My URLs</h1>
+            <p className="text-muted-foreground">Manage and track your short URLs</p>
+          </div>
         </div>
-        <CreateShortUrlDialog onCreate={handleCreate} />
+        <CreateShortUrlDialog onCreate={handleCreate} className="w-full sm:w-auto sm:ml-auto" />
       </div>
 
       {/* toolbar: filter button on the left, result count on the right */}
