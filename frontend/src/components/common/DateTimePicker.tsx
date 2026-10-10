@@ -74,7 +74,7 @@ export default function DateTimePicker({
       </PopoverTrigger>
 
       <PopoverContent align="start" className="w-auto gap-0 p-0">
-        <Card>
+        <Card className="no-scrollbar overflow-y-auto max-h-[var(--available-height)]">
           <CardContent className="flex flex-col gap-2">
             <Calendar
               mode="single"
