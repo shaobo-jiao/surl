@@ -4,20 +4,6 @@
 # - some file paths are different
 
 services:
-  db:
-    volumes:
-      - type: bind
-        source: ./env/db_init.sh
-        target: /docker-entrypoint-initdb.d/db_init.sh
-        read_only: true
-        
-  migration:
-    volumes:
-      - type: bind
-        source: ./migrations/db_schema.sql
-        target: /migration/db_schema.sql
-        read_only: true
-
   api:
     image: !reset null
     build: ./backend/Surl.Api/

@@ -1,4 +1,7 @@
 # syntax=docker/dockerfile:1
+# build:
+# docker build -t shaobojiao/surl-web --platform linux/amd64,linux/arm64 \
+# --build-arg VITE_API_BASE_URL=https://surl-api.shaobo.dev  --build-arg VITE_APP_URL=https://surl.shaobo.dev .\frontend\
 
 # stage 1: build
 FROM node:24-bookworm-slim AS build
