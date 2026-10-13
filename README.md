@@ -1,104 +1,157 @@
-# Overview
-`SURL` is a URL Shortener project implemented with .NET Web API and React. 
-A live preview is available at [https://surl.shaobo.dev](https://surl.shaobo.dev).
+# SURL - URL Shortener
 
-Features
-- Generates a short URL that redirects to the originally provided URL. 
-- User registration and URL management
+> A URL shortener with authentication, click analytics, and link expiry — built with
+> ASP.NET Core Minimal API and React. Live demo at https://surl.shaobo.dev
 
-# Tech stack of the project
-- _.NET Minimal API_ to build the backend API
-- _Postgres_ as the database
-- _React_ + _TypeScript_ + _TailwindCSS_ to build the frontend
-- _Docker_ and _Docker Compose_ for containerization
-- _Cloudflare Tunnel_ to allow public access at [https://surl.shaobo.dev](https://surl.shaobo.dev)
 
-# Try the application locally
-Make sure you have the following installed in your computer:
-- Docker Desktop
-- .NET SDK 10.0
+## Overview
+**SURL** is a full-stack URL shortener that allows users to create, manage and share shortened links, with user authentication and click tracking.
 
-```bash
-# clone the repo
-$ git clone https://github.com/shaobo-jiao/surl.git
-$ cd ./surl/
+- **URL Shortening:** Generates a unique Snowflake-like ID for each shortened URL and encodes it 
+  into a compact Base62 short code, producing links such as `https://surl.shaobo.dev/7YHg8IEAfw`.
+- **Link Management:** Provides registered users with a personal dashboard to create, edit, and 
+  delete links, filter, sort, and paginate their link lists, configure link expiration dates, and 
+  view click counts.
+- **User Authentication:** Supports user registration, login, logout, password changes, and token refresh 
+  using short-lived JWT access tokens and refresh token rotation.
 
-# install dotnet ef if it's not installed
-$ dotnet tool install --global dotnet-ef --version 10.0.*
+--- 
+#### Link Management Dashboard
+![Link Dashboard](docs/images/dashboard.png)
 
-# trust asp.ne core dev cert if it's not trusted
-$ dotnet dev-certs https --trust
+#### Link Creation & Filtering
+<p>
+  <img src="docs/images/dashboard-create.png" width="48%" />
+  <img src="docs/images/dashboard-filter.png" width="48%" />
+</p>
 
-# prepare dev cert files:
-$ mkdir certs
-$ dotnet dev-certs https -ep certs/localhost.crt --format Pem -np
 
-# prepare necessary secrets
-$ cp ./secrets/postgres_password.example ./secrets/postgres_password
-$ cp ./secrets/surl_owner_password.example ./secrets/surl_owner_password
-$ cp ./secrets/surl_rw_password.example ./secrets/surl_rw_password
-$ cp ./secrets/jwt_secret_key.example ./secrets/jwt_secret_key
+## Tech Stack
+- **Backend:** ASP.NET Core Minimal API, Entity Framework Core, FluentValidation
+- **Database:** PostgreSQL 
+- **Frontend:** React, TypeScript, React Router, Tailwind CSS, shadcn/ui
+- **Testing:** xUnit, Testcontainers, Respawn
+- **Deployment:** Docker, Docker Compose
 
-# generate migration script
-$ dotnet restore ./backend/Surl.Api/
-$ dotnet ef migrations script -i -p ./backend/Surl.Api/ -o ./migrations/db_schema.sql
+## Architecture
+![Application Architecture](docs/images/architecture.png)
 
-# start the containers
-$ docker compose up -d
+
+## Features & Tech Highlights
+### Backend Design
+- **Short URL ID Generation:** Generates Short URL IDs using a Snowflake-like algorithm with a configurable 
+  bit layout (epoch, timestamp/worker/sequence bits), sequence overflow and clock-rollback detection. The IDs
+  are Base62-encoded to compact codes (and decoded back) to use in the short URLs.
+- **Vertical Slice Architecture:** Organizes backend code into feature-oriented modules (ShortUrls, Users, 
+  and Auth), each encapsulating its own entities, endpoints, request and response models, services, errors, 
+  and validators.
+- **Asynchronous Click Tracking:** Uses a producer-consumer queue and background worker to decouple URL
+  redirection from click-event processing and database persistence.
+- **Efficient Querying & Pagination:** Implements property-based filtering, sorting with deterministic
+  tie-breaking, direct data projection in SQL rather than memory, and offset pagination via a reusable 
+  `PagedResult<T>`.
+- **Validation & Error Handling:** Runs FluentValidation in a Minimal API endpoint filter `ValidationFilter`.
+  Uses `Result<TValue, TError>` service return types instead of throwing, and standardizes error mapping 
+  to `ProblemDetails` at the endpoint boundary.
+
+### Auth & Security
+- **Token Lifecycle Management:** Uses short-lived JWT access tokens stored in memory and refresh tokens
+  stored in `HttpOnly`, `Secure`, `SameSite=Strict` cookies, with refresh token rotation, configurable 
+  JWT options and automatic token refresh.
+- **Secrets Management:** Uses Docker secrets for sensitive configuration, including database passwords and 
+  JWT secrets, rather than passing them as ordinary environment variables
+- **Least-privilege Database Roles:** Uses separate database roles for migration and application runtime. 
+  The migration role owns the schema, while the application runtime role has only the required DML privileges
+
+### Testing & Delivery
+- **Integration Tests against Real Infrastructure:** Integration tests run against PostgreSQL containers via
+  Testcontainers with real EF Core migrations and database state reset via Respawn.
+- **Deterministic time:** Injects a `FakeTimeProvider` with a matching JWT lifetime validator, so that 
+  expiry and refresh-token tests are not time-flaky.
+- **Containerization & Delivery:** Uses Docker and Docker Compose configurations with multi-stage build and 
+  compose file overlay for development and deployment. Supports health checks and database migration using 
+  idempotent migration scripts
+
+### Frontend 
+- **Responsive UI and Theming:** Provides a responsive interface for different screen sizes, and supports
+  light/dark/system themes
+
+
+## Project Structure
+```text
+surl/
+├── backend/
+│   ├── Surl.Api/                  # Minimal API (Auth, ShortUrls, Users modules)
+│   ├── Surl.Api.UnitTests/        # xUnit unit tests
+│   └── Surl.Api.IntegrationTests/ # xUnit + Testcontainers + Respawn integration tests
+├── frontend/                      # React + TypeScript + Tailwind + shadcn/ui SPA
+├── config/                        # Configurations, e.g. nginx config
+├── env/                           # DB init script and compose env example
+├── secrets/                       # Secret files (only examples committed)
+├── docker/                        # Additional Docker files, e.g. db.Dockerfile
+├── certs/                         # Dev HTTPS certificates (local only)
+├── compose.yaml                   # Base Compose file
+└── compose.dev.yaml               # Dev overlay (build + HTTPS)
 ```
 
+
+## Getting Started
+### Prerequisites
+- .NET SDK 10.0
+- Docker Desktop
+
+### Run the App Locally
+```bash
+# clone the repo
+git clone https://github.com/shaobo-jiao/surl.git && cd ./surl
+
+# install dotnet ef if it's not installed
+dotnet tool install --global dotnet-ef --version 10.0.*
+
+# trust asp.net core dev cert if it's not trusted
+dotnet dev-certs https --trust
+
+# prepare dev cert files:
+mkdir certs
+dotnet dev-certs https -ep ./certs/localhost.crt --format Pem -np
+
+# prepare necessary secrets
+cp ./secrets/postgres_password.example ./secrets/postgres_password
+cp ./secrets/surl_owner_password.example ./secrets/surl_owner_password
+cp ./secrets/surl_rw_password.example ./secrets/surl_rw_password
+cp ./secrets/jwt_secret_key.example ./secrets/jwt_secret_key
+
+# ensure read access for container non-root users to secret files group read access (Linux only)
+# note that the secret reader group ID is configurable in the compose file and dn.Dockerfile
+sudo groupadd -g 2000 surl-secrets
+sudo chown :surl-secrets ./secrets/*
+sudo chmod 640 ./secrets/*
+
+# generate migration script
+dotnet restore ./backend/Surl.Api/
+dotnet ef migrations script -i -p ./backend/Surl.Api/ -o ./migrations/db_schema_latest.sql
+
+# start the containers
+docker compose -f ./compose.yaml -f ./compose.dev.yaml up -d
+```
 visit the application locally at [https://localhost:5001](https://localhost:5001)
 
-
-# Project Details
-
-
-## Update on 15 Aug 2026
-Pending:
-- frontend: auth refresh logic 
-- frontend: short urls page
-- frontend: Me page & related /me api
-- rate limiting
-- api global exception handler
-- short url password protection feature
+### Run the Tests
+```bash
+# backend unit and integration tests (integration tests require Docker)
+dotnet test ./backend/Surl.slnx
+```
 
 
-## Version 2 (User Registration and URL Management)
-...
-
-Pending:
-- logging
-- review authentication and authorization: docs and current impl
-- add url management api 
-- add auth frontend
-- add url management page frontend
-- GitHub Actions for CI/CD
-- explore rate limiting
-- explore caching, Redis
-- unit and integration testing for API 
-- OIDC?
-- mailing service?
+## Future Work
+- **Email Service & Email Registration:** Integrate an email service to support email verification during user registration
+- **Rate Limiting:** Implement API rate limiting to prevent abuse and protect endpoints from excessive
+  requests.
+- **Password Protection:** Allow users to protect shortened URLs with passwords
+- **Global Exception Handling Middleware:** Implement centralized exception handling middleware to manage
+  unhandled exceptions and return consistent error responses.
 
 
-## Version 1 (MVP)
-API Endpoints:
-- `POST /api/short-urls/`: accepts an URL and returns the shortened URL.
-- `GET /api/short-urls/{code}`: searches and returns the original URL by given shortened URL code.
+## License
+Released under the MIT License. See [LICENSE](LICENSE) for details.
 
-Frontend Pages:
-- `/`: homepage that has a form to shorten a URL
-- `/{code}`: redirection page that redirects to original URL or displays error
-
-More:
-- The Shortened URL ID is auto generated from 1 (later change to be from SnowflakeID)
-- Base62 Encoding to convert a shortened URL ID to code
-- producer-consumer pattern with background service for click event tracking
-- logging? validation with endpoint filters? rate limiting? caching?
-
-TODO:
-- port over SnowflakeID
-- port over ValidationFilter and add validations
-- review and finish frontend pages
-- explore caching
-- explore rate limiting
-- add logging
