@@ -98,7 +98,7 @@ surl/
 ## Getting Started
 ### Prerequisites
 - .NET SDK 10.0
-- Docker Desktop
+- Docker Desktop / Docker Engine
 
 ### Run the App Locally
 ```bash
@@ -106,9 +106,11 @@ surl/
 git clone https://github.com/shaobo-jiao/surl.git && cd ./surl
 
 # install dotnet ef if it's not installed
-dotnet tool install --global dotnet-ef --version 10.0.*
+dotnet tool install --global dotnet-ef --version "10.0.*"
 
-# trust asp.net core dev cert if it's not trusted
+# trust asp.net core dev cert if it's not trusted 
+# (Linux only: set environment variable SSL_CERT_DIR first) 
+# export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"
 dotnet dev-certs https --trust
 
 # prepare dev cert files:
@@ -121,17 +123,19 @@ cp ./secrets/surl_owner_password.example ./secrets/surl_owner_password
 cp ./secrets/surl_rw_password.example ./secrets/surl_rw_password
 cp ./secrets/jwt_secret_key.example ./secrets/jwt_secret_key
 
-# ensure read access for container non-root users to secret files group read access (Linux only)
-# note that the secret reader group ID is configurable in the compose file and dn.Dockerfile
+# Linux only: set read access to certs and secrets for container non-root users using a user group;
+# the user group ID is configurable in the compose file and db.Dockerfile 
 sudo groupadd -g 2000 surl-secrets
 sudo chown :surl-secrets ./secrets/*
+sudo chown :surl-secrets ./certs/*
 sudo chmod 640 ./secrets/*
+sudo chmod 640 ./certs/*
 
 # generate migration script
 dotnet restore ./backend/Surl.Api/
 dotnet ef migrations script -i -p ./backend/Surl.Api/ -o ./migrations/db_schema_latest.sql
 
-# start the containers
+# start the containers (prepend `sudo` on Linux)
 docker compose -f ./compose.yaml -f ./compose.dev.yaml up -d
 ```
 visit the application locally at [https://localhost:5001](https://localhost:5001)
@@ -141,7 +145,8 @@ visit the application locally at [https://localhost:5001](https://localhost:5001
 # backend unit and integration tests (integration tests require Docker)
 dotnet test ./backend/Surl.slnx
 
-# or use dotnet run to run tests
+# or use `dotnet run` to run tests 
+# prepend `sudo` to run integration tests on Linux as Docker requires it.
 dotnet run --project ./backend/Surl.Api.UnitTests/
 dotnet run --project ./backend/Surl.Api.IntegrationTests/
 ```
