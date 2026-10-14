@@ -44,9 +44,10 @@ export default function DeleteShortUrlButton({ shortUrl, onDelete, className }: 
         variant="ghost"
         size="icon"
         aria-label="Delete short URL"
-        className={cn("text-muted-foreground hover:text-destructive", className)}>
+        className={cn("text-muted-foreground hover:text-destructive", className)} />}>
         <Trash2 />
-      </Button>} />
+      </AlertDialogTrigger>
+
       <AlertDialogContent size="sm">
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">

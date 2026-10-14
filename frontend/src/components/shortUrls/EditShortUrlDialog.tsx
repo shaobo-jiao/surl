@@ -85,9 +85,10 @@ export default function EditShortUrlDialog({ shortUrl, onUpdate, className }: Ed
         variant="ghost"
         size="icon"
         aria-label="Edit short URL"
-        className={cn("text-muted-foreground", className)}>
+        className={cn("text-muted-foreground", className)} />}>
         <SquarePen />
-      </Button>} />
+      </DialogTrigger>
+
       <DialogContent className="sm:max-w-2xl">
         <form onSubmit={handleSubmit(handleEditShortUrlSubmit)} className="flex flex-col gap-4">
           <DialogHeader>

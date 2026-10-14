@@ -51,6 +51,8 @@ export default function ShortUrlCard({ shortUrl, onDelete, onUpdate }: ShortUrlC
             aria-label="Short URL actions"
             className="text-muted-foreground sm:hidden ml-auto" />}>
             <EllipsisVertical />
+          </PopoverTrigger>
+          
           <PopoverContent align="end" className="sm:hidden gap-0.5 p-1 w-fit">
             <CopyUrlButton
               value={shortUrl.absoluteUrl}
@@ -62,7 +64,6 @@ export default function ShortUrlCard({ shortUrl, onDelete, onUpdate }: ShortUrlC
               shortUrl={shortUrl}
               onDelete={onDelete} />
           </PopoverContent>
-          </PopoverTrigger>
         </Popover>
       </CardHeader>
 
