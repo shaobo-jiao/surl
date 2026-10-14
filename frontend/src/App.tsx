@@ -15,22 +15,21 @@ import ThemeProvider from "./components/common/ThemeProvider";
 const App = () => {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route element={<AppLayout />}>
-              <Route index element={<HomePage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/:shortUrlCode" element={<RedirectionPage />} />
-              <Route element={<ProtectedRoute />}>
-                <Route path="/urls" element={<UrlsPage />} />
-                <Route path="/me" element={<ProfilePage />} />
-              </Route>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<AuthProvider><AppLayout /></AuthProvider>}>
+            <Route index element={<HomePage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/urls" element={<UrlsPage />} />
+              <Route path="/me" element={<ProfilePage />} />
             </Route>
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+          </Route>
+          {/* isolate RedirectionPage from the rest of the app */}
+          <Route path="/:shortUrlCode" element={<RedirectionPage />} />
+        </Routes>
+      </BrowserRouter>
     </ThemeProvider>
   );
 };
