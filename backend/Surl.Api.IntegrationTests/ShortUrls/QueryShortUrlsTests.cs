@@ -1,7 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Surl.Api.Common;
+using Surl.Api.Data;
 using Surl.Api.IntegrationTests.Helpers;
 using Surl.Api.ShortUrls;
 
@@ -268,7 +271,16 @@ public class QueryShortUrlsTests(CustomWebApplicationFactory factory) : IAsyncLi
             .Select(x => new KeyValuePair<string, long>(x.ShortUrlCode, x.ClickCount))
             .ToDictionary();
         await ShortUrlTestHelper.ClickShortUrlsAsync(client, clickCounts, cancellationToken);
-        await Task.Delay(1000, cancellationToken); // delay a bit for the click background service, TO REVIEW
+        await ShortUrlTestHelper.WaitUntilAsync(async ct =>
+        {
+            await using var scope = _factory.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var actual = await db.ShortUrlClicks.LongCountAsync(ct);
+            var expected = clickCounts.Sum(p => p.Value);
+            return actual == expected;
+        });
+
 
         // ties are broken by Id ASC
         var expectedShortUrls = shortUrls.OrderBy(x => x.ClickCount).ThenBy(x => x.Id);

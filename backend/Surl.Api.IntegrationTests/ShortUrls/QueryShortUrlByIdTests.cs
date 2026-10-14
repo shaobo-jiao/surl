@@ -1,5 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Surl.Api.Data;
 using Surl.Api.IntegrationTests.Helpers;
 using Surl.Api.ShortUrls;
 
@@ -102,10 +105,20 @@ public class QueryShortUrlByIdTests(CustomWebApplicationFactory factory) : IAsyn
             TestConstants.TestUser1, TestConstants.TestPassword, cancellationToken);
         var stubShortUrl = await ShortUrlTestHelper.CreateStubShortUrlAsync(client,
             accessToken: loginResponse.AccessToken, cancellationToken: cancellationToken);
+        
         // generate click count
-        stubShortUrl = stubShortUrl with {ClickCount = 10};
+        var expectedClickCount = 10;
+        stubShortUrl = stubShortUrl with {ClickCount = expectedClickCount};
         await ShortUrlTestHelper.ClickShortUrlAsync(client, stubShortUrl.ShortUrlCode, stubShortUrl.ClickCount, cancellationToken);
-        await Task.Delay(100, cancellationToken); // delay a bit for the click background service  
+        await ShortUrlTestHelper.WaitUntilAsync(async ct =>
+        {
+            await using var scope = _factory.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var actual = await db.ShortUrlClicks.LongCountAsync(ct);
+            return actual == expectedClickCount;
+        });
+
         // Act
         var httpResponse = await client.SendAuthenticatedRequestAsJsonAsync(
             HttpMethod.Get, $"/short-urls/{stubShortUrl.Id}", loginResponse.AccessToken, cancellationToken);

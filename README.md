@@ -140,6 +140,10 @@ visit the application locally at [https://localhost:5001](https://localhost:5001
 ```bash
 # backend unit and integration tests (integration tests require Docker)
 dotnet test ./backend/Surl.slnx
+
+# or use dotnet run to run tests
+dotnet run --project ./backend/Surl.Api.UnitTests/
+dotnet run --project ./backend/Surl.Api.IntegrationTests/
 ```
 
 

@@ -31,7 +31,7 @@ public static class ShortUrlTestHelper
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public static async Task<IEnumerable<ShortUrlResponse>> CreateStubShortUrlsAsync(HttpClient client,
-        IEnumerable<CreateShortUrlRequest> createRequests, 
+        IEnumerable<CreateShortUrlRequest> createRequests,
         string? accessToken = null, CancellationToken cancellationToken = default)
     {
         var responses = new List<ShortUrlResponse>();
@@ -52,7 +52,7 @@ public static class ShortUrlTestHelper
     /// <param name="count"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static async Task ClickShortUrlAsync(HttpClient client, string shortUrlCode, long count = 1, 
+    public static async Task ClickShortUrlAsync(HttpClient client, string shortUrlCode, long count = 1,
         CancellationToken cancellationToken = default)
     {
         for (int i = 0; i < count; i++)
@@ -68,12 +68,58 @@ public static class ShortUrlTestHelper
     /// <param name="shortUrlClicks"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static async Task ClickShortUrlsAsync(HttpClient client, Dictionary<string, long> shortUrlClicks, 
+    public static async Task ClickShortUrlsAsync(HttpClient client, Dictionary<string, long> shortUrlClicks,
         CancellationToken cancellationToken)
     {
         foreach (var pair in shortUrlClicks)
         {
             await ClickShortUrlAsync(client, pair.Key, pair.Value, cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// Waits until a condition meets. This is used to wait ClickBackgroundService to complete 
+    /// click event processing.
+    /// </summary>
+    /// <returns></returns>
+    public static async Task WaitUntilAsync(Func<CancellationToken, Task<bool>> condition,
+        TimeSpan timeout, TimeSpan interval)
+    {
+        var testCt = TestContext.Current.CancellationToken;
+        using var timeoutCts = new CancellationTokenSource(timeout);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+            timeoutCts.Token, testCt);
+        var ct = linkedCts.Token;
+
+        try
+        {
+            while (true)
+            {
+                ct.ThrowIfCancellationRequested();
+                if (await condition(ct))
+                {
+                    return;
+                }
+
+                await Task.Delay(interval, ct);
+            }
+        }
+        catch (OperationCanceledException) when (
+            timeoutCts.IsCancellationRequested && !testCt.IsCancellationRequested)
+        {
+            throw new TimeoutException($"Condition was not met within {timeout}");
+        }
+    }
+
+    /// <summary>
+    /// Waits until a condition meets using default interval (100ms) and timeout (10s). 
+    /// This is used to wait ClickBackgroundService to complete 
+    /// click event processing.
+    /// </summary>
+    /// <param name="condition"></param>
+    /// <returns></returns>
+    public static async Task WaitUntilAsync(Func<CancellationToken, Task<bool>> condition)
+    {
+        await WaitUntilAsync(condition, TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
     }
 }

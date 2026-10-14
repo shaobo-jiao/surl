@@ -1,6 +1,9 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Surl.Api.Data;
 using Surl.Api.IntegrationTests.Helpers;
 using Surl.Api.ShortUrls;
 
@@ -95,7 +98,12 @@ public class RedirectShortUrlTests(CustomWebApplicationFactory factory) : IAsync
         // Act
         var httpResponse = await client.GetAsync($"/redirection/{shortUrl.ShortUrlCode}", cancellationToken);
         var actualOriginalUrl = await httpResponse.Content.ReadFromJsonAsync<string>(cancellationToken);
-        await Task.Delay(1000, cancellationToken); // wait a bit for click processing, TO REVIEW
+        await ShortUrlTestHelper.WaitUntilAsync(async ct =>
+        {
+            await using var scope = _factory.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            return await db.ShortUrlClicks.AnyAsync(c => c.ShortUrlId == shortUrl.Id, ct);
+        });
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
@@ -132,6 +140,12 @@ public class RedirectShortUrlTests(CustomWebApplicationFactory factory) : IAsync
         _factory.TimeProvider.Advance(TimeSpan.FromDays(3650));
         var httpResponse = await client.GetAsync($"/redirection/{shortUrl.ShortUrlCode}", cancellationToken);
         var actualOriginalUrl = await httpResponse.Content.ReadFromJsonAsync<string>(cancellationToken);
+        await ShortUrlTestHelper.WaitUntilAsync(async ct =>
+        {
+            await using var scope = _factory.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            return await db.ShortUrlClicks.AnyAsync(c => c.ShortUrlId == shortUrl.Id, ct);
+        });
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
